@@ -131,12 +131,13 @@ export default async function Home() {
         </section>
 
         {/* categories section */}
-        <section>
-          <div className="mb-10">
-            <p className="text-amber-700 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-2">Выбирайте по интересам</p>
-            <h2 className="text-4xl font-bold">Категории и жанры</h2>
+        <section className="py-12">
+          <div className="mb-12">
+            <p className="text-amber-700 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-3">Выбирайте по интересам</p>
+            <h2 className="text-4xl font-bold mb-4">Категории и жанры</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl">Найдите свой любимый жанр среди нашей большой коллекции литературы</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             {categories.map((c, idx) => (
               <CategoryCard key={idx} name={c} />
             ))}

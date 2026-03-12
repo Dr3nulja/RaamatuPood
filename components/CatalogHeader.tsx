@@ -29,10 +29,10 @@ export default function CatalogHeader() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link
-              href="/catalog"
+              href="/"
               className="text-white hover:text-amber-100 font-medium transition-colors"
             >
-              Каталог
+              Домашняя страница
             </Link>
             <Link
               href="#"
@@ -95,10 +95,10 @@ export default function CatalogHeader() {
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 space-y-2">
             <Link
-              href="/catalog"
+              href="/"
               className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
             >
-              Каталог
+              Домашняя страница
             </Link>
             <Link
               href="#"

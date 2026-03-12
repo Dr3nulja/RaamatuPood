@@ -81,21 +81,21 @@ export default function CatalogPage() {
   return (
     <>
       <CatalogHeader />
-      <main className="min-h-screen bg-gray-50 px-4 py-10 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+      <main className="min-h-screen bg-white dark:bg-gray-950 px-4 py-10 text-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-4 rounded-3xl bg-white p-8 shadow-sm dark:bg-gray-800 md:flex-row md:items-end md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 rounded-3xl bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 p-8 shadow-sm border border-amber-100 dark:border-amber-900 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+            <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-amber-800 dark:text-amber-500">
               Каталог
             </p>
-            <h1 className="text-3xl font-bold">Все книги из базы данных</h1>
-            <p className="mt-2 max-w-2xl text-sm text-gray-600 dark:text-gray-300">
+            <h1 className="text-4xl font-bold">Все книги из базы данных</h1>
+            <p className="mt-2 max-w-2xl text-sm text-gray-700 dark:text-gray-300">
               На странице выводятся все книги из таблицы `books` с автором, категорией, ценой, рейтингом и наличием.
             </p>
           </div>
 
-          <div className="rounded-2xl bg-gray-100 px-5 py-4 text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-100">
-            Всего книг: <span className="font-semibold">{books.length}</span>
+          <div className="rounded-2xl bg-amber-800/10 dark:bg-amber-900/30 px-5 py-4 text-sm text-amber-800 dark:text-amber-400 font-semibold border border-amber-200 dark:border-amber-800">
+            Всего книг: <span className="font-bold">{books.length}</span>
           </div>
         </div>
 
@@ -104,14 +104,14 @@ export default function CatalogPage() {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700"
+                className="overflow-hidden rounded-3xl bg-white dark:bg-gray-800 shadow-sm ring-1 ring-amber-200 dark:ring-amber-900"
               >
-                <div className="h-72 animate-pulse bg-gray-200 dark:bg-gray-700" />
+                <div className="h-72 animate-pulse bg-amber-100 dark:bg-gray-700" />
                 <div className="space-y-4 p-6">
-                  <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  <div className="h-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-                  <div className="h-10 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                  <div className="h-6 w-3/4 animate-pulse rounded bg-amber-100 dark:bg-gray-700" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-amber-100 dark:bg-gray-700" />
+                  <div className="h-16 animate-pulse rounded bg-amber-100 dark:bg-gray-700" />
+                  <div className="h-10 animate-pulse rounded bg-amber-100 dark:bg-gray-700" />
                 </div>
               </div>
             ))}
@@ -121,7 +121,7 @@ export default function CatalogPage() {
             Не удалось загрузить каталог из базы данных. Проверь подключение к MySQL и параметры в `.env.local`.
           </div>
         ) : books.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-300 bg-white p-10 text-center text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <div className="rounded-3xl border border-dashed border-amber-300 bg-amber-50 dark:bg-gray-900 p-10 text-center text-amber-900 dark:text-amber-200">
             В базе данных пока нет книг.
           </div>
         ) : (
@@ -133,9 +133,9 @@ export default function CatalogPage() {
               return (
                 <article
                   key={book.id}
-                  className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200 transition hover:-translate-y-1 hover:shadow-lg dark:bg-gray-800 dark:ring-gray-700"
+                  className="overflow-hidden rounded-3xl bg-white dark:bg-gray-800 shadow-sm ring-1 ring-amber-200 dark:ring-amber-900 transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="flex h-72 items-center justify-center overflow-hidden bg-white p-4 dark:bg-gray-700">
+                  <div className="flex h-72 items-center justify-center overflow-hidden bg-amber-50 dark:bg-gray-700 p-4">
                     {cover ? (
                       <img
                         src={cover}
@@ -144,31 +144,31 @@ export default function CatalogPage() {
                         loading="lazy"
                       />
                     ) : (
-                      <span className="text-sm text-gray-500 dark:text-gray-300">Нет обложки</span>
+                      <span className="text-sm text-amber-500 dark:text-amber-300">Нет обложки</span>
                     )}
                   </div>
 
                   <div className="space-y-4 p-6">
                     <div>
-                      <h2 className="line-clamp-2 text-xl font-semibold">{book.title}</h2>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
+                      <h2 className="line-clamp-2 text-xl font-semibold text-gray-900 dark:text-white">{book.title}</h2>
+                      <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
                         {book.author || "Автор не указан"}
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 text-xs font-medium text-gray-600 dark:text-gray-200">
+                    <div className="flex flex-wrap gap-2 text-xs font-medium text-amber-800 dark:text-amber-200">
                       {book.category && (
-                        <span className="rounded-full bg-gray-100 px-3 py-1 dark:bg-gray-700">{book.category}</span>
+                        <span className="rounded-full bg-amber-100 dark:bg-amber-900/40 px-3 py-1">{book.category}</span>
                       )}
                       {book.language && (
-                        <span className="rounded-full bg-gray-100 px-3 py-1 dark:bg-gray-700">{book.language}</span>
+                        <span className="rounded-full bg-amber-100 dark:bg-amber-900/40 px-3 py-1">{book.language}</span>
                       )}
                       {book.publication_year && (
-                        <span className="rounded-full bg-gray-100 px-3 py-1 dark:bg-gray-700">{book.publication_year}</span>
+                        <span className="rounded-full bg-amber-100 dark:bg-amber-900/40 px-3 py-1">{book.publication_year}</span>
                       )}
                     </div>
 
-                    <p className="min-h-12 text-sm text-gray-600 dark:text-gray-300">
+                    <p className="min-h-12 text-sm text-gray-700 dark:text-gray-300">
                       {book.description || "Описание для этой книги пока не добавлено."}
                     </p>
 
@@ -194,13 +194,13 @@ export default function CatalogPage() {
                     <div className="flex gap-3">
                       <Link
                         href={`/catalog/${book.id}`}
-                        className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-blue-700"
+                        className="flex-1 rounded-xl bg-amber-800 hover:bg-amber-900 px-4 py-3 text-center text-sm font-medium text-white transition"
                       >
                         Открыть книгу
                       </Link>
                       <Link
                         href="/"
-                        className="rounded-xl border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700"
+                        className="rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-gray-800 px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-200 transition hover:bg-amber-100 dark:hover:bg-gray-700"
                       >
                         Главная
                       </Link>
