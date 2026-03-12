@@ -1,5 +1,6 @@
 "use client";
 
+import CatalogHeader from "@/components/CatalogHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -78,7 +79,9 @@ export default function CatalogPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <>
+      <CatalogHeader />
+      <main className="min-h-screen bg-gray-50 px-4 py-10 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 rounded-3xl bg-white p-8 shadow-sm dark:bg-gray-800 md:flex-row md:items-end md:justify-between">
           <div>
@@ -209,6 +212,7 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
-    </main>
+      </main>
+    </>
   );
 }

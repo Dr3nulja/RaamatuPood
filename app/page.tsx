@@ -1,6 +1,7 @@
 import SearchBar from "../components/SearchBar";
 import BookCard from "../components/BookCard";
 import CategoryCard from "../components/CategoryCard";
+import Header from "../components/Header";
 import pool from "../lib/db";
 
 export default async function Home() {
@@ -42,11 +43,7 @@ export default async function Home() {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen font-sans text-gray-900 dark:text-gray-100">
-      <header className="bg-white dark:bg-gray-800 shadow">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold">RaamatuPood</h1>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8 space-y-16">
         {/* search */}
