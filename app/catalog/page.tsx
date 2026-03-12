@@ -3,6 +3,7 @@
 import CatalogHeader from "@/components/CatalogHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCart } from "@/contexts/CartContext";
 
 type CatalogBookRow = {
   id: number;
@@ -36,6 +37,7 @@ export default function CatalogPage() {
   const [books, setBooks] = useState<CatalogBookRow[]>([]);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { addItem } = useCart();
 
   useEffect(() => {
     let cancelled = false;
@@ -192,17 +194,25 @@ export default function CatalogPage() {
                     </div>
 
                     <div className="flex gap-3">
-                      <Link
-                        href={`/catalog/${book.id}`}
+                      <button
+                        onClick={() =>
+                          addItem({
+                            id: book.id,
+                            title: book.title,
+                            author: book.author || undefined,
+                            price: book.price,
+                            cover_image: book.cover_image || undefined,
+                          })
+                        }
                         className="flex-1 rounded-xl bg-amber-800 hover:bg-amber-900 px-4 py-3 text-center text-sm font-medium text-white transition"
                       >
-                        Открыть книгу
-                      </Link>
+                        Добавить в корзину
+                      </button>
                       <Link
-                        href="/"
+                        href={`/catalog/${book.id}`}
                         className="rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-gray-800 px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-200 transition hover:bg-amber-100 dark:hover:bg-gray-700"
                       >
-                        Главная
+                        Подробнее
                       </Link>
                     </div>
                   </div>

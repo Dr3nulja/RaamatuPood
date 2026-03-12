@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import CartDrawer from './CartDrawer';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,6 +51,8 @@ export default function Header() {
 
           {/* Auth Buttons and Mobile Menu Button */}
           <div className="flex items-center gap-4">
+            <CartDrawer />
+
             <button className="hidden sm:block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium">
               Войти
             </button>

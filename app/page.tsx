@@ -2,44 +2,60 @@ import SearchBar from "../components/SearchBar";
 import BookCard from "../components/BookCard";
 import CategoryCard from "../components/CategoryCard";
 import Header from "../components/Header";
-import pool from "../lib/db";
+import prisma from "../lib/prisma";
 
 export default async function Home() {
-  // fetch data from database
-  const [popRows] = await pool.query(
-    `SELECT b.title, a.name AS author, b.cover_image
-     FROM books b
-     LEFT JOIN authors a ON b.author_id = a.id
-     ORDER BY b.rating DESC
-     LIMIT 8`
-  ) as [
-    { title: string; author: string | null; cover_image: string | null }[],
-    any
-  ];
-  const popularBooks = popRows.map((r) => ({
-    title: r.title,
-    author: r.author || undefined,
-    cover: r.cover_image || undefined,
+  // fetch popular books
+  const popularBooks = await prisma.book.findMany({
+    select: {
+      title: true,
+      coverImage: true,
+      author: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      rating: "desc",
+    },
+    take: 8,
+  });
+
+  // fetch new arrivals
+  const newArrivals = await prisma.book.findMany({
+    select: {
+      title: true,
+      coverImage: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 8,
+  });
+
+  // fetch categories
+  const categories = await prisma.category.findMany({
+    select: {
+      name: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  const popularBooksFormatted = popularBooks.map((b: typeof popularBooks[0]) => ({
+    title: b.title,
+    author: b.author?.name,
+    cover: b.coverImage || undefined,
   }));
 
-  const [newRows] = await pool.query(
-    `SELECT title, cover_image
-     FROM books
-     ORDER BY created_at DESC
-     LIMIT 8`
-  ) as [
-    { title: string; cover_image: string | null }[],
-    any
-  ];
-  const newArrivals = newRows.map((r) => ({
-    title: r.title,
-    cover: r.cover_image || undefined,
+  const newArrivalsFormatted = newArrivals.map((b: typeof newArrivals[0]) => ({
+    title: b.title,
+    cover: b.coverImage || undefined,
   }));
 
-  const [catRows] = await pool.query(
-    `SELECT name FROM categories ORDER BY name`
-  ) as [{ name: string }[], any];
-  const categories = catRows.map((c) => c.name);
+  const categoryNames = categories.map((c: typeof categories[0]) => c.name);
 
   return (
     <div className="bg-white dark:bg-gray-950 min-h-screen font-sans text-gray-900 dark:text-gray-100">
@@ -99,7 +115,7 @@ export default async function Home() {
             </a>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {popularBooks.map((b, idx) => (
+            {popularBooksFormatted.map((b: typeof popularBooksFormatted[0], idx: number) => (
               <div key={idx} className="group">
                 <BookCard title={b.title} author={b.author} cover={b.cover} />
               </div>
@@ -122,7 +138,7 @@ export default async function Home() {
             </a>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {newArrivals.map((b, idx) => (
+            {newArrivalsFormatted.map((b: typeof newArrivalsFormatted[0], idx: number) => (
               <div key={idx} className="group">
                 <BookCard title={b.title} cover={b.cover} />
               </div>
@@ -138,7 +154,7 @@ export default async function Home() {
             <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl">Найдите свой любимый жанр среди нашей большой коллекции литературы</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-            {categories.map((c, idx) => (
+            {categoryNames.map((c: string, idx: number) => (
               <CategoryCard key={idx} name={c} />
             ))}
           </div>

@@ -1,45 +1,68 @@
 import { NextResponse } from "next/server";
-import pool from "../../../lib/db";
+import prisma from "../../../lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+
+type Book = {
+  id: number;
+  title: string;
+  description: string | null;
+  price: number;
+  language: string | null;
+  publication_year: number | null;
+  stock: number;
+  rating: number | null;
+  cover_image: string | null;
+  author: string | null;
+  category: string | null;
+};
+
 export async function GET() {
   try {
-    const [rows] = await pool.query(
-      `SELECT
-        b.id,
-        b.title,
-        a.name AS author,
-        c.name AS category,
-        b.description,
-        b.price,
-        b.language,
-        b.publication_year,
-        b.stock,
-        b.rating,
-        b.cover_image
-      FROM books b
-      LEFT JOIN authors a ON b.author_id = a.id
-      LEFT JOIN categories c ON b.category_id = c.id
-      ORDER BY b.title ASC`
-    ) as [
-      {
-        id: number;
-        title: string;
-        author: string | null;
-        category: string | null;
-        description: string | null;
-        price: number | string;
-        language: string | null;
-        publication_year: number | null;
-        stock: number | null;
-        rating: number | string | null;
-        cover_image: string | null;
-      }[],
-      unknown
-    ];
+    const books = await prisma.book.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        price: true,
+        language: true,
+        publicationYear: true,
+        stock: true,
+        rating: true,
+        coverImage: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        title: "asc",
+      },
+    });
 
-    return NextResponse.json({ books: rows });
+    
+    const formattedBooks: Book[] = books.map((book: typeof books[0]) => ({
+      id: book.id,
+      title: book.title,
+      author: book.author?.name || null,
+      category: book.category?.name || null,
+      description: book.description,
+      price: Number(book.price),
+      language: book.language,
+      publication_year: book.publicationYear,
+      stock: book.stock,
+      rating: book.rating ? Number(book.rating) : null,
+      cover_image: book.coverImage,
+    }));
+
+    return NextResponse.json({ books: formattedBooks });
   } catch (error) {
     console.error("Failed to load books:", error);
     return NextResponse.json(
