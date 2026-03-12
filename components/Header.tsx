@@ -8,7 +8,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-900 dark:to-purple-900 shadow-lg sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-amber-800 to-amber-950 dark:from-amber-900 dark:to-amber-950 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
@@ -30,19 +30,19 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8">
             <Link
               href="/catalog"
-              className="text-white hover:text-blue-100 font-medium transition-colors"
+              className="text-white hover:text-amber-100 font-medium transition-colors"
             >
               Каталог
             </Link>
             <Link
               href="#"
-              className="text-white hover:text-blue-100 font-medium transition-colors"
+              className="text-white hover:text-amber-100 font-medium transition-colors"
             >
               О нас
             </Link>
             <Link
               href="#"
-              className="text-white hover:text-blue-100 font-medium transition-colors"
+              className="text-white hover:text-amber-100 font-medium transition-colors"
             >
               Контакты
             </Link>
@@ -53,7 +53,7 @@ export default function Header() {
             <button className="hidden sm:block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium">
               Войти
             </button>
-            <button className="hidden sm:block px-4 py-2 bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium">
+            <button className="hidden sm:block px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium">
               Зарегистрироваться
             </button>
 

@@ -42,71 +42,190 @@ export default async function Home() {
   const categories = catRows.map((c) => c.name);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen font-sans text-gray-900 dark:text-gray-100">
+    <div className="bg-white dark:bg-gray-950 min-h-screen font-sans text-gray-900 dark:text-gray-100">
       <Header />
 
-      <main className="container mx-auto px-4 py-8 space-y-16">
-        {/* search */}
-        <section className="flex justify-center">
-          <SearchBar />
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-amber-800 via-amber-700 to-yellow-600 dark:from-amber-900 dark:via-amber-800 dark:to-yellow-800 py-20 md:py-32">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Погрузитесь в <span className="bg-gradient-to-r from-amber-100 to-yellow-100 bg-clip-text text-transparent">мир книг</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-amber-50 mb-8 max-w-2xl mx-auto">
+              Откройте для себя лучшие произведения мировой литературы. Тысячи книг на любой вкус всего в несколько кликов
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/catalog"
+                className="px-8 py-4 bg-white text-amber-800 rounded-lg font-bold hover:bg-amber-50 transition-colors shadow-lg text-center"
+              >
+                Перейти в каталог →
+              </a>
+              <button className="px-8 py-4 bg-white/20 text-white rounded-lg font-bold hover:bg-white/30 transition-colors backdrop-blur border border-white/30">
+                Подробнее
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main className="container mx-auto px-4 py-12 space-y-20">
+        {/* search section */}
+        <section className="mt-[-60px] relative z-20">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-2xl mx-auto">
+            <p className="text-center text-gray-600 dark:text-gray-400 mb-4 text-sm font-medium">ПОИСК КНИГИ</p>
+            <SearchBar />
+          </div>
         </section>
 
-        {/* popular books */}
+        {/* popular books section */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Популярные книги</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <p className="text-amber-800 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-2">Хиты продаж</p>
+              <h2 className="text-4xl font-bold">Популярные книги</h2>
+            </div>
+            <a
+              href="/catalog"
+              className="text-amber-800 dark:text-amber-500 hover:underline font-semibold hidden md:block"
+            >
+              Смотреть все →
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {popularBooks.map((b, idx) => (
-              <BookCard key={idx} title={b.title} author={b.author} cover={b.cover} />
+              <div key={idx} className="group">
+                <BookCard title={b.title} author={b.author} cover={b.cover} />
+              </div>
             ))}
           </div>
         </section>
 
-        {/* new arrivals */}
+        {/* new arrivals section */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Новинки</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <p className="text-amber-700 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-2">Свежие поступления</p>
+              <h2 className="text-4xl font-bold">Новинки издательства</h2>
+            </div>
+            <a
+              href="/catalog"
+              className="text-amber-700 dark:text-amber-500 hover:underline font-semibold hidden md:block"
+            >
+              Смотреть все →
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {newArrivals.map((b, idx) => (
-              <BookCard key={idx} title={b.title} cover={b.cover} />
+              <div key={idx} className="group">
+                <BookCard title={b.title} cover={b.cover} />
+              </div>
             ))}
           </div>
         </section>
 
-        {/* categories */}
+        {/* categories section */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Категории / жанры</h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="mb-10">
+            <p className="text-amber-700 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-2">Выбирайте по интересам</p>
+            <h2 className="text-4xl font-bold">Категории и жанры</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {categories.map((c, idx) => (
               <CategoryCard key={idx} name={c} />
             ))}
           </div>
         </section>
 
-        {/* about */}
-        <section className="prose dark:prose-invert max-w-none">
-          <h2>О магазине</h2>
-          <p>
-            Добро пожаловать в наш книжный интернет-магазин! Здесь вы можете
-            быстро найти книги по интересующим вас жанрам, ознакомиться с
-            новинками и выбрать популярные издания. Мы стараемся сделать
-            процесс покупки удобным и приятным.
+        {/* about section */}
+        <section className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 rounded-3xl p-12 my-20">
+          <div className="max-w-3xl">
+            <div className="mb-6">
+              <p className="text-amber-800 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-3">О нас</p>
+              <h2 className="text-4xl font-bold mb-4">Ваш путеводитель в мир литературы</h2>
+            </div>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+              RaamatuPood — это современный книжный магазин, где каждый найдет что-то для себя. От классической литературы до современных бестселлеров, от детских сказок до научных трудов. Мы верим, что чтение меняет жизнь, и помогаем вам найти идеальную книгу.
+            </p>
+            <div className="grid grid-cols-3 gap-6 text-center">
+              <div>
+                <p className="text-3xl font-bold text-amber-800 dark:text-amber-500">50K+</p>
+                <p className="text-gray-600 dark:text-gray-400">Книг в каталоге</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-amber-700 dark:text-amber-500">100K+</p>
+                <p className="text-gray-600 dark:text-gray-400">Довольных читателей</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-yellow-700 dark:text-yellow-500">24/7</p>
+                <p className="text-gray-600 dark:text-gray-400">Поддержка клиентов</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA section */}
+        <section className="bg-gradient-to-r from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-3xl p-12 text-center text-white mb-20">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Готовы начать путешествие?</h2>
+          <p className="text-amber-100 text-lg mb-8 max-w-2xl mx-auto">
+            Присоединяйтесь к тысячам читателей и найдите свою следующую любимую книгу
           </p>
+          <a
+            href="/catalog"
+            className="inline-block px-8 py-4 bg-white text-amber-800 rounded-lg font-bold hover:bg-amber-50 transition-colors"
+          >
+            Начать покупки
+          </a>
         </section>
       </main>
 
-      <footer className="bg-white dark:bg-gray-800 border-t">
-        <div className="container mx-auto px-4 py-6 flex justify-center gap-8">
-          <a
-            href="#"
-            className="text-sm text-gray-600 hover:underline"
-          >
-            Доставка
-          </a>
-          <a
-            href="#"
-            className="text-sm text-gray-600 hover:underline"
-          >
-            Поддержка
-          </a>
+      {/* Footer */}
+      <footer className="bg-amber-900 dark:bg-amber-950 text-white border-t border-amber-800">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4">RaamatuPood</h3>
+              <p className="text-amber-100 text-sm">Ваш верный помощник в выборе книг</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Навигация</h4>
+              <ul className="space-y-2 text-amber-100 text-sm">
+                <li><a href="/catalog" className="hover:text-white transition">Каталог</a></li>
+                <li><a href="#" className="hover:text-white transition">О нас</a></li>
+                <li><a href="#" className="hover:text-white transition">Контакты</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Информация</h4>
+              <ul className="space-y-2 text-amber-100 text-sm">
+                <li><a href="#" className="hover:text-white transition">Доставка</a></li>
+                <li><a href="#" className="hover:text-white transition">Возвраты</a></li>
+                <li><a href="#" className="hover:text-white transition">FAQ</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Контакты</h4>
+              <ul className="space-y-2 text-amber-100 text-sm">
+                <li>Email: info@raamatu.com</li>
+                <li>Тел: +372 (phone)</li>
+                <li>Режим: 24/7</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-amber-800 pt-8 flex justify-between items-center text-amber-100 text-sm">
+            <p>&copy; 2024 RaamatuPood. Все права защищены.</p>
+            <div className="flex gap-4">
+              <a href="#" className="hover:text-white transition">Тв</a>
+              <a href="#" className="hover:text-white transition">Инстаграм</a>
+              <a href="#" className="hover:text-white transition">Фейсбук</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
