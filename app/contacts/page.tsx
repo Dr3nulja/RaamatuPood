@@ -57,27 +57,8 @@ export default function Contacts() {
           </div>
         </div>
 
-        {/* Google Maps */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-amber-100 p-2">
-          <div className="mb-6 px-8 pt-8">
-            <h2 className="text-3xl font-bold text-amber-900 mb-2">Наше местоположение</h2>
-            <p className="text-amber-700">Найдите нас на карте и посетите наш магазин</p>
-          </div>
-          <div className="rounded-2xl overflow-hidden shadow-inner border border-amber-100 mx-8 mb-8">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d184.9884995179597!2d27.393560111662485!3d59.36091456438828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x469465605dd01af3%3A0xef1cb4f518b677e!2sRohuaia%20tn%2067%2C%20J%C3%B5hvi%2C%2041533%20Ida-Viru%20maakond!5e0!3m2!1sru!2see!4v1773660938972!5m2!1sru!2see"
-              width="100%"
-              height="450"
-              style={{ border: 0 }}
-              allowFullScreen={true}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full"
-            ></iframe>
-          </div>
-        </div>
-
-        <section className="mt-10 rounded-3xl border border-amber-100 bg-white p-6 shadow-lg md:p-8">
+        <div className="text-center mb-16">
+            <section className="mt-10 rounded-3xl border border-amber-100 bg-white p-6 shadow-lg md:p-8">
           <h2 className="text-2xl font-bold text-amber-900 md:text-3xl">Есть вопросы? Напишите нам</h2>
           <p className="mt-2 text-amber-700">Оставьте сообщение, и мы свяжемся с вами в ближайшее время.</p>
 
@@ -107,6 +88,27 @@ export default function Contacts() {
             </button>
           </form>
         </section>
+        </div>
+
+        {/* Google Maps */}
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden border border-amber-100 p-2">
+          <div className="mb-6 px-8 pt-8">
+            <h2 className="text-3xl font-bold text-amber-900 mb-2">Наше местоположение</h2>
+            <p className="text-amber-700">Найдите нас на карте и посетите наш магазин</p>
+          </div>
+          <div className="rounded-2xl overflow-hidden shadow-inner border border-amber-100 mx-8 mb-8">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d184.9884995179597!2d27.393560111662485!3d59.36091456438828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x469465605dd01af3%3A0xef1cb4f518b677e!2sRohuaia%20tn%2067%2C%20J%C3%B5hvi%2C%2041533%20Ida-Viru%20maakond!5e0!3m2!1sru!2see!4v1773660938972!5m2!1sru!2see"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full"
+            ></iframe>
+          </div>
+        </div>
       </div>
     </main>
   );
