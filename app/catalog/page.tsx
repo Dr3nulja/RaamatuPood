@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useCart } from "@/contexts/CartContext";
+import { useCartStore } from "@/stores/cartStore";
 
 type CatalogBookRow = {
   id: number;
@@ -35,7 +35,12 @@ export default function CatalogPage() {
   const [books, setBooks] = useState<CatalogBookRow[]>([]);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { addItem } = useCart();
+  const addItem = useCartStore((state) => state.addItem);
+
+  useEffect(() => {
+    // Гидратируем store с данными из localStorage
+    void useCartStore.persist.rehydrate();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

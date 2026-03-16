@@ -1,15 +1,21 @@
 'use client';
 
-import { useCart } from '@/contexts/CartContext';
-import Image from 'next/image';
+import { useCartStore } from '@/stores/cartStore';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function CartDrawer() {
-  const { items, removeItem, updateQuantity, getTotalPrice } = useCart();
+  const cart = useCartStore((state) => state.cart);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
-  const totalPrice = getTotalPrice();
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cart.reduce((sum, item) => {
+    const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+    return sum + price * item.quantity;
+  }, 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -72,7 +78,7 @@ export default function CartDrawer() {
 
         {/* Содержимое корзины */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {items.length === 0 ? (
+          {cart.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <svg
                 className="w-16 h-16 mx-auto mb-4 opacity-50"
@@ -91,7 +97,7 @@ export default function CartDrawer() {
               <p className="text-sm mt-2">Добавьте книги чтобы начать покупки</p>
             </div>
           ) : (
-            items.map((item) => (
+            cart.map((item) => (
               <div
                 key={item.id}
                 className="flex gap-4 p-4 bg-amber-50 dark:bg-gray-800 rounded-lg border border-amber-200 dark:border-amber-900"
@@ -156,7 +162,7 @@ export default function CartDrawer() {
         </div>
 
         {/* Итого и кнопка */}
-        {items.length > 0 && (
+        {cart.length > 0 && (
           <div className="border-t border-amber-200 dark:border-amber-900 p-6 space-y-4 bg-amber-50 dark:bg-gray-800">
             <div className="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-white">
               <span>Сумма:</span>
@@ -164,7 +170,10 @@ export default function CartDrawer() {
                 €{totalPrice.toFixed(2)}
               </span>
             </div>
-            <button className="w-full px-6 py-3 bg-gradient-to-r from-amber-800 to-amber-900 hover:from-amber-900 hover:to-amber-950 text-white font-bold rounded-lg transition-all duration-200 hover:shadow-lg">
+            <button className="w-full px-6 py-3 bg-gradient-to-r from-amber-800 to-amber-900 hover:from-amber-900 hover:to-amber-950 text-white font-bold rounded-lg transition-all duration-200 hover:shadow-lg" onClick={() => {
+              setIsOpen(false);
+              router.push('/checkout');
+            }}>
               Оформить заказ
             </button>
             <button
