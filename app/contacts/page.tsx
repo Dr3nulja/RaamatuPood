@@ -76,6 +76,37 @@ export default function Contacts() {
             ></iframe>
           </div>
         </div>
+
+        <section className="mt-10 rounded-3xl border border-amber-100 bg-white p-6 shadow-lg md:p-8">
+          <h2 className="text-2xl font-bold text-amber-900 md:text-3xl">Есть вопросы? Напишите нам</h2>
+          <p className="mt-2 text-amber-700">Оставьте сообщение, и мы свяжемся с вами в ближайшее время.</p>
+
+          <form className="mt-6 space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <input
+                type="text"
+                placeholder="Ваше имя"
+                className="w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+              />
+              <input
+                type="email"
+                placeholder="Ваш email"
+                className="w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+              />
+            </div>
+            <textarea
+              rows={5}
+              placeholder="Ваш вопрос"
+              className="w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+            />
+            <button
+              type="submit"
+              className="inline-flex rounded-xl bg-amber-800 px-6 py-3 font-semibold text-white transition hover:bg-amber-700"
+            >
+              Отправить сообщение
+            </button>
+          </form>
+        </section>
       </div>
     </main>
   );
