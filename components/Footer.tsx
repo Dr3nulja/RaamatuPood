@@ -20,7 +20,7 @@ const Footer: React.FC = () => (
         <div>
           <h4 className="font-semibold mb-4">Информация</h4>
           <ul className="space-y-2 text-amber-100 text-sm">
-            <li><Link href="/#" className="hover:text-white transition">Доставка</Link></li>
+            <li><Link href="/delivery" className="hover:text-white transition">Доставка</Link></li>
             <li><Link href="/#" className="hover:text-white transition">Возвраты</Link></li>
             <li><Link href="/#" className="hover:text-white transition">FAQ</Link></li>
           </ul>
