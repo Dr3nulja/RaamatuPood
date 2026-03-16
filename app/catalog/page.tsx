@@ -82,7 +82,6 @@ export default function CatalogPage() {
 
   return (
     <>
-      <CatalogHeader />
       <main className="min-h-screen bg-white dark:bg-gray-950 px-4 py-10 text-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 rounded-3xl bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 p-8 shadow-sm border border-amber-100 dark:border-amber-900 md:flex-row md:items-end md:justify-between">

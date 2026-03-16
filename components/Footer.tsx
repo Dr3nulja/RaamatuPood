@@ -13,7 +13,7 @@ const Footer: React.FC = () => (
           <h4 className="font-semibold mb-4">Навигация</h4>
           <ul className="space-y-2 text-amber-100 text-sm">
             <li><Link href="/catalog" className="hover:text-white transition">Каталог</Link></li>
-            <li><Link href="/#about" className="hover:text-white transition">О нас</Link></li>
+            <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
             <li><Link href="/#contacts" className="hover:text-white transition">Контакты</Link></li>
           </ul>
         </div>
@@ -36,11 +36,6 @@ const Footer: React.FC = () => (
       </div>
       <div className="border-t border-amber-800 pt-8 flex justify-between items-center text-amber-100 text-sm">
         <p>&copy; 2026 RaamatuPood. Все права защищены.</p>
-        <div className="flex gap-4">
-          <Link href="/#" className="hover:text-white transition">Тв</Link>
-          <Link href="/#" className="hover:text-white transition">Инстаграм</Link>
-          <Link href="/#" className="hover:text-white transition">Фейсбук</Link>
-        </div>
       </div>
     </div>
   </footer>

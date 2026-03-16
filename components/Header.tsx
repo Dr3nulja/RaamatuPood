@@ -36,7 +36,7 @@ export default function Header() {
               Каталог
             </Link>
             <Link
-              href="#"
+              href="/about"
               className="text-white hover:text-amber-100 font-medium transition-colors"
             >
               О нас
