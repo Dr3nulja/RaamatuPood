@@ -3,6 +3,7 @@ import BookCard from "../components/BookCard";
 import CategoryCard from "../components/CategoryCard";
 import Header from "../components/Header";
 import prisma from "../lib/prisma";
+import Link from "next/link";
 
 export default async function Home() {
   // fetch popular books
@@ -77,15 +78,18 @@ export default async function Home() {
               Откройте для себя лучшие произведения мировой литературы. Тысячи книг на любой вкус всего в несколько кликов
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/catalog"
                 className="px-8 py-4 bg-white text-amber-800 rounded-lg font-bold hover:bg-amber-50 transition-colors shadow-lg text-center"
               >
                 Перейти в каталог →
-              </a>
-              <button className="px-8 py-4 bg-white/20 text-white rounded-lg font-bold hover:bg-white/30 transition-colors backdrop-blur border border-white/30">
+              </Link>
+              <Link
+                href="/#about"
+                className="px-8 py-4 bg-white/20 text-white rounded-lg font-bold hover:bg-white/30 transition-colors backdrop-blur border border-white/30"
+              >
                 Подробнее
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -107,12 +111,12 @@ export default async function Home() {
               <p className="text-amber-800 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-2">Хиты продаж</p>
               <h2 className="text-4xl font-bold">Популярные книги</h2>
             </div>
-            <a
+            <Link
               href="/catalog"
               className="text-amber-800 dark:text-amber-500 hover:underline font-semibold hidden md:block"
             >
               Смотреть все →
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {popularBooksFormatted.map((b: typeof popularBooksFormatted[0], idx: number) => (
@@ -130,12 +134,12 @@ export default async function Home() {
               <p className="text-amber-700 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-2">Свежие поступления</p>
               <h2 className="text-4xl font-bold">Новинки издательства</h2>
             </div>
-            <a
+            <Link
               href="/catalog"
               className="text-amber-700 dark:text-amber-500 hover:underline font-semibold hidden md:block"
             >
               Смотреть все →
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {newArrivalsFormatted.map((b: typeof newArrivalsFormatted[0], idx: number) => (
@@ -161,7 +165,7 @@ export default async function Home() {
         </section>
 
         {/* about section */}
-        <section className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 rounded-3xl p-12 my-20">
+        <section id="about" className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 rounded-3xl p-12 my-20">
           <div className="max-w-3xl">
             <div className="mb-6">
               <p className="text-amber-800 dark:text-amber-500 text-sm font-bold uppercase tracking-widest mb-3">О нас</p>
@@ -193,17 +197,18 @@ export default async function Home() {
           <p className="text-amber-100 text-lg mb-8 max-w-2xl mx-auto">
             Присоединяйтесь к тысячам читателей и найдите свою следующую любимую книгу
           </p>
-          <a
+          <Link
             href="/catalog"
             className="inline-block px-8 py-4 bg-white text-amber-800 rounded-lg font-bold hover:bg-amber-50 transition-colors"
           >
             Начать покупки
-          </a>
+          </Link>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="bg-amber-900 dark:bg-amber-950 text-white border-t border-amber-800">
+      
+      {/* <footer id="contacts" className="bg-amber-900 dark:bg-amber-950 text-white border-t border-amber-800">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -213,38 +218,33 @@ export default async function Home() {
             <div>
               <h4 className="font-semibold mb-4">Навигация</h4>
               <ul className="space-y-2 text-amber-100 text-sm">
-                <li><a href="/catalog" className="hover:text-white transition">Каталог</a></li>
-                <li><a href="#" className="hover:text-white transition">О нас</a></li>
-                <li><a href="#" className="hover:text-white transition">Контакты</a></li>
+                <li><Link href="/catalog" className="hover:text-white transition">Каталог</Link></li>
+                <li><Link href="/#about" className="hover:text-white transition">О нас</Link></li>
+                <li><Link href="/#contacts" className="hover:text-white transition">Контакты</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Информация</h4>
               <ul className="space-y-2 text-amber-100 text-sm">
-                <li><a href="#" className="hover:text-white transition">Доставка</a></li>
-                <li><a href="#" className="hover:text-white transition">Возвраты</a></li>
-                <li><a href="#" className="hover:text-white transition">FAQ</a></li>
+                <li><Link href="/#" className="hover:text-white transition">Доставка</Link></li>
+                <li><Link href="/#" className="hover:text-white transition">Возвраты</Link></li>
+                <li><Link href="/#" className="hover:text-white transition">FAQ</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Контакты</h4>
               <ul className="space-y-2 text-amber-100 text-sm">
-                <li>Email: info@raamatu.com</li>
-                <li>Тел: +372 (phone)</li>
+                <li>Email: infobook@raamatu.ee</li>
+                <li>Тел: +372 58421276</li>
                 <li>Режим: 24/7</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-amber-800 pt-8 flex justify-between items-center text-amber-100 text-sm">
             <p>&copy; 2024 RaamatuPood. Все права защищены.</p>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-white transition">Тв</a>
-              <a href="#" className="hover:text-white transition">Инстаграм</a>
-              <a href="#" className="hover:text-white transition">Фейсбук</a>
-            </div>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
