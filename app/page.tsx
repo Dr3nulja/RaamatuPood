@@ -85,7 +85,7 @@ export default async function Home() {
                 Перейти в каталог →
               </Link>
               <Link
-                href="/#about"
+                href="/about"
                 className="px-8 py-4 bg-white/20 text-white rounded-lg font-bold hover:bg-white/30 transition-colors backdrop-blur border border-white/30"
               >
                 Подробнее

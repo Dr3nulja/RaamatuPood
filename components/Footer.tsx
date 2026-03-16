@@ -2,7 +2,7 @@ import Link from "next/link";
 import React from "react";
 
 const Footer: React.FC = () => (
-  <footer id="contacts" className="bg-amber-900 dark:bg-amber-950 text-white border-t border-amber-800">
+  <footer id="contacts" className="bg-amber-900 dark:bg-amber-950 text-white border-t border-amber-800 flex-shrink-0">
     <div className="container mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         <div>
