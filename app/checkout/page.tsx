@@ -38,23 +38,13 @@ interface FormErrors {
 
 export default function CheckoutPage() {
   const cart = useCartStore((state) => state.cart);
-  const [isMounted, setIsMounted] = useState(() => useCartStore.persist.hasHydrated());
+  const [isMounted, setIsMounted] = useState(false);
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // ИСПРАВЛЕНО: синхронизируем mounted-статус через onFinishHydration
-    const unsubHydrate = useCartStore.persist.onFinishHydration(() => {
-      setIsMounted(true);
-    });
-
-    if (!useCartStore.persist.hasHydrated()) {
-      void useCartStore.persist.rehydrate();
-    }
-
-    return () => {
-      unsubHydrate();
-    };
+    void useCartStore.persist.rehydrate();
+    setIsMounted(true);
   }, []);
 
   const [formData, setFormData] = useState<FormData>({

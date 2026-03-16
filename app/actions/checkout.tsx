@@ -44,6 +44,11 @@ function sanitizeCartItems(raw: string): CheckoutCartItem[] {
 }
 
 export async function createCheckoutSession(formData: FormData) {
+  // Вычисляем URL назначения в try/catch, затем redirect() вызываем снаружи.
+  // Это КРИТИЧНО: redirect() в Next.js работает через throw NEXT_REDIRECT,
+  // поэтому вызов внутри catch приводит к бесконечному перехвату ошибки.
+  let redirectTo = '/checkout?error=checkout_failed';
+
   try {
     const guestName = String(formData.get('name') || '').trim();
     const guestEmail = String(formData.get('email') || '').trim();
@@ -52,22 +57,21 @@ export async function createCheckoutSession(formData: FormData) {
     const deliveryMethod = String(formData.get('delivery') || '').trim();
     const cartItemsRaw = String(formData.get('cartItems') || '[]');
 
-    // ИСПРАВЛЕНО: серверная валидация критичных полей
     if (!guestName || !guestEmail || !address || !deliveryMethod) {
-      redirect('/checkout?error=missing_fields');
+      redirectTo = '/checkout?error=missing_fields';
+      return;
     }
 
     const cartItems = sanitizeCartItems(cartItemsRaw);
 
     if (cartItems.length === 0) {
-      redirect('/checkout?error=empty_cart');
+      redirectTo = '/checkout?error=empty_cart';
+      return;
     }
 
     const siteUrl = normalizeSiteUrl();
-
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    // ИСПРАВЛЕНО: создаем pending заказ до оплаты
     const order = await prisma.order.create({
       data: {
         status: 'PENDING',
@@ -82,7 +86,6 @@ export async function createCheckoutSession(formData: FormData) {
           name: item.title,
           ...(item.image ? { images: [item.image] } : {}),
         },
-        // ИСПРАВЛЕНО: корректный расчет в центах
         unit_amount: Math.round(item.price * 100),
       },
       quantity: item.quantity,
@@ -111,9 +114,11 @@ export async function createCheckoutSession(formData: FormData) {
     });
 
     revalidatePath('/account');
-    redirect(session.url!);
+    redirectTo = session.url!;
   } catch (error) {
     console.error('createCheckoutSession failed:', error);
-    redirect('/checkout?error=checkout_failed');
+    // redirectTo уже равен '/checkout?error=checkout_failed'
   }
+
+  redirect(redirectTo);
 }
