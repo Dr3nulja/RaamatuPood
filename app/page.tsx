@@ -60,7 +60,7 @@ export default async function Home() {
 
   return (
     <div className="bg-white dark:bg-gray-950 min-h-screen font-sans text-gray-900 dark:text-gray-100">
-      <Header />
+    
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-amber-800 via-amber-700 to-yellow-600 dark:from-amber-900 dark:via-amber-800 dark:to-yellow-800 py-20 md:py-32">

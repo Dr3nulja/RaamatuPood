@@ -14,7 +14,7 @@ const Footer: React.FC = () => (
           <ul className="space-y-2 text-amber-100 text-sm">
             <li><Link href="/catalog" className="hover:text-white transition">Каталог</Link></li>
             <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
-            <li><Link href="/#contacts" className="hover:text-white transition">Контакты</Link></li>
+            <li><Link href="/contacts" className="hover:text-white transition">Контакты</Link></li>
           </ul>
         </div>
         <div>
@@ -27,6 +27,7 @@ const Footer: React.FC = () => (
         </div>
         <div>
           <h4 className="font-semibold mb-4">Контакты</h4>
+
           <ul className="space-y-2 text-amber-100 text-sm">
             <li>Email: infobook@raamatu.com</li>
             <li>Тел: +372 53425673</li>

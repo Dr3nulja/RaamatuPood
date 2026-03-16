@@ -42,7 +42,7 @@ export default function Header() {
               О нас
             </Link>
             <Link
-              href="#"
+              href="/contacts"
               className="text-white hover:text-amber-100 font-medium transition-colors"
             >
               Контакты

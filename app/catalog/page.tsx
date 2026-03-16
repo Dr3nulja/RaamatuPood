@@ -1,6 +1,4 @@
 "use client";
-
-import CatalogHeader from "@/components/CatalogHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
