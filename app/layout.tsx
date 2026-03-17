@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import CartHydration from "@/components/CartHydration";
+import SyncUserAfterAuth from "@/components/SyncUserAfterAuth";
 import { auth0 } from "@/lib/auth0";
 
 const geistSans = Geist({
@@ -28,6 +29,7 @@ export default async function RootLayout({
 }>) {
   const session = await auth0.getSession();
   const userEmail = session?.user?.email ?? null;
+  const isAuthenticated = Boolean(session?.user?.sub);
 
   return (
     <html lang="en">
@@ -36,6 +38,7 @@ export default async function RootLayout({
         style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
       >
         <CartHydration />
+        <SyncUserAfterAuth isAuthenticated={isAuthenticated} />
         <Header userEmail={userEmail} />
         <main className="flex-1">
           {children}

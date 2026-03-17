@@ -1,6 +1,5 @@
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
 import { NextResponse } from 'next/server';
-import { createUserIfNotExists } from '@/lib/auth/createUserIfNotExists';
 
 export const auth0 = new Auth0Client({
   appBaseUrl: process.env.AUTH0_BASE_URL,
@@ -24,10 +23,6 @@ export const auth0 = new Auth0Client({
 
     if (error) {
       return NextResponse.redirect(new URL('/auth/login?error=callback_failed', baseUrl));
-    }
-
-    if (session?.user) {
-      await createUserIfNotExists(session.user);
     }
 
     return NextResponse.redirect(new URL(context.returnTo || '/', baseUrl));

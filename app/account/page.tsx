@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth0 } from '@/lib/auth0';
-import { createUserIfNotExists } from '@/lib/auth/createUserIfNotExists';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +10,6 @@ export default async function AccountPage() {
   if (!session?.user) {
     redirect('/auth/login?returnTo=/account');
   }
-
-  await createUserIfNotExists(session.user);
 
   return (
     <main className="min-h-screen bg-[#FDF8F0] px-4 py-10">
