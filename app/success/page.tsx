@@ -1,83 +1,316 @@
 import Link from 'next/link';
 import Stripe from 'stripe';
+import { prisma } from '@/lib/prisma';
+import type { OrderStatus, Prisma } from '@prisma/client';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-02-25.clover',
-});
+type OrderWithRelations = Prisma.OrderGetPayload<{
+  include: {
+    orderItems: { include: { book: { include: { author: true } } } };
+    shippingMethod: true;
+  };
+}>;
 
-type SuccessPageProps = {
-  searchParams: Promise<{ session_id?: string }>;
-};
+// ─── helpers ────────────────────────────────────────────────────────────────
 
-export default async function SuccessPage({ searchParams }: SuccessPageProps) {
-  const params = await searchParams;
-  const sessionId = params.session_id || 'N/A';
-
-  let amountTotal = 0;
-  let customerEmail = '';
-
-  if (params.session_id && process.env.STRIPE_SECRET_KEY) {
-    try {
-      // ИСПРАВЛЕНО: получаем детали сессии по session_id после оплаты
-      const session = await stripe.checkout.sessions.retrieve(params.session_id);
-      amountTotal = (session.amount_total ?? 0) / 100;
-      customerEmail = session.customer_details?.email || session.customer_email || '';
-    } catch (error) {
-      console.error('Failed to retrieve Stripe session:', error);
-    }
+function statusBadge(status: OrderStatus): { label: string; cls: string } {
+  switch (status) {
+    case 'PAID':      return { label: 'Оплачено',            cls: 'bg-green-100 text-green-700' };
+    case 'SHIPPED':   return { label: 'Отправлено',          cls: 'bg-blue-100 text-blue-700' };
+    case 'DELIVERED': return { label: 'Доставлено',          cls: 'bg-emerald-100 text-emerald-700' };
+    case 'CANCELLED': return { label: 'Отменён',             cls: 'bg-red-100 text-red-700' };
+    default:          return { label: 'Ожидает обработки',   cls: 'bg-amber-100 text-amber-700' };
   }
+}
 
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  }).format(date);
+}
+
+// ─── error states ────────────────────────────────────────────────────────────
+
+function ErrorShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-[#F5F0E8] flex items-center justify-center px-4 py-12">
-      <div className="mx-auto max-w-md">
-        <div className="rounded-3xl border border-amber-100 bg-white px-8 py-12 text-center shadow-lg">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-
-          <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Заказ оформлен!</h1>
-          <p className="mt-3 text-zinc-700">Спасибо за покупку. Мы отправим вам уведомление по электронной почте о статусе доставки.</p>
-
-          <div className="mt-6 rounded-xl bg-amber-50 px-4 py-3">
-            <p className="text-xs text-zinc-600">Session ID:</p>
-            <p className="font-mono text-sm font-semibold text-[#8B5E3C] break-all">{sessionId}</p>
-          </div>
-
-          {amountTotal > 0 && (
-            <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-left text-sm text-zinc-700">
-              <p>
-                <span className="font-semibold text-[#8B5E3C]">Сумма: </span>€{amountTotal.toFixed(2)}
-              </p>
-              {customerEmail && (
-                <p className="mt-1">
-                  <span className="font-semibold text-[#8B5E3C]">Email: </span>{customerEmail}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="mt-6 space-y-2 text-sm text-zinc-700">
-            <p>Вы сможете отследить доставку через письмо с трек-номером.</p>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3">
-            <Link
-              href="/catalog"
-              className="rounded-xl bg-[#D97706] px-5 py-3 font-semibold text-white transition hover:bg-amber-500"
-            >
-              Перейти в каталог
-            </Link>
-            <Link
-              href="/"
-              className="rounded-xl border border-[#A0785A] bg-white px-5 py-3 font-semibold text-[#8B5E3C] transition hover:bg-amber-50"
-            >
-              На главную
-            </Link>
-          </div>
-        </div>
+    <main className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4 py-12">
+      <div className="mx-auto w-full max-w-md rounded-3xl border border-amber-100 bg-white px-8 py-12 text-center shadow-lg">
+        {children}
       </div>
     </main>
+  );
+}
+
+function NotFoundUI() {
+  return (
+    <ErrorShell>
+      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+        <svg className="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+      </div>
+      <h1 className="font-serif text-2xl font-bold text-[#8B5E3C]">Заказ не найден</h1>
+      <p className="mt-3 text-zinc-600 text-sm leading-relaxed">
+        Мы не смогли найти ваш заказ. Возможно, он ещё обрабатывается — попробуйте обновить страницу через минуту.
+        Если проблема сохраняется, свяжитесь с нами.
+      </p>
+      <div className="mt-8 flex flex-col gap-3">
+        <Link
+          href="/contacts"
+          className="rounded-xl bg-[#D97706] px-5 py-3 font-semibold text-white transition hover:bg-amber-500"
+        >
+          Связаться с поддержкой
+        </Link>
+        <Link
+          href="/catalog"
+          className="rounded-xl border border-[#A0785A] bg-white px-5 py-3 font-semibold text-[#8B5E3C] transition hover:bg-amber-50"
+        >
+          Вернуться в каталог
+        </Link>
+      </div>
+    </ErrorShell>
+  );
+}
+
+// ─── page ────────────────────────────────────────────────────────────────────
+
+export default async function SuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
+  const { session_id } = await searchParams;
+
+  if (!session_id) {
+    return <NotFoundUI />;
+  }
+
+  // 1. Find the order in the database
+  let order: OrderWithRelations | null = null;
+  try {
+    order = await prisma.order.findFirst({
+      where: { stripePaymentId: session_id },
+      include: {
+        orderItems: {
+          include: { book: { include: { author: true } } },
+        },
+        shippingMethod: true,
+      },
+    });
+  } catch (err) {
+    console.error('DB error on /success:', err);
+  }
+
+  if (!order) {
+    return <NotFoundUI />;
+  }
+
+  // 2. Fetch Stripe session for guest info + line items (not stored in DB yet)
+  type StripeItem = { name: string; quantity: number; unitCents: number; totalCents: number };
+  let customerEmail = '';
+  let guestName = '';
+  let phone = '';
+  let deliveryAddress = '';
+  let deliveryMethod = '';
+  let stripeItems: StripeItem[] = [];
+
+  try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2026-02-25.clover',
+    });
+    const session = await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ['line_items'],
+    });
+
+    customerEmail  = session.customer_details?.email ?? session.customer_email ?? '';
+    guestName      = session.metadata?.guestName      ?? '';
+    phone          = session.metadata?.phone          ?? '';
+    deliveryAddress = session.metadata?.address       ?? '';
+    deliveryMethod = session.metadata?.deliveryMethod ?? '';
+
+    stripeItems = (session.line_items?.data ?? []).map((li) => ({
+      name:       li.description ?? '',
+      quantity:   li.quantity   ?? 1,
+      unitCents:  li.price?.unit_amount ?? 0,
+      totalCents: li.amount_total,
+    }));
+  } catch (err) {
+    console.error('Stripe session fetch failed on /success:', err);
+  }
+
+  // Prefer DB order items (more data); fall back to Stripe line items
+  const hasDbItems = order.orderItems.length > 0;
+  const total      = Number(order.totalPrice ?? 0);
+  const badge      = statusBadge(order.status);
+
+  return (
+    <main className="min-h-screen bg-[#FDF8F0] px-4 py-12 md:py-16">
+      <div className="mx-auto max-w-2xl space-y-5">
+
+        {/* ── SUCCESS HEADER ─────────────────────────────────────── */}
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 shadow-md ring-4 ring-green-50">
+            <svg className="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="font-serif text-3xl font-bold text-[#8B5E3C] md:text-4xl">
+            Спасибо за ваш заказ!
+          </h1>
+          <p className="mt-2 text-[#A0785A]">
+            Заказ <span className="font-semibold text-[#8B5E3C]">#{order.id}</span> успешно оформлен
+          </p>
+        </div>
+
+        {/* ── ORDER DETAILS ──────────────────────────────────────── */}
+        <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-base font-semibold text-[#8B5E3C]">Детали заказа</h2>
+          <dl className="divide-y divide-amber-50 text-sm">
+
+            <Row label="Номер заказа">
+              <span className="font-semibold text-zinc-800">#{order.id}</span>
+            </Row>
+
+            <Row label="Дата оформления">
+              <span className="text-zinc-700">{formatDate(order.createdAt)}</span>
+            </Row>
+
+            {guestName && (
+              <Row label="Получатель">
+                <span className="text-zinc-700">{guestName}</span>
+              </Row>
+            )}
+
+            {customerEmail && (
+              <Row label="Email">
+                <span className="text-zinc-700">{customerEmail}</span>
+              </Row>
+            )}
+
+            {phone && (
+              <Row label="Телефон">
+                <span className="text-zinc-700">{phone}</span>
+              </Row>
+            )}
+
+            <Row label="Статус">
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+                {badge.label}
+              </span>
+            </Row>
+
+          </dl>
+        </section>
+
+        {/* ── BOOK LIST ──────────────────────────────────────────── */}
+        {(hasDbItems || stripeItems.length > 0) && (
+          <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-base font-semibold text-[#8B5E3C]">Состав заказа</h2>
+
+            <ul className="space-y-3">
+              {hasDbItems
+                ? order.orderItems.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-start justify-between gap-4 border-b border-amber-50 pb-3 last:border-0 last:pb-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-serif text-sm font-semibold text-zinc-800 leading-snug">
+                          {item.book?.title ?? '—'}
+                        </p>
+                        {item.book?.author?.name && (
+                          <p className="mt-0.5 text-xs text-zinc-500">{item.book.author.name}</p>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-right text-sm">
+                        <p className="text-zinc-500">
+                          {item.quantity ?? 1} × €{Number(item.price ?? 0).toFixed(2)}
+                        </p>
+                        <p className="font-semibold text-[#8B5E3C]">
+                          €{(Number(item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+                        </p>
+                      </div>
+                    </li>
+                  ))
+                : stripeItems.map((item, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start justify-between gap-4 border-b border-amber-50 pb-3 last:border-0 last:pb-0"
+                    >
+                      <p className="min-w-0 font-serif text-sm font-semibold text-zinc-800 leading-snug">
+                        {item.name || '—'}
+                      </p>
+                      <div className="shrink-0 text-right text-sm">
+                        <p className="text-zinc-500">
+                          {item.quantity} × €{(item.unitCents / 100).toFixed(2)}
+                        </p>
+                        <p className="font-semibold text-[#8B5E3C]">
+                          €{(item.totalCents / 100).toFixed(2)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+            </ul>
+
+            {/* Total */}
+            <div className="mt-4 flex items-center justify-between border-t border-amber-100 pt-4">
+              <span className="font-semibold text-zinc-700">Итого</span>
+              <span className="text-xl font-bold text-[#8B5E3C]">€{total.toFixed(2)}</span>
+            </div>
+          </section>
+        )}
+
+        {/* ── DELIVERY ───────────────────────────────────────────── */}
+        {(order.shippingMethod?.name || deliveryMethod || deliveryAddress) && (
+          <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-base font-semibold text-[#8B5E3C]">Доставка</h2>
+            <dl className="divide-y divide-amber-50 text-sm">
+              {(order.shippingMethod?.name || deliveryMethod) && (
+                <Row label="Способ доставки">
+                  <span className="text-zinc-700">
+                    {order.shippingMethod?.name ?? deliveryMethod}
+                  </span>
+                </Row>
+              )}
+              {deliveryAddress && (
+                <Row label="Адрес">
+                  <span className="text-right text-zinc-700">{deliveryAddress}</span>
+                </Row>
+              )}
+            </dl>
+          </section>
+        )}
+
+        
+
+        {/* ── BUTTONS ────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/catalog"
+            className="flex-1 rounded-xl bg-[#D97706] px-5 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-amber-500 active:scale-[0.98]"
+          >
+            Вернуться в каталог
+          </Link>
+          <Link
+            href="/contacts"
+            className="flex-1 rounded-xl border border-[#A0785A] bg-white px-5 py-3 text-center font-semibold text-[#8B5E3C] shadow-sm transition hover:bg-amber-50 active:scale-[0.98]"
+          >
+            Задать вопрос
+          </Link>
+        </div>
+
+      </div>
+    </main>
+  );
+}
+
+// ─── tiny layout helper ──────────────────────────────────────────────────────
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5">
+      <dt className="shrink-0 text-zinc-500">{label}</dt>
+      <dd className="text-right">{children}</dd>
+    </div>
   );
 }
