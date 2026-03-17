@@ -10,6 +10,7 @@
     "db:init": "node scripts/initDb.js"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^4.16.0",
     "@stripe/stripe-js": "^8.10.0",
     "mysql2": "^3.19.1",
     "next": "16.1.6",

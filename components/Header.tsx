@@ -5,8 +5,13 @@ import Link from 'next/link';
 import { useState } from 'react';
 import CartDrawer from './CartDrawer';
 
-export default function Header() {
+type HeaderProps = {
+  userEmail?: string | null;
+};
+
+export default function Header({ userEmail }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isAuthenticated = Boolean(userEmail);
 
   return (
     <header className="bg-gradient-to-r from-amber-800 to-amber-950 dark:from-amber-900 dark:to-amber-950 shadow-lg sticky top-0 z-50">
@@ -53,12 +58,34 @@ export default function Header() {
           <div className="flex items-center gap-4">
             <CartDrawer />
 
-            <button className="hidden sm:block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium">
-              Войти
-            </button>
-            <button className="hidden sm:block px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium">
-              Зарегистрироваться
-            </button>
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="hidden sm:block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/login?screen_hint=signup"
+                  className="hidden sm:block px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium"
+                >
+                  Signup
+                </Link>
+              </>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="text-amber-100 text-sm max-w-44 truncate" title={userEmail || ''}>
+                  {userEmail}
+                </span>
+                <Link
+                  href="/auth/logout"
+                  className="px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium"
+                >
+                  Logout
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -103,6 +130,33 @@ export default function Header() {
             >
               Контакты
             </Link>
+
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/login?screen_hint=signup"
+                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  Signup
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="px-4 py-2 text-amber-100 text-sm break-all">{userEmail}</p>
+                <Link
+                  href="/auth/logout"
+                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  Logout
+                </Link>
+              </>
+            )}
           </nav>
         )}
       </div>
