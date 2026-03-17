@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import type { OrderStatus, Prisma } from '@prisma/client';
+import { ClearCartAfterSuccess } from '@/components/ClearCartAfterSuccess';
 
 type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
@@ -282,6 +283,9 @@ export default async function SuccessPage({
         )}
 
         
+
+        {/* Clears the Zustand cart in the browser after a completed order */}
+        <ClearCartAfterSuccess sessionId={session_id} />
 
         {/* ── BUTTONS ────────────────────────────────────────────── */}
         <div className="flex flex-col gap-3 sm:flex-row">
