@@ -152,8 +152,9 @@ CREATE TABLE `shipping_methods` (
 
 -- --------------------------------------------------------
 
+-- --------------------------------------------------------
 --
--- Tabeli struktuur tabelile `users`
+-- Tabeli struktuur tabelile `users` (с полем picture)
 --
 
 CREATE TABLE `users` (
@@ -162,8 +163,18 @@ CREATE TABLE `users` (
   `email` varchar(255) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `role` enum('user','admin') DEFAULT 'user',
+  `picture` varchar(500) DEFAULT NULL, 
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- Индексы
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `auth0_id` (`auth0_id`);
+
+-- AUTO_INCREMENT
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Indeksid tõmmistatud tabelitele
@@ -269,6 +280,10 @@ ALTER TABLE `books`
 --
 ALTER TABLE `cart_items`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+-- Adding the picture column to the users table
+ALTER TABLE `users`
+  ADD COLUMN `picture` varchar(500) DEFAULT NULL AFTER `role`;
 
 --
 -- AUTO_INCREMENT tabelile `categories`

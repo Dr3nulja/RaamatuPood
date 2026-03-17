@@ -29,6 +29,7 @@ export default async function RootLayout({
 }>) {
   const session = await auth0.getSession();
   const userEmail = session?.user?.email ?? null;
+  const userPicture = session?.user?.picture ?? null;
   const isAuthenticated = Boolean(session?.user?.sub);
 
   return (
@@ -39,7 +40,7 @@ export default async function RootLayout({
       >
         <CartHydration />
         <SyncUserAfterAuth isAuthenticated={isAuthenticated} />
-        <Header userEmail={userEmail} />
+        <Header userEmail={userEmail} userPicture={userPicture} />
         <main className="flex-1">
           {children}
         </main>

@@ -8,6 +8,8 @@ export const auth0 = new Auth0Client({
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
   secret: process.env.AUTH0_SECRET,
   signInReturnToPath: '/',
+  logoutStrategy: 'oidc',
+  includeIdTokenHintInOIDCLogoutUrl: true,
   session: {
     rolling: true,
     absoluteDuration: 60 * 60 * 24 * 7,

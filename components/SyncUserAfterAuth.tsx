@@ -12,7 +12,14 @@ export default function SyncUserAfterAuth({ isAuthenticated }: SyncUserAfterAuth
   useEffect(() => {
     let isMounted = true;
 
-    if (!isAuthenticated || hasSyncedRef.current) {
+    if (!isAuthenticated) {
+      hasSyncedRef.current = false;
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    if (hasSyncedRef.current) {
       return;
     }
 
@@ -22,6 +29,7 @@ export default function SyncUserAfterAuth({ isAuthenticated }: SyncUserAfterAuth
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
+          credentials: 'include',
         });
 
         if (isMounted && response.ok) {

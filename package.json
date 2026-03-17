@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:init": "node scripts/initDb.js"
+    "db:init": "node scripts/initDb.js",
+    "db:seed-users": "node scripts/seedUsers.js"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.16.0",

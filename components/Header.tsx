@@ -7,11 +7,23 @@ import CartDrawer from './CartDrawer';
 
 type HeaderProps = {
   userEmail?: string | null;
+  userPicture?: string | null;
 };
 
-export default function Header({ userEmail }: HeaderProps) {
+export default function Header({ userEmail, userPicture }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isAuthenticated = Boolean(userEmail);
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('raamatupood-cart');
+      sessionStorage.clear();
+    } catch {
+      // ignore browser storage errors
+    }
+
+    window.location.assign('/api/auth/logout');
+  };
 
   return (
     <header className="bg-gradient-to-r from-amber-800 to-amber-950 dark:from-amber-900 dark:to-amber-950 shadow-lg sticky top-0 z-50">
@@ -61,13 +73,13 @@ export default function Header({ userEmail }: HeaderProps) {
             {!isAuthenticated ? (
               <>
                 <Link
-                  href="/auth/login"
+                  href="/auth/login?prompt=login"
                   className="hidden sm:block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/auth/login?screen_hint=signup"
+                  href="/auth/login?screen_hint=signup&prompt=login"
                   className="hidden sm:block px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium"
                 >
                   Signup
@@ -75,15 +87,27 @@ export default function Header({ userEmail }: HeaderProps) {
               </>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
+                {userPicture ? (
+                  <Image
+                    src={userPicture}
+                    alt="User avatar"
+                    width={28}
+                    height={28}
+                    className="rounded-full border border-amber-100"
+                  />
+                ) : (
+                  <div className="h-7 w-7 rounded-full bg-amber-100" />
+                )}
                 <span className="text-amber-100 text-sm max-w-44 truncate" title={userEmail || ''}>
                   {userEmail}
                 </span>
-                <Link
-                  href="/auth/logout"
+                <button
+                  type="button"
+                  onClick={handleLogout}
                   className="px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium"
                 >
                   Logout
-                </Link>
+                </button>
               </div>
             )}
 
@@ -134,13 +158,13 @@ export default function Header({ userEmail }: HeaderProps) {
             {!isAuthenticated ? (
               <>
                 <Link
-                  href="/auth/login"
+                  href="/auth/login?prompt=login"
                   className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/auth/login?screen_hint=signup"
+                  href="/auth/login?screen_hint=signup&prompt=login"
                   className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
                 >
                   Signup
@@ -148,13 +172,23 @@ export default function Header({ userEmail }: HeaderProps) {
               </>
             ) : (
               <>
+                {userPicture ? (
+                  <Image
+                    src={userPicture}
+                    alt="User avatar"
+                    width={28}
+                    height={28}
+                    className="mx-4 rounded-full border border-amber-100"
+                  />
+                ) : null}
                 <p className="px-4 py-2 text-amber-100 text-sm break-all">{userEmail}</p>
-                <Link
-                  href="/auth/logout"
+                <button
+                  type="button"
+                  onClick={handleLogout}
                   className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
                 >
                   Logout
-                </Link>
+                </button>
               </>
             )}
           </nav>
