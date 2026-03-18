@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { auth0 } from '@/lib/auth0';
 import { revalidatePath } from 'next/cache';
-import type { CheckoutCartItem } from '@/stores/cartStore';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-02-25.clover',
@@ -13,35 +12,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 function normalizeSiteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
-}
-
-function toPositiveInt(value: unknown, fallback = 1) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  const normalized = Math.floor(parsed);
-  return normalized > 0 ? normalized : fallback;
-}
-
-function sanitizeCartItems(raw: string): CheckoutCartItem[] {
-  const parsed = JSON.parse(raw || '[]') as unknown;
-  if (!Array.isArray(parsed)) {
-    return [];
-  }
-
-  return parsed
-    .map((item) => {
-      const source = item as Partial<CheckoutCartItem>;
-      const price = Number(source.price);
-
-      return {
-        id: toPositiveInt(source.id, 0),
-        title: (source.title || '').trim(),
-        price: Number.isFinite(price) && price > 0 ? price : 0,
-        quantity: toPositiveInt(source.quantity, 1),
-        image: source.image && typeof source.image === 'string' ? source.image : undefined,
-      };
-    })
-    .filter((item) => item.id > 0 && item.title.length > 0 && item.price > 0 && item.quantity > 0);
 }
 
 function parseAddress(formData: FormData) {
@@ -116,7 +86,6 @@ export async function createCheckoutSession(formData: FormData) {
     const guestEmail = String(formData.get('email') || '').trim() || authUser.email?.trim() || '';
     const phone = String(formData.get('phone') || '').trim();
     const deliveryMethod = String(formData.get('delivery') || '').trim();
-    const cartItemsRaw = String(formData.get('cartItems') || '[]');
     const parsedAddress = parseAddress(formData);
 
     if (!guestName || !guestEmail || !deliveryMethod) {
@@ -124,17 +93,25 @@ export async function createCheckoutSession(formData: FormData) {
       return;
     }
 
-    const cartItems = sanitizeCartItems(cartItemsRaw);
+    const cartItems = await prisma.cartItem.findMany({
+      where: { userId: dbUser.id },
+      include: {
+        book: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            coverImage: true,
+          },
+        },
+      },
+    });
 
     if (cartItems.length === 0) {
       redirectTo = '/checkout?error=empty_cart';
       return;
     }
 
-    const siteUrl = normalizeSiteUrl();
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    let addressId: number | null = null;
     const hasAddress = Boolean(
       parsedAddress.combinedAddress ||
       parsedAddress.street ||
@@ -142,6 +119,16 @@ export async function createCheckoutSession(formData: FormData) {
       parsedAddress.city ||
       parsedAddress.country
     );
+
+    if (!hasAddress) {
+      redirectTo = '/checkout?error=missing_fields';
+      return;
+    }
+
+    const siteUrl = normalizeSiteUrl();
+    const subtotal = cartItems.reduce((sum, item) => sum + Number(item.book.price) * item.quantity, 0);
+
+    let addressId: number | null = null;
 
     if (hasAddress) {
       const addressRecord = await prisma.address.create({
@@ -157,9 +144,10 @@ export async function createCheckoutSession(formData: FormData) {
     }
 
     let shippingMethodId: number | null = null;
+    let shippingMethod: { id: number; name: string | null; price: unknown } | null = null;
     if (deliveryMethod) {
       const numericDeliveryId = Number(deliveryMethod);
-      const shippingMethod = await prisma.shippingMethod.findFirst({
+      shippingMethod = await prisma.shippingMethod.findFirst({
         where: Number.isInteger(numericDeliveryId) && numericDeliveryId > 0
           ? {
               OR: [
@@ -168,7 +156,7 @@ export async function createCheckoutSession(formData: FormData) {
               ],
             }
           : { name: deliveryMethod },
-        select: { id: true },
+        select: { id: true, name: true, price: true },
       });
 
       if (shippingMethod) {
@@ -176,17 +164,37 @@ export async function createCheckoutSession(formData: FormData) {
       }
     }
 
+    const shippingPrice = shippingMethod ? Number(shippingMethod.price ?? 0) : 0;
+    const total = subtotal + shippingPrice;
+
+    console.log('[checkout][shipping] deliveryMethod:', deliveryMethod);
+    console.log('[checkout][shipping] shippingMethod:', shippingMethod);
+    console.log('[checkout][shipping] shippingMethodId:', shippingMethodId);
+
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = cartItems.map((item) => ({
       price_data: {
         currency: 'eur',
         product_data: {
-          name: item.title,
-          ...(item.image ? { images: [item.image] } : {}),
+          name: item.book.title,
+          ...(item.book.coverImage ? { images: [item.book.coverImage] } : {}),
         },
-        unit_amount: Math.round(item.price * 100),
+        unit_amount: Math.round(Number(item.book.price) * 100),
       },
       quantity: item.quantity,
     }));
+
+    if (shippingPrice > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: shippingMethod?.name || 'Доставка',
+          },
+          unit_amount: Math.round(shippingPrice * 100),
+        },
+        quantity: 1,
+      });
+    }
 
     const stripeSession = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -200,19 +208,36 @@ export async function createCheckoutSession(formData: FormData) {
         guestEmail,
         phone,
         address: parsedAddress.combinedAddress,
-        deliveryMethod,
+        deliveryMethod: shippingMethod?.name || deliveryMethod,
       },
     });
 
-    const order = await prisma.order.create({
-      data: {
-        userId: dbUser.id,
-        addressId,
-        shippingMethodId,
-        status: 'PENDING',
-        totalPrice: total,
-        stripePaymentId: stripeSession.id,
-      },
+    const order = await prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.order.create({
+        data: {
+          userId: dbUser.id,
+          addressId,
+          shippingMethodId,
+          status: 'PENDING',
+          totalPrice: total,
+          stripePaymentId: stripeSession.id,
+        },
+      });
+
+      await tx.orderItem.createMany({
+        data: cartItems.map((item) => ({
+          orderId: createdOrder.id,
+          bookId: item.bookId,
+          quantity: item.quantity,
+          price: Number(item.book.price),
+        })),
+      });
+
+      await tx.cartItem.deleteMany({
+        where: { userId: dbUser.id },
+      });
+
+      return createdOrder;
     });
 
     await stripe.checkout.sessions.update(stripeSession.id, {

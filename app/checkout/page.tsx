@@ -144,7 +144,7 @@ export default function CheckoutPage() {
     payload.set('email', formData.email);
     payload.set('phone', formData.phone);
     payload.set('address', `${formData.street} ${formData.houseNumber}, ${formData.postalCode} ${formData.city}, ${formData.country}`);
-    payload.set('delivery', formData.deliveryMethod);
+    payload.set('delivery', selectedDelivery.name);
     // ИСПРАВЛЕНО: передача корзины в Server Action через hidden/serialized payload
     payload.set('cartItems', JSON.stringify(cartItemsPayload));
 

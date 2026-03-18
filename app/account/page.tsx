@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth0 } from '@/lib/auth0';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,33 @@ export default async function AccountPage() {
   if (!session?.user) {
     redirect('/auth/login?returnTo=/account');
   }
+
+  const user = await prisma.user.findUnique({
+    where: { auth0Id: session.user.sub || '' },
+    select: {
+      id: true,
+      orders: {
+        include: {
+          address: true,
+          shippingMethod: true,
+          orderItems: {
+            include: {
+              book: {
+                select: {
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+    },
+  });
+
+  const orders = user?.orders || [];
 
   return (
     <main className="min-h-screen bg-[#FDF8F0] px-4 py-10">
@@ -45,6 +73,64 @@ export default async function AccountPage() {
           >
             Logout
           </Link>
+        </div>
+
+        <div className="mt-8 border-t border-amber-100 pt-6">
+          <h2 className="font-serif text-2xl font-bold text-[#8B5E3C]">История заказов</h2>
+
+          {orders.length === 0 ? (
+            <p className="mt-3 text-zinc-600">У вас пока нет заказов.</p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {orders.map((order) => (
+                <article key={order.id} className="rounded-xl border border-amber-100 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-zinc-800">Заказ #{order.id}</p>
+                      <p className="text-sm text-zinc-500">
+                        {new Intl.DateTimeFormat('ru-RU', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        }).format(order.createdAt)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-[#8B5E3C]">€{Number(order.totalPrice ?? 0).toFixed(2)}</p>
+                      <p className="text-sm text-zinc-600">Статус: {order.status.toLowerCase()}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-1 text-sm text-zinc-700">
+                    <p>Метод доставки: {order.shippingMethod?.name || '—'}</p>
+                    <p>
+                      Адрес: {order.address
+                        ? `${order.address.street || ''}, ${order.address.postalCode || ''} ${order.address.city || ''}, ${order.address.country || ''}`
+                        : '—'}
+                    </p>
+                  </div>
+
+                  <ul className="mt-3 space-y-2 text-sm">
+                    {order.orderItems.map((item) => (
+                      <li key={item.id} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2">
+                        <span>{item.book?.title || 'Книга'} × {item.quantity ?? 1}</span>
+                        <span className="font-medium">€{Number(item.price ?? 0).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-3">
+                    <Link
+                      href={`/account/orders/${order.id}`}
+                      className="text-sm font-semibold text-[#8B5E3C] hover:text-amber-600"
+                    >
+                      Подробнее о заказе
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>

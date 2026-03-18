@@ -20,6 +20,7 @@ export interface CheckoutCartItem {
 
 interface CartState {
   cart: CartItem[];
+  setCart: (cart: CartItem[]) => void;
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
@@ -31,6 +32,10 @@ export const useCartStore = create<CartState>()(
     (set, get) => {
       return {
         cart: [],
+
+        setCart: (cart: CartItem[]) => {
+          set({ cart });
+        },
 
         addItem: (item: Omit<CartItem, 'quantity'>) => {
           set((state: CartState) => {

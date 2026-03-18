@@ -18,6 +18,19 @@ export function ClearCartAfterSuccess({ sessionId }: { sessionId: string }) {
   useEffect(() => {
     if (sessionId) {
       clearCart();
+
+      const clearServerCart = async () => {
+        try {
+          await fetch('/api/cart', {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+        } catch {
+          // no-op
+        }
+      };
+
+      void clearServerCart();
     }
   }, [sessionId, clearCart]);
 

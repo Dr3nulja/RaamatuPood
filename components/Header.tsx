@@ -68,7 +68,7 @@ export default function Header({ userEmail, userPicture }: HeaderProps) {
 
           {/* Auth Buttons and Mobile Menu Button */}
           <div className="flex items-center gap-4">
-            <CartDrawer />
+            <CartDrawer isAuthenticated={isAuthenticated} />
 
             {!isAuthenticated ? (
               <>
@@ -101,6 +101,12 @@ export default function Header({ userEmail, userPicture }: HeaderProps) {
                 <span className="text-amber-100 text-sm max-w-44 truncate" title={userEmail || ''}>
                   {userEmail}
                 </span>
+                <Link
+                  href="/account"
+                  className="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
+                >
+                  Кабинет
+                </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -182,6 +188,12 @@ export default function Header({ userEmail, userPicture }: HeaderProps) {
                   />
                 ) : null}
                 <p className="px-4 py-2 text-amber-100 text-sm break-all">{userEmail}</p>
+                <Link
+                  href="/account"
+                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  Кабинет
+                </Link>
                 <button
                   type="button"
                   onClick={handleLogout}

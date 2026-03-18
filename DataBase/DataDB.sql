@@ -1,3 +1,36 @@
+UPDATE shipping_methods
+SET name = 'Курьер по Таллину', price = 6.00
+WHERE name = 'Tallinn Courier';
+
+UPDATE shipping_methods
+SET name = 'Самовывоз', price = 0.00
+WHERE name = 'Self-call';
+
+INSERT INTO shipping_methods (name, price)
+SELECT 'Omniva pakiautomaat', 3.99
+WHERE NOT EXISTS (
+	SELECT 1 FROM shipping_methods WHERE name = 'Omniva pakiautomaat'
+);
+
+INSERT INTO shipping_methods (name, price)
+SELECT 'Itella Smartpost', 4.49
+WHERE NOT EXISTS (
+	SELECT 1 FROM shipping_methods WHERE name = 'Itella Smartpost'
+);
+
+INSERT INTO shipping_methods (name, price)
+SELECT 'Курьер по Таллину', 6.00
+WHERE NOT EXISTS (
+	SELECT 1 FROM shipping_methods WHERE name = 'Курьер по Таллину'
+);
+
+INSERT INTO shipping_methods (name, price)
+SELECT 'Самовывоз', 0.00
+WHERE NOT EXISTS (
+	SELECT 1 FROM shipping_methods WHERE name = 'Самовывоз'
+);
+
+
 -- AUTHORS
 INSERT INTO authors (id, name) VALUES
 (1, 'George Orwell'),

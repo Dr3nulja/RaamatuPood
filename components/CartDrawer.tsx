@@ -1,15 +1,85 @@
 'use client';
 
 import { useCartStore } from '@/stores/cartStore';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function CartDrawer() {
+type CartDrawerProps = {
+  isAuthenticated: boolean;
+};
+
+export default function CartDrawer({ isAuthenticated }: CartDrawerProps) {
   const cart = useCartStore((state) => state.cart);
+  const setCart = useCartStore((state) => state.setCart);
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const loadServerCart = async () => {
+      try {
+        const response = await fetch('/api/cart', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as { items?: Parameters<typeof setCart>[0] };
+        if (Array.isArray(data.items)) {
+          setCart(data.items);
+        }
+      } catch {
+        // keep local store value
+      }
+    };
+
+    void loadServerCart();
+  }, [isAuthenticated, setCart]);
+
+  const handleRemove = async (bookId: number) => {
+    removeItem(bookId);
+
+    if (!isAuthenticated) {
+      return;
+    }
+
+    try {
+      await fetch(`/api/cart/${bookId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+    } catch {
+      // no-op
+    }
+  };
+
+  const handleUpdateQuantity = async (bookId: number, quantity: number) => {
+    updateQuantity(bookId, quantity);
+
+    if (!isAuthenticated) {
+      return;
+    }
+
+    try {
+      await fetch(`/api/cart/${bookId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ quantity }),
+      });
+    } catch {
+      // no-op
+    }
+  };
 
   const totalPrice = cart.reduce((sum, item) => {
     const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
@@ -132,7 +202,7 @@ export default function CartDrawer() {
                   {/* Управление количеством */}
                   <div className="flex items-center gap-2 mt-2">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => void handleUpdateQuantity(item.id, item.quantity - 1)}
                       className="w-8 h-8 rounded bg-amber-200 dark:bg-amber-900 hover:bg-amber-300 dark:hover:bg-amber-800 flex items-center justify-center text-amber-900 dark:text-amber-100 font-bold transition-colors"
                     >
                       −
@@ -141,13 +211,13 @@ export default function CartDrawer() {
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => void handleUpdateQuantity(item.id, item.quantity + 1)}
                       className="w-8 h-8 rounded bg-amber-200 dark:bg-amber-900 hover:bg-amber-300 dark:hover:bg-amber-800 flex items-center justify-center text-amber-900 dark:text-amber-100 font-bold transition-colors"
                     >
                       +
                     </button>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => void handleRemove(item.id)}
                       className="ml-auto text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

@@ -42,6 +42,34 @@ export default function CatalogPage() {
     void useCartStore.persist.rehydrate();
   }, []);
 
+  const addToCart = async (book: CatalogBookRow) => {
+    addItem({
+      id: book.id,
+      title: book.title,
+      author: book.author || undefined,
+      price: book.price,
+      cover_image: book.cover_image || undefined,
+    });
+
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          bookId: book.id,
+          quantity: 1,
+        }),
+      });
+
+      if (response.status === 401) {
+        return;
+      }
+    } catch {
+      // keep local cart on network failures
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -197,15 +225,7 @@ export default function CatalogPage() {
 
                     <div className="flex gap-3">
                       <button
-                        onClick={() =>
-                          addItem({
-                            id: book.id,
-                            title: book.title,
-                            author: book.author || undefined,
-                            price: book.price,
-                            cover_image: book.cover_image || undefined,
-                          })
-                        }
+                        onClick={() => void addToCart(book)}
                         className="flex-1 rounded-xl bg-amber-800 hover:bg-amber-900 px-4 py-3 text-center text-sm font-medium text-white transition"
                       >
                         Добавить в корзину
