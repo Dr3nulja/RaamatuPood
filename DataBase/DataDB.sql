@@ -1,9 +1,9 @@
 UPDATE shipping_methods
-SET name = 'Курьер по Таллину', price = 6.00
+SET name = 'Tallinn Courier', price = 6.00
 WHERE name = 'Tallinn Courier';
 
 UPDATE shipping_methods
-SET name = 'Самовывоз', price = 0.00
+SET name = 'Self-call', price = 0.00
 WHERE name = 'Self-call';
 
 INSERT INTO shipping_methods (name, price)
@@ -19,15 +19,15 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO shipping_methods (name, price)
-SELECT 'Курьер по Таллину', 6.00
+SELECT 'Tallinn Courier', 6.00
 WHERE NOT EXISTS (
-	SELECT 1 FROM shipping_methods WHERE name = 'Курьер по Таллину'
+	SELECT 1 FROM shipping_methods WHERE name = 'Tallinn Courier'
 );
 
 INSERT INTO shipping_methods (name, price)
-SELECT 'Самовывоз', 0.00
+SELECT 'Self-call', 0.00
 WHERE NOT EXISTS (
-	SELECT 1 FROM shipping_methods WHERE name = 'Самовывоз'
+	SELECT 1 FROM shipping_methods WHERE name = 'Self-call'
 );
 
 

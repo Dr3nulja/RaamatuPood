@@ -1,36 +1,53 @@
-import { NextResponse } from "next/server";
-import prisma from "../../../lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import type { ApiErrorResponse } from '@/lib/api/types';
+import type { BooksApiResponse, BooksSort } from '@/lib/api/catalogTypes';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
+function parseSort(value: string | null): BooksSort | null {
+  if (!value) return null;
+  if (value === 'price_asc' || value === 'price_desc' || value === 'rating_desc') {
+    return value;
+  }
+  return null;
+}
 
-type Book = {
-  id: number;
-  title: string;
-  description: string | null;
-  price: number;
-  language: string | null;
-  publication_year: number | null;
-  stock: number;
-  rating: number | null;
-  cover_image: string | null;
-  author: string | null;
-  category: string | null;
-};
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search')?.trim() || '';
+    const categoryIdParam = searchParams.get('categoryId');
+    const sort = parseSort(searchParams.get('sort'));
+
+    const categoryIdNumber = Number(categoryIdParam);
+    const categoryId = categoryIdParam && Number.isInteger(categoryIdNumber) && categoryIdNumber > 0
+      ? categoryIdNumber
+      : null;
+
+    const where = {
+      ...(search ? { title: { contains: search, mode: 'insensitive' as const } } : {}),
+      ...(categoryId ? { categoryId } : {}),
+    };
+
+    const orderBy =
+      sort === 'price_asc'
+        ? { price: 'asc' as const }
+        : sort === 'price_desc'
+          ? { price: 'desc' as const }
+          : sort === 'rating_desc'
+            ? { rating: 'desc' as const }
+            : { title: 'asc' as const };
+
     const books = await prisma.book.findMany({
+      where,
       select: {
         id: true,
         title: true,
-        description: true,
         price: true,
-        language: true,
-        publicationYear: true,
-        stock: true,
         rating: true,
         coverImage: true,
+        stock: true,
         author: {
           select: {
             name: true,
@@ -38,36 +55,36 @@ export async function GET() {
         },
         category: {
           select: {
+            id: true,
             name: true,
           },
         },
       },
-      orderBy: {
-        title: "asc",
-      },
+      orderBy,
     });
 
-    
-    const formattedBooks: Book[] = books.map((book: typeof books[0]) => ({
+    const response: BooksApiResponse = {
+      books: books.map((book) => ({
       id: book.id,
       title: book.title,
-      author: book.author?.name || null,
-      category: book.category?.name || null,
-      description: book.description,
       price: Number(book.price),
-      language: book.language,
-      publication_year: book.publicationYear,
-      stock: book.stock,
       rating: book.rating ? Number(book.rating) : null,
       cover_image: book.coverImage,
-    }));
+      stock: book.stock,
+      author: book.author ? { name: book.author.name } : null,
+      category: book.category
+        ? {
+            id: book.category.id,
+            name: book.category.name,
+          }
+        : null,
+      })),
+    };
 
-    return NextResponse.json({ books: formattedBooks });
+    return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error("Failed to load books:", error);
-    return NextResponse.json(
-      { error: "Failed to load books from database" },
-      { status: 500 }
-    );
+    console.error('Failed to load books:', error);
+    const response: ApiErrorResponse = { error: 'Failed to load books from database' };
+    return NextResponse.json(response, { status: 500 });
   }
 }
