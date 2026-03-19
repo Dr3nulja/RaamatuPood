@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       : null;
 
     const where = {
-      ...(search ? { title: { contains: search, mode: 'insensitive' as const } } : {}),
+      ...(search ? { title: { contains: search } } : {}),
       ...(categoryId ? { categoryId } : {}),
     };
 

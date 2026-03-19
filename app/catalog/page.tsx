@@ -15,6 +15,7 @@ import type {
 } from '@/lib/api/catalogTypes';
 
 const SEARCH_DEBOUNCE_MS = 400;
+const BOOKS_REFETCH_INTERVAL_MS = 5000;
 
 function buildBooksQuery(params: { search: string; categoryId: string; sort: BooksSort }) {
   const query = new URLSearchParams();
@@ -95,12 +96,20 @@ export default function CatalogPage() {
   }, []);
 
   useEffect(() => {
-    const abortController = new AbortController();
+    let isMounted = true;
+    let isFetching = false;
 
-    const loadBooks = async () => {
+    const loadBooks = async (setLoading = true) => {
+      if (isFetching) {
+        return;
+      }
+
+      isFetching = true;
       try {
-        setIsLoadingBooks(true);
-        setBooksError(null);
+        if (setLoading) {
+          setIsLoadingBooks(true);
+          setBooksError(null);
+        }
 
         const query = buildBooksQuery({
           search: debouncedSearch,
@@ -111,7 +120,6 @@ export default function CatalogPage() {
         const response = await fetch(`/api/books?${query}`, {
           method: 'GET',
           cache: 'no-store',
-          signal: abortController.signal,
         });
 
         if (!response.ok) {
@@ -119,26 +127,36 @@ export default function CatalogPage() {
         }
 
         const data = (await response.json()) as BooksApiResponse;
-        setBooks(data.books || []);
+        if (isMounted) {
+          setBooks(data.books || []);
+        }
       } catch (error) {
-        if (abortController.signal.aborted) {
+        if (!isMounted) {
           return;
         }
 
         console.error('Failed to load books:', error);
-        setBooksError('Не удалось загрузить каталог. Попробуйте обновить страницу.');
-        setBooks([]);
+        if (setLoading) {
+          setBooksError('Не удалось загрузить каталог. Попробуйте обновить страницу.');
+          setBooks([]);
+        }
       } finally {
-        if (!abortController.signal.aborted) {
+        if (isMounted && setLoading) {
           setIsLoadingBooks(false);
         }
+        isFetching = false;
       }
     };
 
     void loadBooks();
 
+    const intervalId = window.setInterval(() => {
+      void loadBooks(false);
+    }, BOOKS_REFETCH_INTERVAL_MS);
+
     return () => {
-      abortController.abort();
+      isMounted = false;
+      window.clearInterval(intervalId);
     };
   }, [debouncedSearch, selectedCategoryId, sort]);
 
@@ -149,6 +167,11 @@ export default function CatalogPage() {
 
     return `${books.length}`;
   }, [books.length, isLoadingBooks]);
+
+  const safeBooks = useMemo(
+    () => books.filter((book): book is BookWithRelations => Boolean(book)),
+    [books]
+  );
 
   const handleAddToCart = async (bookId: number): Promise<{ ok: boolean; message: string }> => {
     try {
@@ -243,7 +266,7 @@ export default function CatalogPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-            {books.map((book) => (
+            {safeBooks.map((book) => (
               <BookCard key={book.id} book={book} onAddToCart={handleAddToCart} />
             ))}
           </div>
