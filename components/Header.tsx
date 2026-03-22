@@ -8,9 +8,10 @@ import CartDrawer from './CartDrawer';
 type HeaderProps = {
   userEmail?: string | null;
   userPicture?: string | null;
+  isAdmin?: boolean;
 };
 
-export default function Header({ userEmail, userPicture }: HeaderProps) {
+export default function Header({ userEmail, userPicture, isAdmin = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isAuthenticated = Boolean(userEmail);
 
@@ -107,6 +108,14 @@ export default function Header({ userEmail, userPicture }: HeaderProps) {
                 >
                   Кабинет
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -194,6 +203,14 @@ export default function Header({ userEmail, userPicture }: HeaderProps) {
                 >
                   Кабинет
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={handleLogout}

@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import CartHydration from "@/components/CartHydration";
 import SyncUserAfterAuth from "@/components/SyncUserAfterAuth";
 import { auth0 } from "@/lib/auth0";
+import { prisma } from "@/lib/prisma";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,15 @@ export default async function RootLayout({
   const userPicture = session?.user?.picture ?? null;
   const isAuthenticated = Boolean(session?.user?.sub);
 
+  let isAdmin = false;
+  if (session?.user?.sub) {
+    const dbUser = await prisma.user.findUnique({
+      where: { auth0Id: session.user.sub },
+      select: { role: true },
+    });
+    isAdmin = dbUser?.role === 'ADMIN';
+  }
+
   return (
     <html lang="en">
       <body
@@ -40,7 +50,7 @@ export default async function RootLayout({
       >
         <CartHydration />
         <SyncUserAfterAuth isAuthenticated={isAuthenticated} />
-        <Header userEmail={userEmail} userPicture={userPicture} />
+        <Header userEmail={userEmail} userPicture={userPicture} isAdmin={isAdmin} />
         <main className="flex-1">
           {children}
         </main>
