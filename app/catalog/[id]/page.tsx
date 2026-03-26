@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import pool from "../../../lib/db";
+import BookReviews from "@/components/BookReviews";
 
 type BookPageProps = {
   params: Promise<{
@@ -21,14 +22,6 @@ type BookDetailsRow = {
   rating: number | string | null;
   cover_image: string | null;
   created_at: string | Date;
-};
-
-type ReviewRow = {
-  id: number;
-  rating: number | string | null;
-  comment: string | null;
-  created_at: string | Date;
-  reviewer: string | null;
 };
 
 type ReviewStatsRow = {
@@ -106,21 +99,6 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
      WHERE book_id = ?`,
     [bookId]
   ) as [ReviewStatsRow[], any];
-
-  const [reviewRows] = await pool.query(
-    `SELECT
-      r.id,
-      r.rating,
-      r.comment,
-      r.created_at,
-      COALESCE(u.name, u.email) AS reviewer
-     FROM reviews r
-     LEFT JOIN users u ON r.user_id = u.id
-     WHERE r.book_id = ?
-     ORDER BY r.created_at DESC
-     LIMIT 5`,
-    [bookId]
-  ) as [ReviewRow[], any];
 
   const reviewStats = reviewStatsRows[0] || { review_count: 0, avg_rating: null };
   const reviewCount = Number(reviewStats.review_count || 0);
@@ -244,37 +222,7 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
           </div>
         </section>
 
-        <section className="rounded-3xl bg-white p-8 shadow-sm dark:bg-gray-800">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-bold">Отзывы</h2>
-            <span className="text-sm text-gray-500 dark:text-gray-300">Последние отзывы о книге</span>
-          </div>
-
-          {reviewRows.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
-              У этой книги пока нет отзывов.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {reviewRows.map((review) => (
-                <article key={review.id} className="rounded-2xl bg-gray-50 p-5 dark:bg-gray-700">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <div className="font-semibold">{review.reviewer || "Покупатель"}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-300">{formatDate(review.created_at)}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-                      ★ {formatNumber(review.rating, 1)}
-                    </div>
-                  </div>
-                  <p className="text-sm leading-7 text-gray-700 dark:text-gray-200">
-                    {review.comment || "Без текста отзыва."}
-                  </p>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+        <BookReviews bookId={bookId} />
       </div>
     </main>
   );
