@@ -17,6 +17,7 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         value={safeValue}
         onChange={(event) => onChange?.(event.target.value)}
         placeholder="Поиск по названию книги"
+        suppressHydrationWarning
         className="w-full rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm text-zinc-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
       />
     </div>
