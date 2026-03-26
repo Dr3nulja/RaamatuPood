@@ -4,6 +4,7 @@ export type BookWithRelations = {
   price: number;
   rating: number | null;
   cover_image: string | null;
+  cover_url?: string | null;
   stock: number;
   author: {
     name: string | null;

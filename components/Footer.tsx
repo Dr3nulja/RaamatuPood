@@ -12,26 +12,34 @@ const Footer: React.FC = () => (
         <div>
           <h4 className="font-semibold mb-4">Навигация</h4>
           <ul className="space-y-2 text-amber-100 text-sm">
+            <li><Link href="/" className="hover:text-white transition">Главная</Link></li>
             <li><Link href="/catalog" className="hover:text-white transition">Каталог</Link></li>
-            <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
+            <li><Link href="/account" className="hover:text-white transition">Моя библиотека</Link></li>
             <li><Link href="/contacts" className="hover:text-white transition">Контакты</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="font-semibold mb-4">Информация</h4>
           <ul className="space-y-2 text-amber-100 text-sm">
+            <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
+            <li><Link href="/privacy" className="hover:text-white transition">Политика конфиденциальности</Link></li>
             <li><Link href="/delivery" className="hover:text-white transition">Доставка</Link></li>
             <li><Link href="/returns" className="hover:text-white transition">Возвраты</Link></li>
             <li><Link href="/faq" className="hover:text-white transition">FAQ</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-semibold mb-4">Контакты</h4>
+          <h4 className="font-semibold mb-4">Контакты и соцсети</h4>
 
           <ul className="space-y-2 text-amber-100 text-sm">
             <li>Email: infobook@raamatu.com</li>
             <li>Тел: +372 53425673</li>
             <li>Режим: 24/7</li>
+            <li className="pt-2 flex gap-3">
+              <a href="#" className="hover:text-white transition">Instagram</a>
+              <a href="#" className="hover:text-white transition">Facebook</a>
+              <a href="#" className="hover:text-white transition">X</a>
+            </li>
           </ul>
         </div>
       </div>

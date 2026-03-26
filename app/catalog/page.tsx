@@ -13,6 +13,7 @@ import type {
   CategoriesApiResponse,
   CategoryOption,
 } from '@/lib/api/catalogTypes';
+import type { ApiErrorResponse } from '@/lib/api/types';
 
 const SEARCH_DEBOUNCE_MS = 400;
 const BOOKS_REFETCH_INTERVAL_MS = 5000;
@@ -123,23 +124,27 @@ export default function CatalogPage() {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch books');
+          const errorPayload = (await response.json().catch(() => null)) as ApiErrorResponse | null;
+          throw new Error(errorPayload?.error || 'Failed to fetch books');
         }
 
-        const data = (await response.json()) as BooksApiResponse;
+        const data = (await response.json().catch(() => null)) as BooksApiResponse | null;
+        if (!data || !Array.isArray(data.books)) {
+          throw new Error('Invalid books payload');
+        }
+
         if (isMounted) {
-          setBooks(data.books || []);
+          setBooks(data.books);
+          setBooksError(null);
         }
       } catch (error) {
         if (!isMounted) {
           return;
         }
 
-        console.error('Failed to load books:', error);
-        if (setLoading) {
-          setBooksError('Не удалось загрузить каталог. Попробуйте обновить страницу.');
-          setBooks([]);
-        }
+        console.warn('Failed to load books:', error);
+        setBooksError('Не удалось загрузить книги');
+        setBooks([]);
       } finally {
         if (isMounted && setLoading) {
           setIsLoadingBooks(false);
