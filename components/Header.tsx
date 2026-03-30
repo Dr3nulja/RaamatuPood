@@ -86,6 +86,19 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
             </Link>
           </nav>
 
+          <form onSubmit={handleHeaderSearchSubmit} className="hidden lg:flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <svg className="h-4 w-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 6a7.5 7.5 0 0 0 10.65 10.65Z" />
+            </svg>
+            <input
+              type="text"
+              value={headerSearch}
+              onChange={(event) => setHeaderSearch(event.target.value)}
+              placeholder="Поиск книг"
+              className="w-52 bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500 dark:text-zinc-100"
+            />
+          </form>
+
 
           {/* Auth Buttons and Mobile Menu Button */}
           <div className="flex items-center gap-4">

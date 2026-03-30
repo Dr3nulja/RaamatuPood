@@ -11,8 +11,20 @@ export type AdminBook = {
   category_name: string | null;
 };
 
+export type AdminAuthorOption = {
+  id: number;
+  name: string;
+};
+
+export type AdminCategoryOption = {
+  id: number;
+  name: string;
+};
+
 export type AdminBooksResponse = {
   books: AdminBook[];
+  authors: AdminAuthorOption[];
+  categories: AdminCategoryOption[];
 };
 
 export type AdminOrderBookItem = {
