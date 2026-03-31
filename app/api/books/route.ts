@@ -19,14 +19,31 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')?.trim() || '';
     const categoryIdParam = searchParams.get('categoryId');
     const sort = parseSort(searchParams.get('sort'));
+    const limitRaw = searchParams.get('limit');
+    const limitParam = limitRaw ? Number(limitRaw) : null;
 
     const categoryIdNumber = Number(categoryIdParam);
     const categoryId = categoryIdParam && Number.isInteger(categoryIdNumber) && categoryIdNumber > 0
       ? categoryIdNumber
       : null;
 
+    const shouldLimitToTen = search && !categoryId && !sort;
+    const limitValue = shouldLimitToTen
+      ? 10
+      : Number.isInteger(limitParam) && (limitParam as number) > 0
+        ? Math.min(limitParam, 20)
+        : 20;
+
     const where = {
-      ...(search ? { title: { contains: search } } : {}),
+      ...(search
+        ? {
+            OR: [
+              { title: { contains: search } },
+              { description: { contains: search } },
+              { author: { is: { name: { contains: search } } } },
+            ],
+          }
+        : {}),
       ...(categoryId ? { categoryId } : {}),
     };
 
@@ -41,6 +58,8 @@ export async function GET(request: NextRequest) {
 
     const books = await prisma.book.findMany({
       where,
+      orderBy,
+      take: limitValue,
       select: {
         id: true,
         title: true,
@@ -60,24 +79,24 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy,
     });
 
     const response: BooksApiResponse = {
       books: books.map((book) => ({
-      id: book.id,
-      title: book.title,
-      price: Number(book.price),
-      rating: book.rating ? Number(book.rating) : null,
-      cover_image: book.coverImage,
-      stock: book.stock,
-      author: book.author ? { name: book.author.name } : null,
-      category: book.category
-        ? {
-            id: book.category.id,
-            name: book.category.name,
-          }
-        : null,
+        id: book.id,
+        title: book.title,
+        price: Number(book.price),
+        rating: book.rating ? Number(book.rating) : null,
+        cover_image: book.coverImage,
+        cover_url: book.coverImage,
+        stock: book.stock,
+        author: book.author ? { name: book.author.name } : null,
+        category: book.category
+          ? {
+              id: book.category.id,
+              name: book.category.name,
+            }
+          : null,
       })),
     };
 

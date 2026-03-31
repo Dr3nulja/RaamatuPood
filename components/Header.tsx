@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CartDrawer from './CartDrawer';
+import { useCartStore } from '@/stores/cartStore';
 
 type HeaderProps = {
   userEmail?: string | null;
@@ -12,8 +13,44 @@ type HeaderProps = {
 };
 
 export default function Header({ userEmail, userPicture, isAdmin = false }: HeaderProps) {
+  const cart = useCartStore((state) => state.cart);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState('');
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+  const tickingRef = useRef(false);
   const isAuthenticated = Boolean(userEmail);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    lastScrollYRef.current = window.scrollY;
+
+    const onScroll = () => {
+      if (tickingRef.current) {
+        return;
+      }
+
+      tickingRef.current = true;
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY <= 0) {
+          setIsHeaderVisible(true);
+        } else if (currentScrollY < lastScrollYRef.current) {
+          setIsHeaderVisible(true);
+        } else if (currentScrollY > lastScrollYRef.current) {
+          setIsHeaderVisible(false);
+        }
+
+        lastScrollYRef.current = currentScrollY;
+        tickingRef.current = false;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleLogout = () => {
     try {
@@ -26,13 +63,28 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
     window.location.assign('/api/auth/logout');
   };
 
+  const handleHeaderSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const value = headerSearch.trim();
+    if (!value) {
+      window.location.assign('/catalog');
+      return;
+    }
+
+    window.location.assign(`/catalog?search=${encodeURIComponent(value)}`);
+  };
+
   return (
-    <header className="bg-gradient-to-r from-amber-800 to-amber-950 dark:from-amber-900 dark:to-amber-950 shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
+    <>
+    <header className={`fixed left-0 right-0 top-0 z-50 border-b border-amber-100/70 bg-white/80 backdrop-blur-xl transition-transform duration-300 will-change-transform dark:border-zinc-800/70 dark:bg-zinc-950/75 ${
+      isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-12 h-12 bg-white rounded-lg p-1 shadow-md group-hover:shadow-lg transition-shadow">
+            <div className="relative h-11 w-11 rounded-lg bg-amber-50 p-1 shadow-sm transition-shadow group-hover:shadow-md">
               <Image
                 src="https://i.pinimg.com/736x/34/4e/cd/344ecd43b8dd6c2b48d0d64a7368177f.jpg"
                 alt="RaamatuPood Logo"
@@ -41,47 +93,91 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-2xl font-bold text-white">RaamatuPood</h1>
+              <h1 className="text-2xl font-bold text-amber-900 dark:text-amber-100">RaamatuPood</h1>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
+            <Link
+              href="/"
+              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
+            >
+              Главная
+            </Link>
             <Link
               href="/catalog"
-              className="text-white hover:text-amber-100 font-medium transition-colors"
+              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
             >
               Каталог
             </Link>
             <Link
-              href="/about"
-              className="text-white hover:text-amber-100 font-medium transition-colors"
+              href="/account"
+              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
             >
-              О нас
+              Моя библиотека
             </Link>
             <Link
               href="/contacts"
-              className="text-white hover:text-amber-100 font-medium transition-colors"
+              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
             >
               Контакты
             </Link>
           </nav>
 
+          <form onSubmit={handleHeaderSearchSubmit} className="hidden lg:flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <svg className="h-4 w-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 6a7.5 7.5 0 0 0 10.65 10.65Z" />
+            </svg>
+            <input
+              type="text"
+              value={headerSearch}
+              onChange={(event) => setHeaderSearch(event.target.value)}
+              placeholder="Поиск книг"
+              className="w-52 bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500 dark:text-zinc-100"
+            />
+          </form>
+
+
           {/* Auth Buttons and Mobile Menu Button */}
           <div className="flex items-center gap-4">
-            <CartDrawer isAuthenticated={isAuthenticated} />
+            <button
+              type="button"
+              aria-label="Open cart"
+              onClick={() => setIsCartOpen(true)}
+              className="relative rounded-lg p-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              {totalItems > 0 && (
+                <span className="absolute -right-1 -top-1 min-w-[20px] rounded-full bg-amber-700 px-1 text-center text-xs font-bold leading-5 text-white">
+                  {totalItems}
+                </span>
+              )}
+            </button>
 
             {!isAuthenticated ? (
               <>
                 <Link
                   href="/auth/login?prompt=login"
-                  className="hidden sm:block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
+                  className="hidden rounded-lg px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:block"
                 >
                   Login
                 </Link>
                 <Link
                   href="/auth/login?screen_hint=signup&prompt=login"
-                  className="hidden sm:block px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium"
+                  className="hidden rounded-lg bg-amber-700 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-800 sm:block"
                 >
                   Signup
                 </Link>
@@ -99,19 +195,19 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 ) : (
                   <div className="h-7 w-7 rounded-full bg-amber-100" />
                 )}
-                <span className="text-amber-100 text-sm max-w-44 truncate" title={userEmail || ''}>
+                <span className="max-w-44 truncate text-sm text-zinc-600 dark:text-zinc-300" title={userEmail || ''}>
                   {userEmail}
                 </span>
                 <Link
                   href="/account"
-                  className="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
+                  className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   Кабинет
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors font-medium"
+                    className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                   >
                     Admin
                   </Link>
@@ -119,7 +215,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-white text-amber-800 hover:bg-amber-50 rounded-lg transition-colors font-medium"
+                  className="rounded-lg bg-amber-700 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-800"
                 >
                   Logout
                 </button>
@@ -128,7 +224,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+              className="rounded-lg p-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800 md:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <svg
@@ -150,37 +246,58 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <nav className="md:hidden mt-4 pb-4 space-y-2">
+          <nav className="mt-4 space-y-2 pb-4 md:hidden">
+            <Link
+              href="/"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            >
+              Главная
+            </Link>
             <Link
               href="/catalog"
-              className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
               Каталог
             </Link>
             <Link
-              href="#"
-              className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+              href="/account"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
-              О нас
+              Моя библиотека
             </Link>
             <Link
-              href="#"
-              className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+              href="/contacts"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
               Контакты
             </Link>
+
+            <form onSubmit={handleHeaderSearchSubmit} className="px-4 pt-1">
+              <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                <svg className="h-4 w-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 6a7.5 7.5 0 0 0 10.65 10.65Z" />
+                </svg>
+                <input
+                  type="text"
+                  value={headerSearch}
+                  onChange={(event) => setHeaderSearch(event.target.value)}
+                  placeholder="Поиск книг"
+                  className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500 dark:text-zinc-100"
+                />
+              </div>
+            </form>
 
             {!isAuthenticated ? (
               <>
                 <Link
                   href="/auth/login?prompt=login"
-                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   Login
                 </Link>
                 <Link
                   href="/auth/login?screen_hint=signup&prompt=login"
-                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   Signup
                 </Link>
@@ -196,17 +313,17 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                     className="mx-4 rounded-full border border-amber-100"
                   />
                 ) : null}
-                <p className="px-4 py-2 text-amber-100 text-sm break-all">{userEmail}</p>
+                <p className="break-all px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300">{userEmail}</p>
                 <Link
                   href="/account"
-                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   Кабинет
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                    className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                   >
                     Admin
                   </Link>
@@ -214,7 +331,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block px-4 py-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   Logout
                 </button>
@@ -223,6 +340,9 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
           </nav>
         )}
       </div>
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} isAuthenticated={isAuthenticated} />
     </header>
+    <div aria-hidden className="h-[76px]" />
+    </>
   );
 }

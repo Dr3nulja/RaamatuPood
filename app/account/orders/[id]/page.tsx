@@ -88,9 +88,22 @@ export default async function AccountOrderDetailsPage({
           <h2 className="font-semibold text-zinc-800">Книги</h2>
           <ul className="mt-3 space-y-2">
             {order.orderItems.map((item) => (
-              <li key={item.id} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm">
-                <span>{item.book?.title || 'Книга'} × {item.quantity ?? 1}</span>
-                <span className="font-medium">€{Number(item.price ?? 0).toFixed(2)}</span>
+              <li key={item.id} className="rounded-lg bg-amber-50 px-3 py-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span>{item.book?.title || 'Книга'} × {item.quantity ?? 1}</span>
+                  <span className="font-medium">€{Number(item.price ?? 0).toFixed(2)}</span>
+                </div>
+
+                {order.status === 'DELIVERED' && item.bookId ? (
+                  <div className="mt-2">
+                    <Link
+                      href={`/catalog/${item.bookId}`}
+                      className="inline-flex rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#8B5E3C] transition hover:bg-amber-100"
+                    >
+                      Оставить отзыв
+                    </Link>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>

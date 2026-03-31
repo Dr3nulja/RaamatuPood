@@ -4,6 +4,7 @@ export type BookWithRelations = {
   price: number;
   rating: number | null;
   cover_image: string | null;
+  cover_url?: string | null;
   stock: number;
   author: {
     name: string | null;
@@ -28,3 +29,27 @@ export type CategoriesApiResponse = {
 };
 
 export type BooksSort = 'price_asc' | 'price_desc' | 'rating_desc';
+
+export type ReviewItem = {
+  id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  user: {
+    name: string | null;
+  };
+};
+
+export type ReviewsApiResponse = {
+  reviews: ReviewItem[];
+  reviewCount: number;
+  averageRating: number;
+  canReview: boolean;
+  hasReviewed: boolean;
+  isAuthenticated: boolean;
+};
+
+export type CreateReviewApiResponse = {
+  review: ReviewItem;
+  averageRating: number;
+};
