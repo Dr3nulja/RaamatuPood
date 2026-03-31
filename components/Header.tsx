@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CartDrawer from './CartDrawer';
+import { useCartStore } from '@/stores/cartStore';
 
 type HeaderProps = {
   userEmail?: string | null;
@@ -12,9 +13,44 @@ type HeaderProps = {
 };
 
 export default function Header({ userEmail, userPicture, isAdmin = false }: HeaderProps) {
+  const cart = useCartStore((state) => state.cart);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState('');
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+  const tickingRef = useRef(false);
   const isAuthenticated = Boolean(userEmail);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    lastScrollYRef.current = window.scrollY;
+
+    const onScroll = () => {
+      if (tickingRef.current) {
+        return;
+      }
+
+      tickingRef.current = true;
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY <= 0) {
+          setIsHeaderVisible(true);
+        } else if (currentScrollY < lastScrollYRef.current) {
+          setIsHeaderVisible(true);
+        } else if (currentScrollY > lastScrollYRef.current) {
+          setIsHeaderVisible(false);
+        }
+
+        lastScrollYRef.current = currentScrollY;
+        tickingRef.current = false;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleLogout = () => {
     try {
@@ -40,7 +76,10 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-amber-100/70 bg-white/80 backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-950/75">
+    <>
+    <header className={`fixed left-0 right-0 top-0 z-50 border-b border-amber-100/70 bg-white/80 backdrop-blur-xl transition-transform duration-300 will-change-transform dark:border-zinc-800/70 dark:bg-zinc-950/75 ${
+      isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
@@ -102,7 +141,31 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
 
           {/* Auth Buttons and Mobile Menu Button */}
           <div className="flex items-center gap-4">
-            <CartDrawer isAuthenticated={isAuthenticated} />
+            <button
+              type="button"
+              aria-label="Open cart"
+              onClick={() => setIsCartOpen(true)}
+              className="relative rounded-lg p-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              {totalItems > 0 && (
+                <span className="absolute -right-1 -top-1 min-w-[20px] rounded-full bg-amber-700 px-1 text-center text-xs font-bold leading-5 text-white">
+                  {totalItems}
+                </span>
+              )}
+            </button>
 
             {!isAuthenticated ? (
               <>
@@ -277,6 +340,9 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
           </nav>
         )}
       </div>
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} isAuthenticated={isAuthenticated} />
     </header>
+    <div aria-hidden className="h-[76px]" />
+    </>
   );
 }
