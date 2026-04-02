@@ -40,6 +40,35 @@ function parseNullableInt(value: unknown) {
   return parsed;
 }
 
+function parseAuthorIds(values: unknown[]): number[] | null {
+  if (values.length === 0) {
+    return [];
+  }
+
+  const result: number[] = [];
+
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') {
+      continue;
+    }
+
+    const chunks = String(value)
+      .split(',')
+      .map((chunk) => chunk.trim())
+      .filter(Boolean);
+
+    for (const chunk of chunks) {
+      const parsed = Number(chunk);
+      if (!Number.isInteger(parsed) || parsed <= 0) {
+        return null;
+      }
+      result.push(parsed);
+    }
+  }
+
+  return [...new Set(result)];
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
@@ -58,10 +87,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     price?: number;
     stock?: number;
     description?: string | null;
-    authorId?: number | null;
     categoryId?: number | null;
     coverImage?: string | null;
   } = {};
+  let authorIdsToSet: number[] | undefined;
 
   const contentType = request.headers.get('content-type') || '';
 
@@ -71,7 +100,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const priceValue = form.get('price');
     const stockValue = form.get('stock');
     const descriptionValue = form.get('description');
-    const authorIdValue = form.get('author_id');
+    const authorIdValues = [...form.getAll('author_ids'), form.get('author_id')];
     const categoryIdValue = form.get('category_id');
     const coverImageValue = form.get('cover_image');
     const coverFile = form.get('cover');
@@ -114,12 +143,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       data.coverImage = await saveCoverFile(coverFile);
     }
 
-    if (authorIdValue !== null) {
-      const parsed = parseNullableInt(authorIdValue);
-      if (Number.isNaN(parsed)) {
+    if (authorIdValues.some((value) => value !== null && value !== undefined)) {
+      const parsed = parseAuthorIds(authorIdValues);
+      if (!parsed) {
         return NextResponse.json({ error: 'Invalid author_id' }, { status: 400 });
       }
-      data.authorId = parsed;
+      authorIdsToSet = parsed;
     }
 
     if (categoryIdValue !== null) {
@@ -136,6 +165,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       stock?: number;
       description?: string | null;
       author_id?: number | string | null;
+      author_ids?: Array<number | string> | string | null;
       category_id?: number | string | null;
       cover_image?: string | null;
     } | null;
@@ -173,15 +203,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     if (body?.author_id !== undefined) {
-      if (body.author_id === null || body.author_id === '') {
-        data.authorId = null;
-      } else {
-        const authorId = Number(body.author_id);
-        if (!Number.isInteger(authorId) || authorId <= 0) {
-          return NextResponse.json({ error: 'Invalid author_id' }, { status: 400 });
-        }
-        data.authorId = authorId;
+      const parsed = parseAuthorIds([body.author_id]);
+      if (!parsed) {
+        return NextResponse.json({ error: 'Invalid author_id' }, { status: 400 });
       }
+      authorIdsToSet = parsed;
+    }
+
+    if (body?.author_ids !== undefined) {
+      const parsed = parseAuthorIds(Array.isArray(body.author_ids) ? body.author_ids : [body.author_ids]);
+      if (!parsed) {
+        return NextResponse.json({ error: 'Invalid author_ids' }, { status: 400 });
+      }
+      authorIdsToSet = parsed;
     }
 
     if (body?.category_id !== undefined) {
@@ -197,9 +231,45 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
   }
 
-  await prisma.book.update({
-    where: { id },
-    data,
+  if (data.categoryId !== undefined && data.categoryId !== null) {
+    const categoryExists = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+      select: { id: true },
+    });
+
+    if (!categoryExists) {
+      return NextResponse.json({ error: 'Invalid category_id' }, { status: 400 });
+    }
+  }
+
+  if (authorIdsToSet) {
+    const authorCount = await prisma.author.count({
+      where: { id: { in: authorIdsToSet } },
+    });
+
+    if (authorCount !== authorIdsToSet.length) {
+      return NextResponse.json({ error: 'One or more author_ids are invalid' }, { status: 400 });
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.book.update({
+      where: { id },
+      data,
+    });
+
+    if (authorIdsToSet) {
+      await tx.bookAuthor.deleteMany({ where: { bookId: id } });
+
+      if (authorIdsToSet.length > 0) {
+        await tx.bookAuthor.createMany({
+          data: authorIdsToSet.map((authorId) => ({
+            bookId: id,
+            authorId,
+          })),
+        });
+      }
+    }
   });
 
   return NextResponse.json({ ok: true }, { status: 200 });

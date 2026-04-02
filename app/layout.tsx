@@ -48,7 +48,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
         style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
       >
-        <CartHydration />
+        <CartHydration isAuthenticated={isAuthenticated} />
         <SyncUserAfterAuth isAuthenticated={isAuthenticated} />
         <Header userEmail={userEmail} userPicture={userPicture} isAdmin={isAdmin} />
         <main className="flex-1">

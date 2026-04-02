@@ -25,9 +25,16 @@ export async function GET() {
           price: true,
           stock: true,
           coverImage: true,
-          author: {
+          bookAuthors: {
+            orderBy: {
+              authorId: 'asc',
+            },
             select: {
-              name: true,
+              author: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -39,7 +46,7 @@ export async function GET() {
   const items: CartResponse['items'] = cartItems.map((item) => ({
     id: item.bookId,
     title: item.book.title,
-    author: item.book.author?.name ?? undefined,
+    author: item.book.bookAuthors[0]?.author?.name ?? undefined,
     price: Number(item.book.price),
     cover_image: item.book.coverImage ?? undefined,
     quantity: item.quantity,

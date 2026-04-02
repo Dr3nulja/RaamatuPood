@@ -13,7 +13,7 @@ type BookPayload = {
   price: number;
   stock: number;
   description: string | null;
-  authorId: number | null;
+  authorIds: number[];
   categoryId: number | null;
   coverImage: string | null;
 };
@@ -46,6 +46,35 @@ function parseNullableInt(value: unknown) {
   return parsed;
 }
 
+function parseAuthorIds(values: unknown[]): number[] | null {
+  if (values.length === 0) {
+    return [];
+  }
+
+  const result: number[] = [];
+
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') {
+      continue;
+    }
+
+    const chunks = String(value)
+      .split(',')
+      .map((chunk) => chunk.trim())
+      .filter(Boolean);
+
+    for (const chunk of chunks) {
+      const parsed = Number(chunk);
+      if (!Number.isInteger(parsed) || parsed <= 0) {
+        return null;
+      }
+      result.push(parsed);
+    }
+  }
+
+  return [...new Set(result)];
+}
+
 async function normalizePayload(request: NextRequest): Promise<BookPayload | null> {
   const contentType = request.headers.get('content-type') || '';
 
@@ -55,7 +84,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
     const price = Number(form.get('price'));
     const stock = Number(form.get('stock'));
     const descriptionRaw = String(form.get('description') || '').trim();
-    const authorId = parseNullableInt(form.get('author_id'));
+    const authorIds = parseAuthorIds([...form.getAll('author_ids'), form.get('author_id')]);
     const categoryId = parseNullableInt(form.get('category_id'));
     const coverField = form.get('cover');
     const coverUrlRaw = String(form.get('cover_image') || '').trim();
@@ -64,7 +93,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
       return null;
     }
 
-    if (Number.isNaN(authorId) || Number.isNaN(categoryId)) {
+    if (!authorIds || Number.isNaN(categoryId)) {
       return null;
     }
 
@@ -78,7 +107,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
       price,
       stock,
       description: descriptionRaw || null,
-      authorId,
+      authorIds,
       categoryId,
       coverImage,
     };
@@ -90,6 +119,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
     stock?: number;
     description?: string | null;
     author_id?: number | string | null;
+    author_ids?: Array<number | string> | string | null;
     category_id?: number | string | null;
     cover_image?: string | null;
   } | null;
@@ -99,14 +129,20 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
   const stock = Number(body?.stock);
   const description = body?.description ? String(body.description).trim() : null;
   const coverImage = body?.cover_image ? String(body.cover_image).trim() : null;
-  const authorId = parseNullableInt(body?.author_id);
+  const authorIds = parseAuthorIds(
+    body?.author_ids !== undefined
+      ? Array.isArray(body.author_ids)
+        ? body.author_ids
+        : [body.author_ids]
+      : [body?.author_id]
+  );
   const categoryId = parseNullableInt(body?.category_id);
 
   if (!title || !Number.isFinite(price) || !Number.isInteger(stock) || stock < 0) {
     return null;
   }
 
-  if (Number.isNaN(authorId) || Number.isNaN(categoryId)) {
+  if (!authorIds || Number.isNaN(categoryId)) {
     return null;
   }
 
@@ -115,7 +151,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
     price,
     stock,
     description,
-    authorId,
+    authorIds,
     categoryId,
     coverImage,
   };
@@ -130,7 +166,12 @@ export async function GET() {
   const [books, authors, categories] = await Promise.all([
     prisma.book.findMany({
       include: {
-        author: { select: { id: true, name: true } },
+        bookAuthors: {
+          orderBy: { authorId: 'asc' },
+          include: {
+            author: { select: { id: true, name: true } },
+          },
+        },
         category: { select: { id: true, name: true } },
       },
       orderBy: { id: 'desc' },
@@ -153,9 +194,11 @@ export async function GET() {
       stock: book.stock,
       description: book.description,
       cover_image: book.coverImage,
-      author_id: book.authorId,
+      author_id: book.bookAuthors[0]?.authorId ?? null,
+      author_ids: book.bookAuthors.map((link) => link.authorId),
       category_id: book.categoryId,
-      author_name: book.author?.name ?? null,
+      author_name: book.bookAuthors[0]?.author?.name ?? null,
+      author_names: book.bookAuthors.map((link) => link.author.name),
       category_name: book.category?.name ?? null,
     })),
     authors,
@@ -177,6 +220,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
+  if (payload.authorIds.length > 0) {
+    const authorCount = await prisma.author.count({
+      where: { id: { in: payload.authorIds } },
+    });
+
+    if (authorCount !== payload.authorIds.length) {
+      return NextResponse.json({ error: 'One or more author_ids are invalid' }, { status: 400 });
+    }
+  }
+
+  if (payload.categoryId !== null) {
+    const categoryExists = await prisma.category.findUnique({
+      where: { id: payload.categoryId },
+      select: { id: true },
+    });
+
+    if (!categoryExists) {
+      return NextResponse.json({ error: 'Invalid category_id' }, { status: 400 });
+    }
+  }
+
   const created = await prisma.book.create({
     data: {
       title: payload.title,
@@ -184,8 +248,16 @@ export async function POST(request: NextRequest) {
       stock: payload.stock,
       description: payload.description,
       coverImage: payload.coverImage,
-      authorId: payload.authorId,
       categoryId: payload.categoryId,
+      ...(payload.authorIds.length > 0
+        ? {
+            bookAuthors: {
+              create: payload.authorIds.map((authorId) => ({
+                author: { connect: { id: authorId } },
+              })),
+            },
+          }
+        : {}),
     },
   });
 

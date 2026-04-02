@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const categoryIdParam = searchParams.get('categoryId');
     const sort = parseSort(searchParams.get('sort'));
     const limitRaw = searchParams.get('limit');
-    const limitParam = limitRaw ? Number(limitRaw) : null;
+    const parsedLimit = limitRaw ? Number(limitRaw) : null;
 
     const categoryIdNumber = Number(categoryIdParam);
     const categoryId = categoryIdParam && Number.isInteger(categoryIdNumber) && categoryIdNumber > 0
@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
     const shouldLimitToTen = search && !categoryId && !sort;
     const limitValue = shouldLimitToTen
       ? 10
-      : Number.isInteger(limitParam) && (limitParam as number) > 0
-        ? Math.min(limitParam, 20)
+      : parsedLimit !== null && Number.isInteger(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 20)
         : 20;
 
     const where = {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
             OR: [
               { title: { contains: search } },
               { description: { contains: search } },
-              { author: { is: { name: { contains: search } } } },
+              { bookAuthors: { some: { author: { name: { contains: search } } } } },
             ],
           }
         : {}),
@@ -67,9 +67,16 @@ export async function GET(request: NextRequest) {
         rating: true,
         coverImage: true,
         stock: true,
-        author: {
+        bookAuthors: {
+          orderBy: {
+            authorId: 'asc',
+          },
           select: {
-            name: true,
+            author: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         category: {
@@ -90,7 +97,7 @@ export async function GET(request: NextRequest) {
         cover_image: book.coverImage,
         cover_url: book.coverImage,
         stock: book.stock,
-        author: book.author ? { name: book.author.name } : null,
+        author: book.bookAuthors[0]?.author ? { name: book.bookAuthors[0].author.name } : null,
         category: book.category
           ? {
               id: book.category.id,

@@ -6,7 +6,7 @@ import { ClearCartAfterSuccess } from '@/components/ClearCartAfterSuccess';
 
 type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
-    orderItems: { include: { book: { include: { author: true } } } };
+    orderItems: { include: { book: { include: { bookAuthors: { include: { author: true } } } } } };
     shippingMethod: true;
   };
 }>;
@@ -93,7 +93,7 @@ export default async function SuccessPage({
       where: { stripePaymentId: session_id },
       include: {
         orderItems: {
-          include: { book: { include: { author: true } } },
+          include: { book: { include: { bookAuthors: { include: { author: true } } } } },
         },
         shippingMethod: true,
       },
@@ -219,8 +219,8 @@ export default async function SuccessPage({
                         <p className="font-serif text-sm font-semibold text-zinc-800 leading-snug">
                           {item.book?.title ?? '—'}
                         </p>
-                        {item.book?.author?.name && (
-                          <p className="mt-0.5 text-xs text-zinc-500">{item.book.author.name}</p>
+                        {item.book?.bookAuthors[0]?.author?.name && (
+                          <p className="mt-0.5 text-xs text-zinc-500">{item.book.bookAuthors[0].author.name}</p>
                         )}
                       </div>
                       <div className="shrink-0 text-right text-sm">

@@ -40,7 +40,7 @@ model Author {
   name  String
 
   // Relations
-  books Book[]
+  bookAuthors BookAuthor[]
 
   @@map("authors")
 }
@@ -58,31 +58,42 @@ model Category {
 
 // Books table
 model Book {
-  id              Int     @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   title           String
-  description     String? @db.Text
-  price           Decimal @db.Decimal(10, 2)
+  description     String?   @db.Text
+  price           Decimal   @db.Decimal(10, 2)
   language        String?
-  publicationYear Int?    @map("publication_year")
-  stock           Int     @default(0)
-  rating          Decimal @default(0.0) @db.Decimal(2, 1)
-  coverImage      String? @map("cover_image") @db.VarChar(500)
-  createdAt       DateTime @default(now()) @map("created_at")
+  publicationYear Int?      @map("publication_year")
+  stock           Int       @default(0)
+  rating          Decimal   @default(0.0) @db.Decimal(2, 1)
+  coverImage      String?   @map("cover_image") @db.VarChar(500)
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   // Foreign keys
-  authorId   Int?    @map("author_id")
-  categoryId Int?    @map("category_id")
+  categoryId      Int?      @map("category_id")
 
   // Relations
-  author      Author?       @relation(fields: [authorId], references: [id])
-  category    Category?     @relation(fields: [categoryId], references: [id])
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  reviews     Review[]
+  category        Category?   @relation(fields: [categoryId], references: [id])
+  bookAuthors     BookAuthor[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  reviews         Review[]
 
-  @@index([authorId])
   @@index([categoryId])
   @@map("books")
+}
+
+// Explicit join table for books <-> authors
+model BookAuthor {
+  bookId   Int @map("book_id")
+  authorId Int @map("author_id")
+
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, authorId])
+  @@index([authorId])
+  @@map("book_authors")
 }
 
 // Cart Items table
@@ -112,10 +123,10 @@ model Address {
   postalCode String? @map("postal_code") @db.VarChar(20)
 
   // Foreign keys
-  userId Int    @map("user_id")
+  userId Int?   @map("user_id")
 
   // Relations
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
 
   @@index([userId])

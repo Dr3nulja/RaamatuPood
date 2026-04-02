@@ -3,12 +3,20 @@
 import { useEffect } from 'react';
 import { useCartStore } from '@/stores/cartStore';
 
-export default function CartHydration() {
+type CartHydrationProps = {
+  isAuthenticated: boolean;
+};
+
+export default function CartHydration({ isAuthenticated }: CartHydrationProps) {
   const setCart = useCartStore((state) => state.setCart);
 
   useEffect(() => {
     // ИСПРАВЛЕНО: принудительная гидратация persist-store при старте приложения
     void useCartStore.persist.rehydrate();
+
+    if (!isAuthenticated) {
+      return;
+    }
 
     const syncServerCart = async () => {
       try {
@@ -32,7 +40,7 @@ export default function CartHydration() {
     };
 
     void syncServerCart();
-  }, [setCart]);
+  }, [isAuthenticated, setCart]);
 
   return null;
 }

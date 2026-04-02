@@ -9,9 +9,16 @@ export default async function Home() {
       title: true,
       rating: true,
       coverImage: true,
-      author: {
+      bookAuthors: {
+        orderBy: {
+          authorId: 'asc',
+        },
         select: {
-          name: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -27,9 +34,16 @@ export default async function Home() {
       title: true,
       rating: true,
       coverImage: true,
-      author: {
+      bookAuthors: {
+        orderBy: {
+          authorId: 'asc',
+        },
         select: {
-          name: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -120,7 +134,7 @@ export default async function Home() {
 
                 <div className="space-y-2 p-4">
                   <h3 className="line-clamp-2 text-base font-semibold text-zinc-900">{book.title}</h3>
-                  <p className="text-sm text-zinc-600">{book.author?.name || 'Автор не указан'}</p>
+                  <p className="text-sm text-zinc-600">{book.bookAuthors[0]?.author?.name || 'Автор не указан'}</p>
                   <p className="text-sm font-semibold text-amber-700">★ {Number(book.rating ?? 0).toFixed(1)}</p>
                   <Link
                     href={`/catalog/${book.id}`}
@@ -165,7 +179,7 @@ export default async function Home() {
 
                 <div className="space-y-2 p-4">
                   <h3 className="line-clamp-2 text-base font-semibold text-zinc-900">{book.title}</h3>
-                  <p className="text-sm text-zinc-600">{book.author?.name || 'Автор не указан'}</p>
+                  <p className="text-sm text-zinc-600">{book.bookAuthors[0]?.author?.name || 'Автор не указан'}</p>
                   <p className="text-sm font-semibold text-amber-700">★ {Number(book.rating ?? 0).toFixed(1)}</p>
                   <Link
                     href={`/catalog/${book.id}`}

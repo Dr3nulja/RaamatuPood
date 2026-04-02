@@ -6,8 +6,10 @@ export type AdminBook = {
   description: string | null;
   cover_image: string | null;
   author_id: number | null;
+  author_ids: number[];
   category_id: number | null;
   author_name: string | null;
+  author_names: string[];
   category_name: string | null;
 };
 

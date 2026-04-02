@@ -69,7 +69,7 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
     `SELECT
       b.id,
       b.title,
-      a.name AS author,
+      GROUP_CONCAT(DISTINCT a.name ORDER BY a.name SEPARATOR ', ') AS author,
       c.name AS category,
       b.description,
       b.price,
@@ -80,9 +80,11 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
       b.cover_image,
       b.created_at
     FROM books b
-    LEFT JOIN authors a ON b.author_id = a.id
+    LEFT JOIN book_authors ba ON ba.book_id = b.id
+    LEFT JOIN authors a ON ba.author_id = a.id
     LEFT JOIN categories c ON b.category_id = c.id
     WHERE b.id = ?
+    GROUP BY b.id, b.title, c.name, b.description, b.price, b.language, b.publication_year, b.stock, b.rating, b.cover_image, b.created_at
     LIMIT 1`,
     [bookId]
   ) as [BookDetailsRow[], any];
