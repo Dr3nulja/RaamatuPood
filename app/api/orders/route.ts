@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse, OrdersHistoryResponse } from '@/lib/api/types';
+<<<<<<< HEAD
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
+=======
+>>>>>>> origin/main
 
 export async function GET() {
   const session = await auth0.getSession();
@@ -75,6 +78,7 @@ export async function GET() {
 
   return NextResponse.json(response, { status: 200 });
 }
+<<<<<<< HEAD
 
 export async function POST(request: Request) {
   const user = await getDbUserFromSession();
@@ -211,3 +215,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Order creation failed' }, { status: 500 });
   }
 }
+=======
+>>>>>>> origin/main

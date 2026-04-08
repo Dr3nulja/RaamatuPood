@@ -55,7 +55,10 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
   const handleLogout = () => {
     try {
       localStorage.removeItem('raamatupood-cart');
+<<<<<<< HEAD
       document.cookie = 'raamatupood-cart-sync=; Path=/; Max-Age=0; SameSite=Lax';
+=======
+>>>>>>> origin/main
       sessionStorage.clear();
     } catch {
       // ignore browser storage errors

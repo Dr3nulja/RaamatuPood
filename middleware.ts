@@ -7,6 +7,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+<<<<<<< HEAD
     '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|auth/callback).*)',
+=======
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+>>>>>>> origin/main
   ],
 };

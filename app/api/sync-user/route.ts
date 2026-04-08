@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
+<<<<<<< HEAD
 import { normalizeSessionCartItems } from '@/lib/cart/sessionCart';
 import { mergeSessionCartIntoDb } from '@/lib/cart/sync';
+=======
+>>>>>>> origin/main
 
 export const runtime = 'nodejs';
 
@@ -37,9 +40,12 @@ export async function POST(request: Request) {
   const corsHeaders = getCorsHeaders(request.headers.get('origin'));
 
   try {
+<<<<<<< HEAD
     const payload = (await request.json().catch(() => null)) as { cartItems?: unknown } | null;
     const sessionCartItems = normalizeSessionCartItems(payload?.cartItems);
 
+=======
+>>>>>>> origin/main
     const session = await auth0.getSession();
     const authUser = session?.user;
 
@@ -71,6 +77,7 @@ export async function POST(request: Request) {
       create: createData,
     });
 
+<<<<<<< HEAD
     // Fallback sync after callback: merge client-side session cart into cart_items for this user.
     const mergedCart = await mergeSessionCartIntoDb(user.id, sessionCartItems);
 
@@ -91,6 +98,9 @@ export async function POST(request: Request) {
       },
       { status: 200, headers: corsHeaders }
     );
+=======
+    return NextResponse.json({ user }, { status: 200, headers: corsHeaders });
+>>>>>>> origin/main
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to sync user';
     return NextResponse.json({ error: message }, { status: 500, headers: corsHeaders });

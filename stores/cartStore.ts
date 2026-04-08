@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+<<<<<<< HEAD
 import { CART_SYNC_COOKIE_NAME } from '@/lib/cart/sessionCart';
+=======
+>>>>>>> origin/main
 
 export interface CartItem {
   id: number;
@@ -28,6 +31,7 @@ interface CartState {
   clearCart: () => void;
 }
 
+<<<<<<< HEAD
 function persistCartSyncCookie(cart: CartItem[]) {
   if (typeof document === 'undefined') {
     return;
@@ -47,6 +51,8 @@ function persistCartSyncCookie(cart: CartItem[]) {
   document.cookie = `${CART_SYNC_COOKIE_NAME}=${encoded}; Path=/; Max-Age=2592000; SameSite=Lax`;
 }
 
+=======
+>>>>>>> origin/main
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => {
@@ -54,13 +60,17 @@ export const useCartStore = create<CartState>()(
         cart: [],
 
         setCart: (cart: CartItem[]) => {
+<<<<<<< HEAD
           persistCartSyncCookie(cart);
+=======
+>>>>>>> origin/main
           set({ cart });
         },
 
         addItem: (item: Omit<CartItem, 'quantity'>) => {
           set((state: CartState) => {
             const existingItem = state.cart.find((i: CartItem) => i.id === item.id);
+<<<<<<< HEAD
             const nextCart = existingItem
               ? state.cart.map((i: CartItem) =>
                   i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
@@ -74,15 +84,33 @@ export const useCartStore = create<CartState>()(
             }
 
             return { cart: nextCart };
+=======
+            if (existingItem) {
+              return {
+                cart: state.cart.map((i: CartItem) =>
+                  i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+                ),
+              };
+            }
+            return {
+              cart: [...state.cart, { ...item, quantity: 1 }],
+            };
+>>>>>>> origin/main
           });
         },
 
         removeItem: (id: number) => {
+<<<<<<< HEAD
           set((state: CartState) => {
             const nextCart = state.cart.filter((i: CartItem) => i.id !== id);
             persistCartSyncCookie(nextCart);
             return { cart: nextCart };
           });
+=======
+          set((state: CartState) => ({
+            cart: state.cart.filter((i: CartItem) => i.id !== id),
+          }));
+>>>>>>> origin/main
         },
 
         updateQuantity: (id: number, quantity: number) => {
@@ -90,6 +118,7 @@ export const useCartStore = create<CartState>()(
             (get() as CartState).removeItem(id);
             return;
           }
+<<<<<<< HEAD
           set((state: CartState) => {
             const nextCart = state.cart.map((i: CartItem) =>
               i.id === id ? { ...i, quantity } : i
@@ -101,6 +130,16 @@ export const useCartStore = create<CartState>()(
 
         clearCart: () => {
           persistCartSyncCookie([]);
+=======
+          set((state: CartState) => ({
+            cart: state.cart.map((i: CartItem) =>
+              i.id === id ? { ...i, quantity } : i
+            ),
+          }));
+        },
+
+        clearCart: () => {
+>>>>>>> origin/main
           set({ cart: [] });
         },
       };
