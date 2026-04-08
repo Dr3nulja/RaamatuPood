@@ -15,6 +15,7 @@ export async function GET() {
     return unauthorized();
   }
 
+  // Authenticated cart is always loaded from cart_items by user_id.
   const cartItems = await prisma.cartItem.findMany({
     where: { userId: user.id },
     include: {

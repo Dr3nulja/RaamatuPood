@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useCartStore } from '@/stores/cartStore';
 
 type SyncUserAfterAuthProps = {
   isAuthenticated: boolean;
@@ -8,6 +9,7 @@ type SyncUserAfterAuthProps = {
 
 export default function SyncUserAfterAuth({ isAuthenticated }: SyncUserAfterAuthProps) {
   const hasSyncedRef = useRef(false);
+  const setCart = useCartStore((state) => state.setCart);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,14 +27,27 @@ export default function SyncUserAfterAuth({ isAuthenticated }: SyncUserAfterAuth
 
     const sync = async () => {
       try {
+        const localCartSnapshot = useCartStore
+          .getState()
+          .cart.map((item) => ({ id: item.id, quantity: item.quantity }));
+
         const response = await fetch('/api/sync-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
           credentials: 'include',
+          body: JSON.stringify({ cartItems: localCartSnapshot }),
         });
 
         if (isMounted && response.ok) {
+          const data = (await response.json().catch(() => null)) as {
+            cart?: { items?: Parameters<typeof setCart>[0] };
+          } | null;
+
+          if (Array.isArray(data?.cart?.items)) {
+            setCart(data.cart.items);
+          }
+
           hasSyncedRef.current = true;
         }
       } catch {
@@ -45,7 +60,7 @@ export default function SyncUserAfterAuth({ isAuthenticated }: SyncUserAfterAuth
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, setCart]);
 
   return null;
 }

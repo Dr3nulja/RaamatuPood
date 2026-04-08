@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse, OrdersHistoryResponse } from '@/lib/api/types';
+import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
 
 export async function GET() {
   const session = await auth0.getSession();
@@ -73,4 +74,140 @@ export async function GET() {
   };
 
   return NextResponse.json(response, { status: 200 });
+}
+
+export async function POST(request: Request) {
+  const user = await getDbUserFromSession();
+
+  if (!user) {
+    const response: ApiErrorResponse = { error: 'Unauthorized' };
+    return NextResponse.json(response, { status: 401 });
+  }
+
+  const body = (await request.json().catch(() => null)) as
+    | {
+        shippingMethodId?: number;
+        addressId?: number;
+      }
+    | null;
+
+  const shippingMethodId = Number(body?.shippingMethodId);
+  const addressId = Number(body?.addressId);
+
+  const selectedAddress = Number.isInteger(addressId) && addressId > 0
+    ? await prisma.address.findFirst({
+        where: {
+          id: addressId,
+          userId: user.id,
+        },
+        select: { id: true },
+      })
+    : null;
+
+  const selectedShippingMethod = Number.isInteger(shippingMethodId) && shippingMethodId > 0
+    ? await prisma.shippingMethod.findUnique({
+        where: { id: shippingMethodId },
+        select: { id: true, price: true },
+      })
+    : null;
+
+  // Purchase always reads the latest logged-in cart from cart_items in DB.
+  const cartItems = await prisma.cartItem.findMany({
+    where: { userId: user.id },
+    include: {
+      book: {
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          stock: true,
+        },
+      },
+    },
+  });
+
+  if (cartItems.length === 0) {
+    return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
+  }
+
+  for (const item of cartItems) {
+    if (item.quantity > item.book.stock) {
+      return NextResponse.json(
+        { error: `Not enough stock for book ${item.book.id}` },
+        { status: 400 }
+      );
+    }
+  }
+
+  const subtotal = cartItems.reduce((sum, item) => sum + Number(item.book.price) * item.quantity, 0);
+  const shippingPrice = Number(selectedShippingMethod?.price ?? 0);
+  const totalPrice = subtotal + shippingPrice;
+
+  try {
+    const createdOrder = await prisma.$transaction(async (tx) => {
+      // Atomic stock update: every book stock is decremented only if enough stock is still available.
+      for (const item of cartItems) {
+        const updated = await tx.book.updateMany({
+          where: {
+            id: item.bookId,
+            stock: { gte: item.quantity },
+          },
+          data: {
+            stock: { decrement: item.quantity },
+          },
+        });
+
+        if (updated.count === 0) {
+          throw new Error(`INSUFFICIENT_STOCK:${item.bookId}`);
+        }
+      }
+
+      const order = await tx.order.create({
+        data: {
+          userId: user.id,
+          addressId: selectedAddress?.id ?? null,
+          shippingMethodId: selectedShippingMethod?.id ?? null,
+          totalPrice,
+          status: 'PAID',
+          stripePaymentId: null,
+        },
+        select: {
+          id: true,
+          createdAt: true,
+        },
+      });
+
+      await tx.orderItem.createMany({
+        data: cartItems.map((item) => ({
+          orderId: order.id,
+          bookId: item.bookId,
+          quantity: item.quantity,
+          price: Number(item.book.price),
+        })),
+      });
+
+      await tx.cartItem.deleteMany({
+        where: { userId: user.id },
+      });
+
+      return order;
+    });
+
+    return NextResponse.json(
+      {
+        ok: true,
+        orderId: createdOrder.id,
+        totalPrice,
+        createdAt: createdOrder.createdAt.toISOString(),
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Order creation failed';
+    if (message.startsWith('INSUFFICIENT_STOCK:')) {
+      return NextResponse.json({ error: 'Stock changed. Please review your cart.' }, { status: 409 });
+    }
+
+    return NextResponse.json({ error: 'Order creation failed' }, { status: 500 });
+  }
 }

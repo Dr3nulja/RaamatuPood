@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
+import { normalizeSessionCartItems } from '@/lib/cart/sessionCart';
+import { mergeSessionCartIntoDb } from '@/lib/cart/sync';
 
 export const runtime = 'nodejs';
 
@@ -35,6 +37,9 @@ export async function POST(request: Request) {
   const corsHeaders = getCorsHeaders(request.headers.get('origin'));
 
   try {
+    const payload = (await request.json().catch(() => null)) as { cartItems?: unknown } | null;
+    const sessionCartItems = normalizeSessionCartItems(payload?.cartItems);
+
     const session = await auth0.getSession();
     const authUser = session?.user;
 
@@ -66,7 +71,26 @@ export async function POST(request: Request) {
       create: createData,
     });
 
-    return NextResponse.json({ user }, { status: 200, headers: corsHeaders });
+    // Fallback sync after callback: merge client-side session cart into cart_items for this user.
+    const mergedCart = await mergeSessionCartIntoDb(user.id, sessionCartItems);
+
+    return NextResponse.json(
+      {
+        user,
+        cart: {
+          items: mergedCart.map((item) => ({
+            id: item.bookId,
+            title: item.book.title,
+            author: item.book.bookAuthors[0]?.author?.name ?? undefined,
+            price: Number(item.book.price),
+            cover_image: item.book.coverImage ?? undefined,
+            quantity: item.quantity,
+            stock: item.book.stock,
+          })),
+        },
+      },
+      { status: 200, headers: corsHeaders }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to sync user';
     return NextResponse.json({ error: message }, { status: 500, headers: corsHeaders });
