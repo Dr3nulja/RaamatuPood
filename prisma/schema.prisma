@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table
+model User {
+  id        Int       @id @default(autoincrement())
+  auth0Id   String    @unique @map("auth0_id")
+  email     String    @unique
+  name      String?
+  picture   String?   @db.VarChar(500)
+  role      UserRole  @default(USER)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  addresses   Address[]
+  cartItems   CartItem[]
+  orders      Order[]
+  reviews     Review[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER  @map("user")
+  ADMIN @map("admin")
+}
+
+// Authors table
+model Author {
+  id    Int     @id @default(autoincrement())
+  name  String
+
+  // Relations
+  bookAuthors BookAuthor[]
+
+  @@map("authors")
+}
+
+// Categories table
+model Category {
+  id   Int     @id @default(autoincrement())
+  name String
+
+  // Relations
+  books Book[]
+
+  @@map("categories")
+}
+
+// Books table
+model Book {
+  id              Int       @id @default(autoincrement())
+  title           String
+  description     String?   @db.Text
+  price           Decimal   @db.Decimal(10, 2)
+  language        String?
+  publicationYear Int?      @map("publication_year")
+  stock           Int       @default(0)
+  rating          Decimal   @default(0.0) @db.Decimal(2, 1)
+  coverImage      String?   @map("cover_image") @db.VarChar(500)
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Foreign keys
+  categoryId      Int?      @map("category_id")
+
+  // Relations
+  category        Category?   @relation(fields: [categoryId], references: [id])
+  bookAuthors     BookAuthor[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+
+  @@index([categoryId])
+  @@map("books")
+}
+
+// Explicit join table for books <-> authors
+model BookAuthor {
+  bookId   Int @map("book_id")
+  authorId Int @map("author_id")
+
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, authorId])
+  @@index([authorId])
+  @@map("book_authors")
+}
+
+// Cart Items table
+model CartItem {
+  id       Int @id @default(autoincrement())
+  quantity Int @default(1)
+
+  // Foreign keys
+  userId Int    @map("user_id")
+  bookId Int    @map("book_id")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bookId])
+  @@map("cart_items")
+}
+
+// Addresses table
+model Address {
+  id         Int     @id @default(autoincrement())
+  country    String? @db.VarChar(100)
+  city       String? @db.VarChar(100)
+  street     String? @db.VarChar(255)
+  postalCode String? @map("postal_code") @db.VarChar(20)
+
+  // Foreign keys
+  userId Int?   @map("user_id")
+
+  // Relations
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// Shipping Methods table
+model ShippingMethod {
+  id    Int     @id @default(autoincrement())
+  name  String? @db.VarChar(100)
+  price Decimal? @db.Decimal(10, 2)
+
+  // Relations
+  orders Order[]
+
+  @@map("shipping_methods")
+}
+
+// Orders table
+model Order {
+  id              Int       @id @default(autoincrement())
+  totalPrice      Decimal?  @map("total_price") @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  stripePaymentId String?   @map("stripe_payment_id") @db.VarChar(255)
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Foreign keys
+  userId           Int?      @map("user_id")
+  addressId        Int?      @map("address_id")
+  shippingMethodId Int?      @map("shipping_method_id")
+
+  // Relations
+  user             User?           @relation(fields: [userId], references: [id])
+  address          Address?        @relation(fields: [addressId], references: [id])
+  shippingMethod   ShippingMethod? @relation(fields: [shippingMethodId], references: [id])
+  orderItems       OrderItem[]
+
+  @@index([userId])
+  @@index([addressId])
+  @@index([shippingMethodId])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING    @map("pending")
+  PAID       @map("paid")
+  SHIPPED    @map("shipped")
+  DELIVERED  @map("delivered")
+  CANCELLED  @map("cancelled")
+}
+
+// Order Items table
+model OrderItem {
+  id       Int     @id @default(autoincrement())
+  quantity Int?
+  price    Decimal? @db.Decimal(10, 2)
+
+  // Foreign keys
+  orderId Int?   @map("order_id")
+  bookId  Int?   @map("book_id")
+
+  // Relations
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book  Book? @relation(fields: [bookId], references: [id])
+
+  @@index([orderId])
+  @@index([bookId])
+  @@map("order_items")
+}
+
+// Reviews table
+model Review {
+  id        Int     @id @default(autoincrement())
+  rating    Int?
+  comment   String? @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Foreign keys
+  bookId Int    @map("book_id")
+  userId Int    @map("user_id")
+
+  // Relations
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([userId])
+  @@map("reviews")
+}
