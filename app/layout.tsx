@@ -50,7 +50,7 @@ export default async function RootLayout({
         <CartHydration isAuthenticated={isAuthenticated} />
         <SyncUserAfterAuth isAuthenticated={isAuthenticated} />
         <Header userEmail={userEmail} userPicture={userPicture} isAdmin={isAdmin} />
-        <main className="flex-1">
+        <main className="flex-1 pt-16">
           {children}
         </main>
         <Footer />
