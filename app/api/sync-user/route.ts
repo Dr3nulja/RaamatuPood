@@ -59,20 +59,16 @@ async function postSyncUser(request: Request) {
 
     const auth0Id = authUser.sub;
     const email = authUser.email?.trim() || `${auth0Id}@auth0.local`;
-    const name = authUser.name?.trim() || null;
-    const picture = authUser.picture?.trim() || null;
 
     const updateData = {
       email,
-      name,
-      picture,
     } as any;
 
     const createData = {
       auth0Id,
       email,
-      name,
-      picture,
+      name: null,
+      picture: null,
     } as any;
 
     const user = await prisma.user.upsert({

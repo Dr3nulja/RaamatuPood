@@ -1,19 +1,14 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
+import { requireUserFlowAccess } from '@/lib/auth/flow';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AccountPage() {
-  const session = await auth0.getSession();
-
-  if (!session?.user) {
-    redirect('/auth/login?returnTo=/account');
-  }
+  const { session, user: currentUser } = await requireUserFlowAccess({ returnTo: '/account' });
 
   const user = await prisma.user.findUnique({
-    where: { auth0Id: session.user.sub || '' },
+    where: { id: currentUser.id },
     select: {
       id: true,
       orders: {
@@ -52,7 +47,7 @@ export default async function AccountPage() {
           </div>
           <div className="flex items-center justify-between gap-4 py-3">
             <dt className="text-zinc-500">Имя</dt>
-            <dd className="font-medium text-zinc-800">{session.user.name ?? '—'}</dd>
+            <dd className="font-medium text-zinc-800">{currentUser.name ?? '—'}</dd>
           </div>
           <div className="flex items-center justify-between gap-4 py-3">
             <dt className="text-zinc-500">Auth0 ID</dt>

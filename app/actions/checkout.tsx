@@ -1,16 +1,16 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { auth0 } from '@/lib/auth0';
 import { revalidatePath } from 'next/cache';
 import { createCheckout } from '@/lib/checkout/createCheckout';
+import { requireUserFlowAccess } from '@/lib/auth/flow';
 
 export async function createCheckoutSession(formData: FormData) {
   let redirectTo = '/checkout?error=checkout_failed';
 
   try {
-    const authSession = await auth0.getSession();
-    const authUser = authSession?.user;
+    const { session } = await requireUserFlowAccess({ returnTo: '/checkout' });
+    const authUser = session?.user;
 
     if (!authUser?.sub) {
       redirectTo = '/checkout?error=unauthorized';

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse, OrdersHistoryResponse } from '@/lib/api/types';
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
+import { requireUserFlowAccessForApi } from '@/lib/auth/flow';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 import { withPrismaProtection } from '@/lib/security/prisma';
@@ -13,25 +13,18 @@ const createOrderSchema = strictObject({
 });
 
 async function getOrders() {
-  const session = await auth0.getSession();
-
-  if (!session?.user?.sub) {
-    const response: ApiErrorResponse = { error: 'Unauthorized' };
-    return NextResponse.json(response, { status: 401 });
+  const access = await requireUserFlowAccessForApi();
+  if (!access.ok) {
+    return access.response;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { auth0Id: session.user.sub },
-    select: { id: true },
-  });
-
-  if (!user) {
+  if (!access.user) {
     const response: ApiErrorResponse = { error: 'User not found' };
     return NextResponse.json(response, { status: 404 });
   }
 
   const orders = await withPrismaProtection(() => prisma.order.findMany({
-    where: { userId: user.id },
+    where: { userId: access.user.id },
     orderBy: { createdAt: 'desc' },
     include: {
       address: true,

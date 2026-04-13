@@ -14,21 +14,17 @@ export async function createUserIfNotExists(authUser: Auth0SessionUser | null | 
   }
 
   const email = authUser?.email?.trim() || `${auth0Id}@auth0.local`;
-  const name = authUser?.name?.trim() || null;
-  const picture = authUser?.picture?.trim() || null;
 
   const user = await prisma.user.upsert({
     where: { auth0Id },
     update: {
       email,
-      name,
-      picture,
     },
     create: {
       auth0Id,
       email,
-      name,
-      picture,
+      name: null,
+      picture: null,
     },
   });
 

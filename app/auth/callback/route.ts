@@ -12,6 +12,7 @@ import {
 } from '@/lib/security/brute-force';
 import { getClientIp } from '@/lib/security/ip';
 import { logSecurityEvent } from '@/lib/security/logger';
+import { hasCompleteProfile } from '@/lib/auth/flow';
 
 export const runtime = 'nodejs';
 
@@ -49,17 +50,32 @@ export async function GET(request: NextRequest) {
 
       registerSuccessfulLoginAttempt(bruteForceKey);
 
+      const authUser = session?.user;
+      const returnTo = context.returnTo || '/';
+
+      if (!authUser?.sub) {
+        return NextResponse.redirect(new URL('/auth/login?error=callback_failed', baseUrl));
+      }
+
+      if (authUser.email_verified !== true) {
+        return NextResponse.redirect(new URL(`/verify-email?returnTo=${encodeURIComponent(returnTo)}`, baseUrl));
+      }
+
       try {
         // Create/update user and merge pre-login cart payload into cart_items for this user.
-        const dbUser = await createUserIfNotExists(session?.user);
+        const dbUser = await createUserIfNotExists(authUser);
         if (dbUser?.id) {
           await mergeSessionCartIntoDb(dbUser.id, sessionCartItems);
+
+          if (!hasCompleteProfile(dbUser)) {
+            return NextResponse.redirect(new URL(`/profile-setup?returnTo=${encodeURIComponent(returnTo)}`, baseUrl));
+          }
         }
       } catch (syncError) {
         console.error('Failed to sync Auth0 user/cart during callback', syncError);
       }
 
-      return NextResponse.redirect(new URL(context.returnTo || '/', baseUrl));
+      return NextResponse.redirect(new URL(returnTo, baseUrl));
     },
   });
 

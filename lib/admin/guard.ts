@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
+import { requireUserFlowAccessForApi } from '@/lib/auth/flow';
 
 export async function getAdminDbUser() {
-  const session = await auth0.getSession();
-  const auth0Id = session?.user?.sub;
-
-  if (!auth0Id) {
+  const access = await requireUserFlowAccessForApi();
+  if (!access.ok || !access.user) {
     return null;
   }
 
   const user = await prisma.user.findUnique({
-    where: { auth0Id },
+    where: { id: access.user.id },
   });
 
   if (!user || user.role !== 'ADMIN') {
@@ -22,18 +20,18 @@ export async function getAdminDbUser() {
 }
 
 export async function requireAdminRoute() {
-  const session = await auth0.getSession();
-  const auth0Id = session?.user?.sub;
-
-  if (!auth0Id) {
+  const access = await requireUserFlowAccessForApi();
+  if (!access.ok || !access.user) {
     return {
       ok: false as const,
-      response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+      response: access.ok
+        ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        : access.response,
     };
   }
 
   const user = await prisma.user.findUnique({
-    where: { auth0Id },
+    where: { id: access.user.id },
   });
 
   if (!user || user.role !== 'ADMIN') {

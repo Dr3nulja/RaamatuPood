@@ -37,6 +37,26 @@ function shouldBypassEarlyBlocking(pathname: string, request: NextRequest) {
   return false;
 }
 
+function isEmailFlowAllowedPath(pathname: string) {
+  if (pathname === '/verify-email' || pathname.startsWith('/verify-email/')) {
+    return true;
+  }
+
+  if (pathname === '/profile-setup' || pathname.startsWith('/profile-setup/')) {
+    return true;
+  }
+
+  if (pathname.startsWith('/auth/') || pathname.startsWith('/api/auth/')) {
+    return true;
+  }
+
+  if (pathname.startsWith('/api/sync-user') || pathname.startsWith('/api/profile/setup') || pathname.startsWith('/api/auth/status')) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = getClientIp(request);
@@ -59,6 +79,19 @@ export async function middleware(request: NextRequest) {
         }
       );
     }
+  }
+
+  const session = await auth0.getSession(request);
+  if (session?.user?.sub && session.user.email_verified !== true && !isEmailFlowAllowedPath(pathname)) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'email_not_verified' }, { status: 403 });
+    }
+
+    const verifyEmailUrl = request.nextUrl.clone();
+    verifyEmailUrl.pathname = '/verify-email';
+    verifyEmailUrl.search = '';
+    verifyEmailUrl.searchParams.set('returnTo', pathname);
+    return NextResponse.redirect(verifyEmailUrl);
   }
 
   const response = await auth0.middleware(request);

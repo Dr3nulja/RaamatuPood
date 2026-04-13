@@ -30,16 +30,17 @@ export default async function RootLayout({
 }>) {
   const session = await auth0.getSession();
   const userEmail = session?.user?.email ?? null;
-  const userPicture = session?.user?.picture ?? null;
   const isAuthenticated = Boolean(session?.user?.sub);
 
   let isAdmin = false;
+  let userPicture = session?.user?.picture ?? null;
   if (session?.user?.sub) {
     const dbUser = await prisma.user.findUnique({
       where: { auth0Id: session.user.sub },
-      select: { role: true },
+      select: { role: true, picture: true },
     });
     isAdmin = dbUser?.role === 'ADMIN';
+    userPicture = dbUser?.picture ?? userPicture;
   }
 
   return (

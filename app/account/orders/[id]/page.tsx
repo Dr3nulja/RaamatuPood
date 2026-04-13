@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { auth0 } from '@/lib/auth0';
+import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { requireUserFlowAccess } from '@/lib/auth/flow';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,11 +10,7 @@ export default async function AccountOrderDetailsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth0.getSession();
-
-  if (!session?.user?.sub) {
-    redirect('/auth/login?returnTo=/account');
-  }
+  const { user: currentUser } = await requireUserFlowAccess({ returnTo: '/account' });
 
   const { id } = await params;
   const orderId = Number(id);
@@ -23,19 +19,10 @@ export default async function AccountOrderDetailsPage({
     notFound();
   }
 
-  const user = await prisma.user.findUnique({
-    where: { auth0Id: session.user.sub },
-    select: { id: true },
-  });
-
-  if (!user) {
-    redirect('/account');
-  }
-
   const order = await prisma.order.findFirst({
     where: {
       id: orderId,
-      userId: user.id,
+      userId: currentUser.id,
     },
     include: {
       address: true,
