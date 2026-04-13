@@ -4,6 +4,19 @@ import { requireAdminRoute } from '@/lib/admin/guard';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const adminPatchBookSchema = strictObject({
+  title: z.string().min(1).max(300).optional(),
+  price: z.number().min(0).optional(),
+  stock: z.number().int().min(0).optional(),
+  description: z.string().max(5000).nullable().optional(),
+  author_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
+  author_ids: z.union([z.array(z.union([z.number().int().positive(), z.string()])), z.string()]).nullable().optional(),
+  category_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
+  cover_image: z.string().max(1000).nullable().optional(),
+}).passthrough();
 
 export const runtime = 'nodejs';
 
@@ -69,7 +82,7 @@ function parseAuthorIds(values: unknown[]): number[] | null {
   return [...new Set(result)];
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchAdminBook(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
     return admin.response;
@@ -275,7 +288,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   return NextResponse.json({ ok: true }, { status: 200 });
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteAdminBook(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
     return admin.response;
@@ -295,3 +308,17 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     return NextResponse.json({ error: 'Unable to delete book' }, { status: 400 });
   }
 }
+
+export const PATCH = withApiSecurity(patchAdminBook, {
+  bucket: 'api',
+  maxBodyBytes: 2 * 1024 * 1024,
+  schemaByMethod: {
+    PATCH: adminPatchBookSchema,
+  },
+  requireCaptcha: false,
+});
+
+export const DELETE = withApiSecurity(deleteAdminBook, {
+  bucket: 'api',
+  requireCaptcha: false,
+});

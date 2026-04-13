@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
-<<<<<<< HEAD
 import { normalizeSessionCartItems } from '@/lib/cart/sessionCart';
 import { mergeSessionCartIntoDb } from '@/lib/cart/sync';
-=======
->>>>>>> origin/main
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const syncUserSchema = strictObject({
+  cartItems: z.array(
+    strictObject({
+      id: z.number().int().positive(),
+      quantity: z.number().int().positive().max(999),
+    })
+  ).max(50).optional(),
+});
 
 export const runtime = 'nodejs';
 
@@ -29,23 +37,19 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-export async function OPTIONS(request: Request) {
+async function optionsSyncUser(request: Request) {
   return new NextResponse(null, {
     status: 204,
     headers: getCorsHeaders(request.headers.get('origin')),
   });
 }
 
-export async function POST(request: Request) {
+async function postSyncUser(request: Request) {
   const corsHeaders = getCorsHeaders(request.headers.get('origin'));
 
   try {
-<<<<<<< HEAD
     const payload = (await request.json().catch(() => null)) as { cartItems?: unknown } | null;
     const sessionCartItems = normalizeSessionCartItems(payload?.cartItems);
-
-=======
->>>>>>> origin/main
     const session = await auth0.getSession();
     const authUser = session?.user;
 
@@ -77,7 +81,6 @@ export async function POST(request: Request) {
       create: createData,
     });
 
-<<<<<<< HEAD
     // Fallback sync after callback: merge client-side session cart into cart_items for this user.
     const mergedCart = await mergeSessionCartIntoDb(user.id, sessionCartItems);
 
@@ -98,11 +101,24 @@ export async function POST(request: Request) {
       },
       { status: 200, headers: corsHeaders }
     );
-=======
-    return NextResponse.json({ user }, { status: 200, headers: corsHeaders });
->>>>>>> origin/main
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to sync user';
     return NextResponse.json({ error: message }, { status: 500, headers: corsHeaders });
   }
 }
+
+export const OPTIONS = withApiSecurity(optionsSyncUser, {
+  requireCaptcha: false,
+  skipBotCheck: true,
+  rateLimitBucket: 'auth',
+});
+
+export const POST = withApiSecurity(postSyncUser, {
+  requireCaptcha: false,
+  skipBotCheck: true,
+  rateLimitBucket: 'auth',
+  maxBodyBytes: 48 * 1024,
+  schemaByMethod: {
+    POST: syncUserSchema,
+  },
+});

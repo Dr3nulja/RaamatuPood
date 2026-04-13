@@ -2,16 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminRoute } from '@/lib/admin/guard';
 import type { AdminOrdersResponse } from '@/lib/api/adminTypes';
+import { withApiSecurity } from '@/lib/security/api-guard';
+import { withPrismaProtection } from '@/lib/security/prisma';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+async function getAdminOrders() {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
     return admin.response;
   }
 
-  const orders = await prisma.order.findMany({
+  const orders = await withPrismaProtection(() => prisma.order.findMany({
     include: {
       user: {
         select: {
@@ -29,7 +31,7 @@ export async function GET() {
       },
     },
     orderBy: { createdAt: 'desc' },
-  });
+  }));
 
   const response: AdminOrdersResponse = {
     orders: orders.map((order) => ({
@@ -50,3 +52,7 @@ export async function GET() {
 
   return NextResponse.json(response, { status: 200 });
 }
+
+export const GET = withApiSecurity(getAdminOrders, {
+  bucket: 'api',
+});

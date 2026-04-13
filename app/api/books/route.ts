@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse } from '@/lib/api/types';
 import type { BooksApiResponse, BooksSort } from '@/lib/api/catalogTypes';
+import { withApiSecurity } from '@/lib/security/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ function parseSort(value: string | null): BooksSort | null {
   return null;
 }
 
-export async function GET(request: NextRequest) {
+async function getBooks(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search')?.trim() || '';
@@ -114,3 +115,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response, { status: 500 });
   }
 }
+
+export const GET = withApiSecurity(getBooks, {
+  bucket: 'search',
+});

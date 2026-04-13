@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminRoute } from '@/lib/admin/guard';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const adminPatchOrderSchema = strictObject({
+  status: z.enum(['pending', 'paid', 'shipped', 'delivered', 'cancelled']),
+});
 
 export const runtime = 'nodejs';
 
@@ -17,7 +23,7 @@ function parseId(value: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchAdminOrder(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
     return admin.response;
@@ -48,3 +54,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
+
+export const PATCH = withApiSecurity(patchAdminOrder, {
+  bucket: 'api',
+  maxBodyBytes: 8 * 1024,
+  schemaByMethod: {
+    PATCH: adminPatchOrderSchema,
+  },
+  requireCaptcha: false,
+});

@@ -18,10 +18,16 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState('');
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const lastScrollYRef = useRef(0);
   const tickingRef = useRef(false);
   const isAuthenticated = Boolean(userEmail);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const safeTotalItems = mounted ? totalItems : 0;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
@@ -55,10 +61,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
   const handleLogout = () => {
     try {
       localStorage.removeItem('raamatupood-cart');
-<<<<<<< HEAD
       document.cookie = 'raamatupood-cart-sync=; Path=/; Max-Age=0; SameSite=Lax';
-=======
->>>>>>> origin/main
       sessionStorage.clear();
     } catch {
       // ignore browser storage errors
@@ -93,6 +96,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 src="https://i.pinimg.com/736x/34/4e/cd/344ecd43b8dd6c2b48d0d64a7368177f.jpg"
                 alt="RaamatuPood Logo"
                 fill
+                sizes="44px"
                 className="object-contain p-1"
               />
             </div>
@@ -164,9 +168,9 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              {totalItems > 0 && (
+              {safeTotalItems > 0 && (
                 <span className="absolute -right-1 -top-1 min-w-[20px] rounded-full bg-amber-700 px-1 text-center text-xs font-bold leading-5 text-white">
-                  {totalItems}
+                  {safeTotalItems}
                 </span>
               )}
             </button>

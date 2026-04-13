@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const cartItemPatchSchema = strictObject({
+  quantity: z.number().int().max(999),
+});
 
 function unauthorized() {
   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -11,7 +17,7 @@ function parseBookId(value: string) {
   return Number.isInteger(bookId) && bookId > 0 ? bookId : null;
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ bookId: string }> }) {
+async function patchCartItem(request: NextRequest, { params }: { params: Promise<{ bookId: string }> }) {
   const user = await getDbUserFromSession();
 
   if (!user) {
@@ -75,7 +81,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   return NextResponse.json({ ok: true }, { status: 200 });
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ bookId: string }> }) {
+async function deleteCartItem(_request: NextRequest, { params }: { params: Promise<{ bookId: string }> }) {
   const user = await getDbUserFromSession();
 
   if (!user) {
@@ -98,3 +104,16 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
+
+export const PATCH = withApiSecurity(patchCartItem, {
+  bucket: 'api',
+  maxBodyBytes: 8 * 1024,
+  schemaByMethod: {
+    PATCH: cartItemPatchSchema,
+  },
+  requireCaptcha: false,
+});
+
+export const DELETE = withApiSecurity(deleteCartItem, {
+  bucket: 'api',
+});

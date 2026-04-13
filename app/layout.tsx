@@ -43,10 +43,9 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-        style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
       >
         <CartHydration isAuthenticated={isAuthenticated} />
         <SyncUserAfterAuth isAuthenticated={isAuthenticated} />

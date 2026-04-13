@@ -2,8 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { createCheckout } from '@/lib/checkout/createCheckout';
 import type { ApiErrorResponse, CheckoutResponse } from '@/lib/api/types';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 
-export async function POST(request: NextRequest) {
+const checkoutSchema = strictObject({
+  name: z.string().max(120).optional(),
+  email: z.string().email().max(180).optional(),
+  phone: z.string().max(50).optional(),
+  delivery: z.string().max(80).optional(),
+  address: z.string().max(300).optional(),
+  street: z.string().max(200).optional(),
+  postalCode: z.string().max(40).optional(),
+  city: z.string().max(120).optional(),
+  country: z.string().max(120).optional(),
+});
+
+async function createCheckoutHandler(request: NextRequest) {
   const session = await auth0.getSession();
 
   if (!session?.user?.sub) {
@@ -55,3 +69,12 @@ export async function POST(request: NextRequest) {
   const response: CheckoutResponse = result;
   return NextResponse.json(response, { status: 200 });
 }
+
+export const POST = withApiSecurity(createCheckoutHandler, {
+  bucket: 'api',
+  maxBodyBytes: 64 * 1024,
+  schemaByMethod: {
+    POST: checkoutSchema,
+  },
+  requireCaptcha: true,
+});

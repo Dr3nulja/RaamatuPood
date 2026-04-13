@@ -62,6 +62,7 @@ export default function HomeBookSearch({
     }
 
     let isMounted = true;
+    const controller = new AbortController();
 
     const loadBooks = async () => {
       setIsLoading(true);
@@ -69,6 +70,7 @@ export default function HomeBookSearch({
         const response = await fetch(`/api/books?search=${encodeURIComponent(debouncedQuery)}&limit=10`, {
           method: 'GET',
           cache: 'no-store',
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -96,6 +98,7 @@ export default function HomeBookSearch({
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
   }, [debouncedQuery]);
 

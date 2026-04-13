@@ -4,6 +4,14 @@ import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse } from '@/lib/api/types';
 import type { CreateReviewApiResponse, ReviewsApiResponse } from '@/lib/api/catalogTypes';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const createReviewSchema = strictObject({
+  bookId: z.number().int().positive(),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(2000).optional(),
+});
 
 type CreateReviewBody = {
   bookId?: number;
@@ -51,7 +59,7 @@ async function hasDeliveredOrderForBook(userId: number, bookId: number) {
   return Boolean(orderItem);
 }
 
-export async function GET(request: NextRequest) {
+async function getReviews(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const bookId = parseBookId(searchParams.get('bookId'));
@@ -124,7 +132,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function createReview(request: NextRequest) {
   try {
     const userId = await getSessionUserId();
 
@@ -224,3 +232,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, { status: 500 });
   }
 }
+
+export const GET = withApiSecurity(getReviews, {
+  bucket: 'api',
+});
+
+export const POST = withApiSecurity(createReview, {
+  bucket: 'api',
+  maxBodyBytes: 32 * 1024,
+  schemaByMethod: {
+    POST: createReviewSchema,
+  },
+  requireCaptcha: false,
+});

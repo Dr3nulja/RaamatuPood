@@ -14,6 +14,7 @@ import type {
   CategoryOption,
 } from '@/lib/api/catalogTypes';
 import type { ApiErrorResponse } from '@/lib/api/types';
+import { createClickGuard } from '@/lib/security/frontend';
 
 const SEARCH_DEBOUNCE_MS = 400;
 const BOOKS_REFETCH_INTERVAL_MS = 5000;
@@ -36,6 +37,7 @@ function buildBooksQuery(params: { search: string; categoryId: string; sort: Boo
 
 export default function CatalogPage() {
   const addItem = useCartStore((state) => state.addItem);
+  const canClickAddToCart = useMemo(() => createClickGuard(500), []);
 
   const [books, setBooks] = useState<BookWithRelations[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -179,6 +181,10 @@ export default function CatalogPage() {
   );
 
   const handleAddToCart = async (bookId: number): Promise<{ ok: boolean; message: string }> => {
+    if (!canClickAddToCart()) {
+      return { ok: false, message: 'Слишком часто. Попробуйте через секунду.' };
+    }
+
     try {
       const response = await fetch('/api/cart', {
         method: 'POST',
@@ -215,7 +221,7 @@ export default function CatalogPage() {
 
       return { ok: true, message: 'Книга добавлена в корзину' };
     } catch {
-      return { ok: false, message: 'Ошибка сети при добавлении в корзину' };
+      return { ok: false, message: 'Не удалось выполнить действие. Попробуйте позже.' };
     }
   };
 

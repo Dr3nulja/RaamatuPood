@@ -1,13 +1,6 @@
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
-import { NextResponse } from 'next/server';
-<<<<<<< HEAD
-import { createUserIfNotExists } from '@/lib/auth/createUserIfNotExists';
 
 export const auth0Options = {
-=======
-
-export const auth0 = new Auth0Client({
->>>>>>> origin/main
   appBaseUrl: process.env.AUTH0_BASE_URL,
   domain: process.env.AUTH0_ISSUER_BASE_URL?.replace(/^https?:\/\//, ''),
   clientId: process.env.AUTH0_CLIENT_ID,
@@ -26,19 +19,6 @@ export const auth0 = new Auth0Client({
       path: '/',
     },
   },
-<<<<<<< HEAD
 } as const;
 
 export const auth0 = new Auth0Client(auth0Options);
-=======
-  onCallback: async (error, context, session) => {
-    const baseUrl = context.appBaseUrl || process.env.AUTH0_BASE_URL || 'http://localhost:3000';
-
-    if (error) {
-      return NextResponse.redirect(new URL('/auth/login?error=callback_failed', baseUrl));
-    }
-
-    return NextResponse.redirect(new URL(context.returnTo || '/', baseUrl));
-  },
-});
->>>>>>> origin/main

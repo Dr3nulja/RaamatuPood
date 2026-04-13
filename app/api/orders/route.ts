@@ -2,12 +2,17 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse, OrdersHistoryResponse } from '@/lib/api/types';
-<<<<<<< HEAD
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
-=======
->>>>>>> origin/main
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+import { withPrismaProtection } from '@/lib/security/prisma';
 
-export async function GET() {
+const createOrderSchema = strictObject({
+  shippingMethodId: z.number().int().positive().optional(),
+  addressId: z.number().int().positive().optional(),
+});
+
+async function getOrders() {
   const session = await auth0.getSession();
 
   if (!session?.user?.sub) {
@@ -25,7 +30,7 @@ export async function GET() {
     return NextResponse.json(response, { status: 404 });
   }
 
-  const orders = await prisma.order.findMany({
+  const orders = await withPrismaProtection(() => prisma.order.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -41,7 +46,7 @@ export async function GET() {
         },
       },
     },
-  });
+  }));
 
   const response: OrdersHistoryResponse = {
     orders: orders.map((order) => ({
@@ -78,9 +83,8 @@ export async function GET() {
 
   return NextResponse.json(response, { status: 200 });
 }
-<<<<<<< HEAD
 
-export async function POST(request: Request) {
+async function createOrder(request: Request) {
   const user = await getDbUserFromSession();
 
   if (!user) {
@@ -116,7 +120,7 @@ export async function POST(request: Request) {
     : null;
 
   // Purchase always reads the latest logged-in cart from cart_items in DB.
-  const cartItems = await prisma.cartItem.findMany({
+  const cartItems = await withPrismaProtection(() => prisma.cartItem.findMany({
     where: { userId: user.id },
     include: {
       book: {
@@ -128,7 +132,7 @@ export async function POST(request: Request) {
         },
       },
     },
-  });
+  }));
 
   if (cartItems.length === 0) {
     return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
@@ -215,5 +219,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Order creation failed' }, { status: 500 });
   }
 }
-=======
->>>>>>> origin/main
+
+export const GET = withApiSecurity(getOrders, {
+  bucket: 'api',
+});
+
+export const POST = withApiSecurity(createOrder, {
+  bucket: 'api',
+  maxBodyBytes: 32 * 1024,
+  schemaByMethod: {
+    POST: createOrderSchema,
+  },
+  requireCaptcha: false,
+});

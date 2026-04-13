@@ -1,7 +1,7 @@
 'use client';
 
 import { useCartStore } from '@/stores/cartStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 type CartDrawerProps = {
@@ -16,6 +16,11 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -105,6 +110,9 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
     return sum + price * item.quantity;
   }, 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const safeCart = mounted ? cart : [];
+  const safeTotalPrice = mounted ? totalPrice : 0;
+  const safeTotalItems = mounted ? totalItems : 0;
 
   return (
     <div
@@ -135,7 +143,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
       >
         <header className="shrink-0 border-b border-amber-100 bg-amber-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-amber-900 dark:text-amber-100">Cart ({totalItems})</h2>
+            <h2 className="text-lg font-bold text-amber-900 dark:text-amber-100">Cart ({safeTotalItems})</h2>
             <button
               type="button"
               onClick={onClose}
@@ -149,14 +157,14 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
         </header>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {cart.length === 0 ? (
+          {safeCart.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-amber-200 bg-amber-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
               <p className="text-base font-semibold text-zinc-700 dark:text-zinc-200">Your cart is empty</p>
               <p className="mt-1 text-sm text-zinc-500">Add books to start checkout</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {cart.map((item) => (
+              {safeCart.map((item) => (
                 <article
                   key={item.id}
                   className="rounded-xl border border-amber-100 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
@@ -212,7 +220,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
         <footer className="shrink-0 border-t border-amber-100 bg-amber-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="mb-3 flex items-center justify-between text-sm font-semibold text-zinc-700 dark:text-zinc-200">
             <span>Total</span>
-            <span className="text-lg font-bold text-amber-800 dark:text-amber-400">€{totalPrice.toFixed(2)}</span>
+            <span className="text-lg font-bold text-amber-800 dark:text-amber-400">€{safeTotalPrice.toFixed(2)}</span>
           </div>
           <button
             className="w-full rounded-xl bg-amber-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-800"

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const shippingMethodPatchSchema = strictObject({
+  name: z.string().min(1).max(120).optional(),
+  price: z.number().min(0).max(10000).optional(),
+});
 
 async function ensureAdmin() {
   const user = await getDbUserFromSession();
@@ -20,7 +27,7 @@ function parseId(raw: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchShippingMethod(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const adminCheck = await ensureAdmin();
   if (!adminCheck.ok) {
     return NextResponse.json({ error: adminCheck.status === 401 ? 'Unauthorized' : 'Forbidden' }, { status: adminCheck.status });
@@ -62,7 +69,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   });
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteShippingMethod(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const adminCheck = await ensureAdmin();
   if (!adminCheck.ok) {
     return NextResponse.json({ error: adminCheck.status === 401 ? 'Unauthorized' : 'Forbidden' }, { status: adminCheck.status });
@@ -78,3 +85,16 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   await prisma.shippingMethod.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
+
+export const PATCH = withApiSecurity(patchShippingMethod, {
+  bucket: 'api',
+  maxBodyBytes: 8 * 1024,
+  schemaByMethod: {
+    PATCH: shippingMethodPatchSchema,
+  },
+  requireCaptcha: false,
+});
+
+export const DELETE = withApiSecurity(deleteShippingMethod, {
+  bucket: 'api',
+});

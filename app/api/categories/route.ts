@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import type { CategoriesApiResponse } from '@/lib/api/catalogTypes';
 import type { ApiErrorResponse } from '@/lib/api/types';
+import { withApiSecurity } from '@/lib/security/api-guard';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+async function getCategories() {
   try {
     const categories = await prisma.category.findMany({
       select: {
@@ -28,3 +29,7 @@ export async function GET() {
     return NextResponse.json(response, { status: 500 });
   }
 }
+
+export const GET = withApiSecurity(getCategories, {
+  bucket: 'api',
+});

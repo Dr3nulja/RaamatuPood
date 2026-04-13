@@ -5,6 +5,19 @@ import type { AdminBooksResponse } from '@/lib/api/adminTypes';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const adminCreateBookSchema = strictObject({
+  title: z.string().min(1).max(300),
+  price: z.number().min(0),
+  stock: z.number().int().min(0),
+  description: z.string().max(5000).nullable().optional(),
+  author_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
+  author_ids: z.union([z.array(z.union([z.number().int().positive(), z.string()])), z.string()]).nullable().optional(),
+  category_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
+  cover_image: z.string().max(1000).nullable().optional(),
+}).passthrough();
 
 export const runtime = 'nodejs';
 
@@ -157,7 +170,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
   };
 }
 
-export async function GET() {
+async function getAdminBooks() {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
     return admin.response;
@@ -208,7 +221,7 @@ export async function GET() {
   return NextResponse.json(response, { status: 200 });
 }
 
-export async function POST(request: NextRequest) {
+async function createAdminBook(request: NextRequest) {
   const admin = await requireAdminRoute();
   if (!admin.ok) {
     return admin.response;
@@ -263,3 +276,16 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ id: created.id }, { status: 201 });
 }
+
+export const GET = withApiSecurity(getAdminBooks, {
+  bucket: 'api',
+});
+
+export const POST = withApiSecurity(createAdminBook, {
+  bucket: 'api',
+  maxBodyBytes: 2 * 1024 * 1024,
+  schemaByMethod: {
+    POST: adminCreateBookSchema,
+  },
+  requireCaptcha: false,
+});

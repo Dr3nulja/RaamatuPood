@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiSecurity } from '@/lib/security/api-guard';
 
 export const runtime = 'nodejs';
 
@@ -80,11 +81,11 @@ function buildLogoutResponse(request: Request) {
   return response;
 }
 
-export async function GET(request: Request) {
+async function getLogout(request: Request) {
   return buildLogoutResponse(request);
 }
 
-export async function POST(request: Request) {
+async function postLogout(request: Request) {
   const response = buildLogoutResponse(request);
   response.headers.set('Location', response.headers.get('Location') || '/');
   response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -97,3 +98,12 @@ export async function POST(request: Request) {
     headers: response.headers,
   });
 }
+
+export const GET = withApiSecurity(getLogout, {
+  bucket: 'login',
+});
+
+export const POST = withApiSecurity(postLogout, {
+  bucket: 'login',
+  maxBodyBytes: 8 * 1024,
+});

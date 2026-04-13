@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const shippingMethodSchema = strictObject({
+  name: z.string().min(1).max(120),
+  price: z.number().min(0).max(10000),
+});
 
 async function ensureAdmin() {
   const user = await getDbUserFromSession();
@@ -15,7 +22,7 @@ async function ensureAdmin() {
   return { ok: true as const };
 }
 
-export async function GET() {
+async function getShippingMethods() {
   const methods = await prisma.shippingMethod.findMany({
     orderBy: { id: 'asc' },
   });
@@ -29,7 +36,7 @@ export async function GET() {
   });
 }
 
-export async function POST(request: NextRequest) {
+async function createShippingMethod(request: NextRequest) {
   const adminCheck = await ensureAdmin();
   if (!adminCheck.ok) {
     return NextResponse.json({ error: adminCheck.status === 401 ? 'Unauthorized' : 'Forbidden' }, { status: adminCheck.status });
@@ -67,3 +74,16 @@ export async function POST(request: NextRequest) {
     },
   }, { status: 201 });
 }
+
+export const GET = withApiSecurity(getShippingMethods, {
+  bucket: 'api',
+});
+
+export const POST = withApiSecurity(createShippingMethod, {
+  bucket: 'api',
+  maxBodyBytes: 8 * 1024,
+  schemaByMethod: {
+    POST: shippingMethodSchema,
+  },
+  requireCaptcha: false,
+});

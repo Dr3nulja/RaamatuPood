@@ -2,23 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
 import type { ApiErrorResponse, CartResponse } from '@/lib/api/types';
+import { z } from 'zod';
+import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
+
+const cartPostSchema = strictObject({
+  bookId: z.number().int().positive(),
+  quantity: z.number().int().positive().max(50).optional(),
+});
+
+const cartPatchSchema = strictObject({
+  bookId: z.number().int().positive(),
+  quantity: z.number().int().max(999),
+});
 
 function unauthorized() {
   const response: ApiErrorResponse = { error: 'Unauthorized' };
   return NextResponse.json(response, { status: 401 });
 }
 
-export async function GET() {
+async function getCart() {
   const user = await getDbUserFromSession();
 
   if (!user) {
     return unauthorized();
   }
 
-<<<<<<< HEAD
   // Authenticated cart is always loaded from cart_items by user_id.
-=======
->>>>>>> origin/main
   const cartItems = await prisma.cartItem.findMany({
     where: { userId: user.id },
     include: {
@@ -61,7 +70,7 @@ export async function GET() {
   return NextResponse.json(response);
 }
 
-export async function POST(request: NextRequest) {
+async function addToCart(request: NextRequest) {
   const user = await getDbUserFromSession();
 
   if (!user) {
@@ -123,7 +132,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ ok: true }, { status: 200 });
 }
 
-export async function PATCH(request: NextRequest) {
+async function patchCart(request: NextRequest) {
   const user = await getDbUserFromSession();
 
   if (!user) {
@@ -178,7 +187,7 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json({ ok: true }, { status: 200 });
 }
 
-export async function DELETE() {
+async function clearCart() {
   const user = await getDbUserFromSession();
 
   if (!user) {
@@ -191,3 +200,32 @@ export async function DELETE() {
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
+
+export const GET = withApiSecurity(getCart, {
+  requireCaptcha: false,
+  rateLimitBucket: 'api',
+});
+
+export const POST = withApiSecurity(addToCart, {
+  requireCaptcha: false,
+  rateLimitBucket: 'api',
+  maxBodyBytes: 16 * 1024,
+  schemaByMethod: {
+    POST: cartPostSchema,
+  },
+});
+
+export const PATCH = withApiSecurity(patchCart, {
+  requireCaptcha: false,
+  rateLimitBucket: 'api',
+  maxBodyBytes: 16 * 1024,
+  schemaByMethod: {
+    PATCH: cartPatchSchema,
+  },
+});
+
+export const DELETE = withApiSecurity(clearCart, {
+  requireCaptcha: false,
+  rateLimitBucket: 'api',
+  maxBodyBytes: 8 * 1024,
+});
