@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getDbUserFromSession } from '@/lib/auth/getDbUserFromSession';
+import { withAuthenticatedSession } from '@/lib/auth/sessionGuard';
 import type { ApiErrorResponse, CartResponse } from '@/lib/api/types';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
@@ -20,12 +20,8 @@ function unauthorized() {
   return NextResponse.json(response, { status: 401 });
 }
 
-async function getCart() {
-  const user = await getDbUserFromSession();
-
-  if (!user) {
-    return unauthorized();
-  }
+const getCart = withAuthenticatedSession(async (_request, _context, { dbUser }) => {
+  const user = dbUser;
 
   // Authenticated cart is always loaded from cart_items by user_id.
   const cartItems = await prisma.cartItem.findMany({
@@ -68,14 +64,10 @@ async function getCart() {
 
   const response: CartResponse = { items };
   return NextResponse.json(response);
-}
+});
 
-async function addToCart(request: NextRequest) {
-  const user = await getDbUserFromSession();
-
-  if (!user) {
-    return unauthorized();
-  }
+const addToCart = withAuthenticatedSession(async (request: NextRequest, _context, { dbUser }) => {
+  const user = dbUser;
 
   const body = (await request.json().catch(() => null)) as { bookId?: number; quantity?: number } | null;
   const bookId = Number(body?.bookId);
@@ -130,14 +122,10 @@ async function addToCart(request: NextRequest) {
   }
 
   return NextResponse.json({ ok: true }, { status: 200 });
-}
+});
 
-async function patchCart(request: NextRequest) {
-  const user = await getDbUserFromSession();
-
-  if (!user) {
-    return unauthorized();
-  }
+const patchCart = withAuthenticatedSession(async (request: NextRequest, _context, { dbUser }) => {
+  const user = dbUser;
 
   const body = (await request.json().catch(() => null)) as { bookId?: number; quantity?: number } | null;
   const bookId = Number(body?.bookId);
@@ -185,21 +173,17 @@ async function patchCart(request: NextRequest) {
   });
 
   return NextResponse.json({ ok: true }, { status: 200 });
-}
+});
 
-async function clearCart() {
-  const user = await getDbUserFromSession();
-
-  if (!user) {
-    return unauthorized();
-  }
+const clearCart = withAuthenticatedSession(async (_request, _context, { dbUser }) => {
+  const user = dbUser;
 
   await prisma.cartItem.deleteMany({
     where: { userId: user.id },
   });
 
   return NextResponse.json({ ok: true }, { status: 200 });
-}
+});
 
 export const GET = withApiSecurity(getCart, {
   requireCaptcha: false,
