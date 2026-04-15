@@ -16,7 +16,6 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
   const cart = useCartStore((state) => state.cart);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [headerSearch, setHeaderSearch] = useState('');
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [mounted, setMounted] = useState(false);
   const lastScrollYRef = useRef(0);
@@ -70,18 +69,6 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
     window.location.assign('/api/auth/logout');
   };
 
-  const handleHeaderSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const value = headerSearch.trim();
-    if (!value) {
-      window.location.assign('/catalog');
-      return;
-    }
-
-    window.location.assign(`/catalog?search=${encodeURIComponent(value)}`);
-  };
-
   return (
     <>
     <header className={`fixed left-0 right-0 top-0 z-50 border-b border-amber-100/70 bg-white/80 backdrop-blur-xl transition-transform duration-300 will-change-transform dark:border-zinc-800/70 dark:bg-zinc-950/75 ${
@@ -133,18 +120,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
             </Link>
           </nav>
 
-          <form onSubmit={handleHeaderSearchSubmit} className="hidden lg:flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-            <svg className="h-4 w-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 6a7.5 7.5 0 0 0 10.65 10.65Z" />
-            </svg>
-            <input
-              type="text"
-              value={headerSearch}
-              onChange={(event) => setHeaderSearch(event.target.value)}
-              placeholder="Поиск книг"
-              className="w-52 bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500 dark:text-zinc-100"
-            />
-          </form>
+
 
 
           {/* Auth Buttons and Mobile Menu Button */}
@@ -179,43 +155,49 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
               <>
                 <Link
                   href="/auth/login?prompt=login"
-                  className="hidden rounded-lg px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:block"
+                  className="hidden sm:block rounded-lg px-4 py-2.5 font-semibold text-amber-700 border-2 border-amber-700 transition-all duration-200 hover:bg-amber-700 hover:text-white hover:shadow-lg dark:text-amber-400 dark:border-amber-400 dark:hover:bg-amber-400 dark:hover:text-black"
                 >
-                  Login
+                  Вход
                 </Link>
                 <Link
                   href="/auth/login?screen_hint=signup&prompt=login"
-                  className="hidden rounded-lg bg-amber-700 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-800 sm:block"
+                  className="hidden sm:block rounded-lg px-6 py-2.5 font-semibold bg-gradient-to-r from-amber-600 to-amber-700 text-white transition-all duration-200 hover:shadow-lg hover:shadow-amber-600/50 hover:-translate-y-0.5 dark:from-amber-500 dark:to-amber-600 dark:hover:shadow-amber-500/50"
                 >
-                  Signup
+                  Регистрация
                 </Link>
               </>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-3">
                 {userPicture ? (
-                  <Image
-                    src={userPicture}
-                    alt="User avatar"
-                    width={28}
-                    height={28}
-                    className="rounded-full border border-amber-100"
-                  />
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                    <Image
+                      src={userPicture}
+                      alt="User avatar"
+                      width={36}
+                      height={36}
+                      className="relative rounded-full border-2 border-white shadow-md object-cover dark:border-zinc-800"
+                    />
+                  </div>
                 ) : (
-                  <div className="h-7 w-7 rounded-full bg-amber-100" />
+                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-white shadow-md dark:border-zinc-800" />
                 )}
-                <span className="max-w-44 truncate text-sm text-zinc-600 dark:text-zinc-300" title={userEmail || ''}>
-                  {userEmail}
-                </span>
+                <div className="flex flex-col hidden lg:block">
+                  <span className="max-w-48 truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Профиль</span>
+                  <span className="max-w-48 truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100" title={userEmail || ''}>
+                    {userEmail}
+                  </span>
+                </div>
                 <Link
                   href="/account"
-                  className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-all duration-200 hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800 hover:shadow-sm"
                 >
                   Кабинет
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    className="rounded-lg px-4 py-2 font-medium text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 hover:shadow-sm"
                   >
                     Admin
                   </Link>
@@ -223,9 +205,9 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-lg bg-amber-700 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-800"
+                  className="rounded-lg px-4 py-2 font-medium text-white bg-red-600 transition-all duration-200 hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/50"
                 >
-                  Logout
+                  Выход
                 </button>
               </div>
             )}
@@ -280,48 +262,47 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
               Контакты
             </Link>
 
-            <form onSubmit={handleHeaderSearchSubmit} className="px-4 pt-1">
-              <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <svg className="h-4 w-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 6a7.5 7.5 0 0 0 10.65 10.65Z" />
-                </svg>
-                <input
-                  type="text"
-                  value={headerSearch}
-                  onChange={(event) => setHeaderSearch(event.target.value)}
-                  placeholder="Поиск книг"
-                  className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500 dark:text-zinc-100"
-                />
-              </div>
-            </form>
+
 
             {!isAuthenticated ? (
               <>
                 <Link
                   href="/auth/login?prompt=login"
-                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="block rounded-lg px-4 py-2 font-medium text-amber-700 border-2 border-amber-700 transition-all duration-200 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-400 dark:hover:bg-zinc-800"
                 >
-                  Login
+                  Вход
                 </Link>
                 <Link
                   href="/auth/login?screen_hint=signup&prompt=login"
-                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="block rounded-lg px-4 py-2 font-medium bg-gradient-to-r from-amber-600 to-amber-700 text-white transition-all duration-200 hover:shadow-lg hover:shadow-amber-600/50 dark:from-amber-500 dark:to-amber-600"
                 >
-                  Signup
+                  Регистрация
                 </Link>
               </>
             ) : (
               <>
-                {userPicture ? (
-                  <Image
-                    src={userPicture}
-                    alt="User avatar"
-                    width={28}
-                    height={28}
-                    className="mx-4 rounded-full border border-amber-100"
-                  />
-                ) : null}
-                <p className="break-all px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300">{userEmail}</p>
+                <div className="px-4 py-3 border-b border-amber-100 dark:border-zinc-800">
+                  <div className="flex items-center gap-3">
+                    {userPicture ? (
+                      <div className="relative">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full blur opacity-75"></div>
+                        <Image
+                          src={userPicture}
+                          alt="User avatar"
+                          width={40}
+                          height={40}
+                          className="relative rounded-full border-2 border-white shadow-md object-cover dark:border-zinc-800"
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-white shadow-md dark:border-zinc-800" />
+                    )}
+                    <div>
+                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Профиль</p>
+                      <p className="break-all text-sm font-semibold text-zinc-800 dark:text-zinc-100 line-clamp-1">{userEmail}</p>
+                    </div>
+                  </div>
+                </div>
                 <Link
                   href="/account"
                   className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
@@ -331,7 +312,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    className="block rounded-lg px-4 py-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                   >
                     Admin
                   </Link>
@@ -339,9 +320,9 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="block w-full text-left rounded-lg px-4 py-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                 >
-                  Logout
+                  Выход
                 </button>
               </>
             )}
