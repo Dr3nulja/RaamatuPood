@@ -8,11 +8,12 @@ import { useCartStore } from '@/stores/cartStore';
 
 type HeaderProps = {
   userEmail?: string | null;
+  userNickname?: string | null;
   userPicture?: string | null;
   isAdmin?: boolean;
 };
 
-export default function Header({ userEmail, userPicture, isAdmin = false }: HeaderProps) {
+export default function Header({ userEmail, userNickname, userPicture, isAdmin = false }: HeaderProps) {
   const cart = useCartStore((state) => state.cart);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -20,7 +21,8 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
   const [mounted, setMounted] = useState(false);
   const lastScrollYRef = useRef(0);
   const tickingRef = useRef(false);
-  const isAuthenticated = Boolean(userEmail);
+  const displayName = userNickname?.trim() || userEmail?.trim() || 'Пользователь';
+  const isAuthenticated = Boolean(userEmail || userNickname);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const safeTotalItems = mounted ? totalItems : 0;
 
@@ -96,25 +98,25 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/"
-              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
+              className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Главная
             </Link>
             <Link
               href="/catalog"
-              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
+              className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Каталог
             </Link>
             <Link
               href="/account"
-              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
+              className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Моя библиотека
             </Link>
             <Link
               href="/contacts"
-              className="font-medium text-zinc-700 transition-colors hover:text-amber-700 dark:text-zinc-200 dark:hover:text-amber-300"
+              className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Контакты
             </Link>
@@ -129,7 +131,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
               type="button"
               aria-label="Open cart"
               onClick={() => setIsCartOpen(true)}
-              className="relative rounded-lg p-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="relative rounded-lg p-2 text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50 hover:text-amber-700 hover:shadow-sm active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               <svg
                 className="h-6 w-6"
@@ -155,13 +157,13 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
               <>
                 <Link
                   href="/auth/login?prompt=login"
-                  className="hidden sm:block rounded-lg px-4 py-2.5 font-semibold text-amber-700 border-2 border-amber-700 transition-all duration-200 hover:bg-amber-700 hover:text-white hover:shadow-lg dark:text-amber-400 dark:border-amber-400 dark:hover:bg-amber-400 dark:hover:text-black"
+                  className="hidden sm:block rounded-lg border-2 border-amber-700 px-4 py-2.5 font-semibold text-amber-700 transition-[color,background-color,transform,box-shadow,border-color] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-700 hover:text-white hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-amber-400 dark:text-amber-400 dark:hover:bg-amber-400 dark:hover:text-black dark:focus-visible:ring-amber-300 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Вход
                 </Link>
                 <Link
                   href="/auth/login?screen_hint=signup&prompt=login"
-                  className="hidden sm:block rounded-lg px-6 py-2.5 font-semibold bg-gradient-to-r from-amber-600 to-amber-700 text-white transition-all duration-200 hover:shadow-lg hover:shadow-amber-600/50 hover:-translate-y-0.5 dark:from-amber-500 dark:to-amber-600 dark:hover:shadow-amber-500/50"
+                  className="hidden sm:block rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-2.5 font-semibold text-white transition-[transform,box-shadow,opacity] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-600/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:from-amber-500 dark:to-amber-600 dark:hover:shadow-amber-500/40 dark:focus-visible:ring-amber-300 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Регистрация
                 </Link>
@@ -169,8 +171,12 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
             ) : (
               <div className="hidden sm:flex items-center gap-3">
                 {userPicture ? (
-                  <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                  <Link
+                    href="/account"
+                    aria-label="Открыть профиль"
+                    className="relative group rounded-full transition-transform duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+                  >
+                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 blur opacity-0 transition duration-300 group-hover:opacity-100"></div>
                     <Image
                       src={userPicture}
                       alt="User avatar"
@@ -178,26 +184,29 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                       height={36}
                       className="relative rounded-full border-2 border-white shadow-md object-cover dark:border-zinc-800"
                     />
-                  </div>
+                  </Link>
                 ) : (
-                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-white shadow-md dark:border-zinc-800" />
+                  <Link
+                    href="/account"
+                    aria-label="Открыть профиль"
+                    className="relative h-9 w-9 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-white shadow-md transition-transform duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-zinc-800 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+                  />
                 )}
                 <div className="flex flex-col hidden lg:block">
-                  <span className="max-w-48 truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Профиль</span>
-                  <span className="max-w-48 truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100" title={userEmail || ''}>
-                    {userEmail}
+                  <span className="max-w-48 truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100" title={displayName}>
+                    {displayName}
                   </span>
                 </div>
                 <Link
                   href="/account"
-                  className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-all duration-200 hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800 hover:shadow-sm"
+                  className="rounded-lg px-4 py-2 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Кабинет
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="rounded-lg px-4 py-2 font-medium text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 hover:shadow-sm"
+                    className="rounded-lg px-4 py-2 font-medium text-red-600 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-red-50 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-red-400 dark:hover:bg-red-900/20 dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-zinc-950"
                   >
                     Admin
                   </Link>
@@ -205,7 +214,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-lg px-4 py-2 font-medium text-white bg-red-600 transition-all duration-200 hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/50"
+                  className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-[background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md hover:shadow-red-600/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Выход
                 </button>
@@ -214,7 +223,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
 
             {/* Mobile Menu Button */}
             <button
-              className="rounded-lg p-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800 md:hidden"
+              className="rounded-lg p-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950 md:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <svg
@@ -239,25 +248,25 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
           <nav className="mt-4 space-y-2 pb-4 md:hidden">
             <Link
               href="/"
-              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Главная
             </Link>
             <Link
               href="/catalog"
-              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Каталог
             </Link>
             <Link
               href="/account"
-              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Моя библиотека
             </Link>
             <Link
               href="/contacts"
-              className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
             >
               Контакты
             </Link>
@@ -268,13 +277,13 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
               <>
                 <Link
                   href="/auth/login?prompt=login"
-                  className="block rounded-lg px-4 py-2 font-medium text-amber-700 border-2 border-amber-700 transition-all duration-200 hover:bg-amber-50 dark:text-amber-400 dark:border-amber-400 dark:hover:bg-zinc-800"
+                  className="block rounded-lg border-2 border-amber-700 px-4 py-2 font-medium text-amber-700 transition-[color,background-color,opacity,border-color] duration-150 ease-out hover:bg-amber-50 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-amber-400 dark:text-amber-400 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Вход
                 </Link>
                 <Link
                   href="/auth/login?screen_hint=signup&prompt=login"
-                  className="block rounded-lg px-4 py-2 font-medium bg-gradient-to-r from-amber-600 to-amber-700 text-white transition-all duration-200 hover:shadow-lg hover:shadow-amber-600/50 dark:from-amber-500 dark:to-amber-600"
+                  className="block rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-2 font-medium text-white transition-[opacity,box-shadow,background-color] duration-150 ease-out hover:opacity-95 hover:shadow-md hover:shadow-amber-600/30 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:from-amber-500 dark:to-amber-600 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Регистрация
                 </Link>
@@ -284,8 +293,12 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <div className="px-4 py-3 border-b border-amber-100 dark:border-zinc-800">
                   <div className="flex items-center gap-3">
                     {userPicture ? (
-                      <div className="relative">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full blur opacity-75"></div>
+                      <Link
+                        href="/account"
+                        aria-label="Открыть профиль"
+                        className="relative rounded-full transition-[opacity,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+                      >
+                        <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 blur opacity-75"></div>
                         <Image
                           src={userPicture}
                           alt="User avatar"
@@ -293,26 +306,29 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                           height={40}
                           className="relative rounded-full border-2 border-white shadow-md object-cover dark:border-zinc-800"
                         />
-                      </div>
+                      </Link>
                     ) : (
-                      <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-white shadow-md dark:border-zinc-800" />
+                      <Link
+                        href="/account"
+                        aria-label="Открыть профиль"
+                        className="relative h-10 w-10 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-2 border-white shadow-md transition-[opacity,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-zinc-800 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+                      />
                     )}
                     <div>
-                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Профиль</p>
-                      <p className="break-all text-sm font-semibold text-zinc-800 dark:text-zinc-100 line-clamp-1">{userEmail}</p>
+                      <p className="break-all text-sm font-semibold text-zinc-800 dark:text-zinc-100 line-clamp-1">{displayName}</p>
                     </div>
                   </div>
                 </div>
                 <Link
                   href="/account"
-                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Кабинет
                 </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="block rounded-lg px-4 py-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                    className="block rounded-lg px-4 py-2 text-red-600 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-red-50 active:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-red-400 dark:hover:bg-red-900/20 dark:active:bg-red-900/30 dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-zinc-950"
                   >
                     Admin
                   </Link>
@@ -320,7 +336,7 @@ export default function Header({ userEmail, userPicture, isAdmin = false }: Head
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full text-left rounded-lg px-4 py-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                  className="block w-full rounded-lg px-4 py-2 text-left text-red-600 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-red-50 active:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-red-400 dark:hover:bg-red-900/20 dark:active:bg-red-900/30 dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-zinc-950"
                 >
                   Выход
                 </button>

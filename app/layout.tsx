@@ -34,13 +34,15 @@ export default async function RootLayout({
 
   let isAdmin = false;
   let userPicture = session?.user?.picture ?? null;
+  let userNickname = (session?.user?.nickname as string | undefined) ?? null;
   if (session?.user?.sub) {
     const dbUser = await prisma.user.findUnique({
       where: { auth0Id: session.user.sub },
-      select: { role: true, picture: true },
+      select: { role: true, picture: true, name: true },
     });
     isAdmin = dbUser?.role === 'ADMIN';
     userPicture = dbUser?.picture ?? userPicture;
+    userNickname = dbUser?.name ?? userNickname;
   }
 
   return (
@@ -50,7 +52,12 @@ export default async function RootLayout({
       >
         <CartHydration isAuthenticated={isAuthenticated} />
         <SyncUserAfterAuth isAuthenticated={isAuthenticated} />
-        <Header userEmail={userEmail} userPicture={userPicture} isAdmin={isAdmin} />
+        <Header
+          userEmail={userEmail}
+          userNickname={userNickname}
+          userPicture={userPicture}
+          isAdmin={isAdmin}
+        />
         <main className="flex-1 pt-16">
           {children}
         </main>
