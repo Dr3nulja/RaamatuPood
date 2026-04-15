@@ -16,7 +16,7 @@ model User {
   auth0Id   String    @unique @map("auth0_id")
   email     String    @unique
   name      String?
-  picture   String?   @db.VarChar(500)
+  picture   String?   @db.LongText
   role      UserRole  @default(USER)
   createdAt DateTime  @default(now()) @map("created_at")
 

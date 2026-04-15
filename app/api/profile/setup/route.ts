@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import { createUserIfNotExists } from '@/lib/auth/createUserIfNotExists';
@@ -10,15 +8,7 @@ import { updateAuth0ProfileMetadata } from '@/lib/auth/auth0Management';
 export const runtime = 'nodejs';
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
-const AVATAR_DIR = path.join(process.cwd(), 'public', 'uploads', 'avatars');
-
-function getImageExtension(mimeType: string) {
-  if (mimeType === 'image/jpeg') return 'jpg';
-  if (mimeType === 'image/png') return 'png';
-  if (mimeType === 'image/webp') return 'webp';
-  if (mimeType === 'image/gif') return 'gif';
-  return null;
-}
+const SUPPORTED_AVATAR_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 export async function POST(request: Request) {
   const session = await auth0.getSession();
@@ -55,8 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'avatar_too_large', message: 'Avatar must be <= 2MB' }, { status: 400 });
   }
 
-  const extension = getImageExtension(avatar.type);
-  if (!extension) {
+  if (!SUPPORTED_AVATAR_TYPES.has(avatar.type)) {
     return NextResponse.json(
       { error: 'unsupported_avatar_type', message: 'Use jpg, png, webp or gif avatar image' },
       { status: 400 }
@@ -86,21 +75,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'username_taken', message: 'Username is already in use' }, { status: 409 });
   }
 
-  await mkdir(AVATAR_DIR, { recursive: true });
-
-  const safeId = authUser.sub.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const fileName = `${safeId}-${Date.now()}.${extension}`;
-  const targetPath = path.join(AVATAR_DIR, fileName);
   const buffer = Buffer.from(await avatar.arrayBuffer());
-  await writeFile(targetPath, buffer);
-
-  const avatarUrl = `/uploads/avatars/${fileName}`;
+  const avatarBase64 = buffer.toString('base64');
+  const avatarDataUrl = `data:${avatar.type};base64,${avatarBase64}`;
 
   const user = await prisma.user.update({
     where: { id: existingUser.id },
     data: {
       name: usernameRaw,
-      picture: avatarUrl,
+      picture: avatarDataUrl,
       email: authUser.email?.trim() || existingUser.email,
     },
     select: {
@@ -117,7 +100,7 @@ export async function POST(request: Request) {
     await updateAuth0ProfileMetadata({
       auth0UserId: authUser.sub,
       username: usernameRaw,
-      avatarUrl,
+      avatarUrl: '/api/profile/avatar',
     });
   } catch (error) {
     metadataSyncWarning = error instanceof Error ? error.message : 'Failed to sync Auth0 metadata';
