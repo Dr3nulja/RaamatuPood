@@ -10,6 +10,8 @@ type AdminLayoutShellProps = {
 const links = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/books', label: 'Books' },
+  { href: '/admin/authors', label: 'Authors' },
+  { href: '/admin/categories', label: 'Categories' },
   { href: '/admin/orders', label: 'Orders' },
 ];
 

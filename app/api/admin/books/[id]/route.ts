@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminRoute } from '@/lib/admin/guard';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { extname, join } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { uploadImageToStorage } from '@/lib/storage/upload';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 
@@ -16,6 +14,7 @@ const adminPatchBookSchema = strictObject({
   author_ids: z.union([z.array(z.union([z.number().int().positive(), z.string()])), z.string()]).nullable().optional(),
   category_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
   cover_image: z.string().max(1000).nullable().optional(),
+  uploaded_cover_url: z.string().max(1000).nullable().optional(),
 }).passthrough();
 
 export const runtime = 'nodejs';
@@ -23,21 +22,6 @@ export const runtime = 'nodejs';
 function parseId(value: string) {
   const id = Number(value);
   return Number.isInteger(id) && id > 0 ? id : null;
-}
-
-async function saveCoverFile(file: File) {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-
-  const extension = extname(file.name || '').toLowerCase();
-  const safeExtension = extension && extension.length <= 8 ? extension : '.jpg';
-  const filename = `${Date.now()}-${randomUUID()}${safeExtension}`;
-  const uploadDir = join(process.cwd(), 'public', 'uploads', 'books');
-
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(join(uploadDir, filename), buffer);
-
-  return `/uploads/books/${filename}`;
 }
 
 function parseNullableInt(value: unknown) {
@@ -82,28 +66,27 @@ function parseAuthorIds(values: unknown[]): number[] | null {
   return [...new Set(result)];
 }
 
-async function patchAdminBook(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdminRoute();
-  if (!admin.ok) {
-    return admin.response;
-  }
+function normalizeName(name: string) {
+  return name.trim().replace(/\s+/g, ' ');
+}
 
-  const { id: rawId } = await params;
-  const id = parseId(rawId);
-
-  if (!id) {
-    return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-  }
-
-  const data: {
+type PatchPayload = {
+  data: {
     title?: string;
     price?: number;
     stock?: number;
     description?: string | null;
     categoryId?: number | null;
     coverImage?: string | null;
-  } = {};
+  };
+  authorIdsToSet?: number[];
+  coverFile?: File | null;
+};
+
+async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | null> {
+  const data: PatchPayload['data'] = {};
   let authorIdsToSet: number[] | undefined;
+  let coverFile: File | null = null;
 
   const contentType = request.headers.get('content-type') || '';
 
@@ -115,13 +98,14 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     const descriptionValue = form.get('description');
     const authorIdValues = [...form.getAll('author_ids'), form.get('author_id')];
     const categoryIdValue = form.get('category_id');
+    const uploadedCoverUrl = String(form.get('uploaded_cover_url') || '').trim();
     const coverImageValue = form.get('cover_image');
-    const coverFile = form.get('cover');
+    const maybeCoverFile = form.get('cover');
 
     if (titleValue !== null) {
       const title = String(titleValue).trim();
       if (!title) {
-        return NextResponse.json({ error: 'Invalid title' }, { status: 400 });
+        return null;
       }
       data.title = title;
     }
@@ -129,7 +113,7 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     if (priceValue !== null) {
       const price = Number(priceValue);
       if (!Number.isFinite(price) || price < 0) {
-        return NextResponse.json({ error: 'Invalid price' }, { status: 400 });
+        return null;
       }
       data.price = price;
     }
@@ -137,7 +121,7 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     if (stockValue !== null) {
       const stock = Number(stockValue);
       if (!Number.isInteger(stock) || stock < 0) {
-        return NextResponse.json({ error: 'Invalid stock' }, { status: 400 });
+        return null;
       }
       data.stock = stock;
     }
@@ -147,19 +131,19 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
       data.description = normalized || null;
     }
 
-    if (coverImageValue !== null) {
-      const normalized = String(coverImageValue).trim();
-      data.coverImage = normalized || null;
+    const manualCover = coverImageValue !== null ? String(coverImageValue).trim() : '';
+    if (uploadedCoverUrl || manualCover) {
+      data.coverImage = uploadedCoverUrl || manualCover || null;
     }
 
-    if (coverFile instanceof File && coverFile.size > 0) {
-      data.coverImage = await saveCoverFile(coverFile);
+    if (maybeCoverFile instanceof File && maybeCoverFile.size > 0) {
+      coverFile = maybeCoverFile;
     }
 
     if (authorIdValues.some((value) => value !== null && value !== undefined)) {
       const parsed = parseAuthorIds(authorIdValues);
       if (!parsed) {
-        return NextResponse.json({ error: 'Invalid author_id' }, { status: 400 });
+        return null;
       }
       authorIdsToSet = parsed;
     }
@@ -167,7 +151,7 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     if (categoryIdValue !== null) {
       const parsed = parseNullableInt(categoryIdValue);
       if (Number.isNaN(parsed)) {
-        return NextResponse.json({ error: 'Invalid category_id' }, { status: 400 });
+        return null;
       }
       data.categoryId = parsed;
     }
@@ -181,12 +165,13 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
       author_ids?: Array<number | string> | string | null;
       category_id?: number | string | null;
       cover_image?: string | null;
+      uploaded_cover_url?: string | null;
     } | null;
 
     if (body?.title !== undefined) {
       const title = String(body.title).trim();
       if (!title) {
-        return NextResponse.json({ error: 'Invalid title' }, { status: 400 });
+        return null;
       }
       data.title = title;
     }
@@ -194,7 +179,7 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     if (body?.price !== undefined) {
       const price = Number(body.price);
       if (!Number.isFinite(price) || price < 0) {
-        return NextResponse.json({ error: 'Invalid price' }, { status: 400 });
+        return null;
       }
       data.price = price;
     }
@@ -202,7 +187,7 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     if (body?.stock !== undefined) {
       const stock = Number(body.stock);
       if (!Number.isInteger(stock) || stock < 0) {
-        return NextResponse.json({ error: 'Invalid stock' }, { status: 400 });
+        return null;
       }
       data.stock = stock;
     }
@@ -211,14 +196,17 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
       data.description = body.description ? String(body.description).trim() : null;
     }
 
-    if (body?.cover_image !== undefined) {
-      data.coverImage = body.cover_image ? String(body.cover_image).trim() : null;
+    if (body?.cover_image !== undefined || body?.uploaded_cover_url !== undefined) {
+      const cover =
+        (body?.uploaded_cover_url ? String(body.uploaded_cover_url).trim() : '')
+        || (body?.cover_image ? String(body.cover_image).trim() : '');
+      data.coverImage = cover || null;
     }
 
     if (body?.author_id !== undefined) {
       const parsed = parseAuthorIds([body.author_id]);
       if (!parsed) {
-        return NextResponse.json({ error: 'Invalid author_id' }, { status: 400 });
+        return null;
       }
       authorIdsToSet = parsed;
     }
@@ -226,7 +214,7 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     if (body?.author_ids !== undefined) {
       const parsed = parseAuthorIds(Array.isArray(body.author_ids) ? body.author_ids : [body.author_ids]);
       if (!parsed) {
-        return NextResponse.json({ error: 'Invalid author_ids' }, { status: 400 });
+        return null;
       }
       authorIdsToSet = parsed;
     }
@@ -237,16 +225,46 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
       } else {
         const categoryId = Number(body.category_id);
         if (!Number.isInteger(categoryId) || categoryId <= 0) {
-          return NextResponse.json({ error: 'Invalid category_id' }, { status: 400 });
+          return null;
         }
         data.categoryId = categoryId;
       }
     }
   }
 
-  if (data.categoryId !== undefined && data.categoryId !== null) {
+  return {
+    data,
+    authorIdsToSet,
+    coverFile,
+  };
+}
+
+async function patchAdminBook(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const admin = await requireAdminRoute();
+  if (!admin.ok) {
+    return admin.response;
+  }
+
+  const { id: rawId } = await params;
+  const id = parseId(rawId);
+
+  if (!id) {
+    return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+  }
+
+  const payload = await parsePatchPayload(request);
+  if (!payload) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+
+  if (payload.coverFile) {
+    const uploaded = await uploadImageToStorage(payload.coverFile);
+    payload.data.coverImage = uploaded.url;
+  }
+
+  if (payload.data.categoryId !== undefined && payload.data.categoryId !== null) {
     const categoryExists = await prisma.category.findUnique({
-      where: { id: data.categoryId },
+      where: { id: payload.data.categoryId },
       select: { id: true },
     });
 
@@ -255,12 +273,12 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     }
   }
 
-  if (authorIdsToSet) {
+  if (payload.authorIdsToSet && payload.authorIdsToSet.length > 0) {
     const authorCount = await prisma.author.count({
-      where: { id: { in: authorIdsToSet } },
+      where: { id: { in: payload.authorIdsToSet } },
     });
 
-    if (authorCount !== authorIdsToSet.length) {
+    if (authorCount !== payload.authorIdsToSet.length) {
       return NextResponse.json({ error: 'One or more author_ids are invalid' }, { status: 400 });
     }
   }
@@ -268,15 +286,15 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
   await prisma.$transaction(async (tx) => {
     await tx.book.update({
       where: { id },
-      data,
+      data: payload.data,
     });
 
-    if (authorIdsToSet) {
+    if (payload.authorIdsToSet !== undefined) {
       await tx.bookAuthor.deleteMany({ where: { bookId: id } });
 
-      if (authorIdsToSet.length > 0) {
+      if (payload.authorIdsToSet.length > 0) {
         await tx.bookAuthor.createMany({
-          data: authorIdsToSet.map((authorId) => ({
+          data: payload.authorIdsToSet.map((authorId) => ({
             bookId: id,
             authorId,
           })),
@@ -311,7 +329,7 @@ async function deleteAdminBook(_request: NextRequest, { params }: { params: Prom
 
 export const PATCH = withApiSecurity(patchAdminBook, {
   bucket: 'api',
-  maxBodyBytes: 2 * 1024 * 1024,
+  maxBodyBytes: 12 * 1024 * 1024,
   schemaByMethod: {
     PATCH: adminPatchBookSchema,
   },

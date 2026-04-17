@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminRoute } from '@/lib/admin/guard';
 import type { AdminBooksResponse } from '@/lib/api/adminTypes';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { extname, join } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { uploadImageToStorage } from '@/lib/storage/upload';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 
@@ -17,6 +15,7 @@ const adminCreateBookSchema = strictObject({
   author_ids: z.union([z.array(z.union([z.number().int().positive(), z.string()])), z.string()]).nullable().optional(),
   category_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
   cover_image: z.string().max(1000).nullable().optional(),
+  uploaded_cover_url: z.string().max(1000).nullable().optional(),
 }).passthrough();
 
 export const runtime = 'nodejs';
@@ -29,22 +28,8 @@ type BookPayload = {
   authorIds: number[];
   categoryId: number | null;
   coverImage: string | null;
+  coverFile: File | null;
 };
-
-async function saveCoverFile(file: File) {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-
-  const extension = extname(file.name || '').toLowerCase();
-  const safeExtension = extension && extension.length <= 8 ? extension : '.jpg';
-  const filename = `${Date.now()}-${randomUUID()}${safeExtension}`;
-  const uploadDir = join(process.cwd(), 'public', 'uploads', 'books');
-
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(join(uploadDir, filename), buffer);
-
-  return `/uploads/books/${filename}`;
-}
 
 function parseNullableInt(value: unknown) {
   if (value === null || value === undefined || value === '') {
@@ -100,6 +85,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
     const authorIds = parseAuthorIds([...form.getAll('author_ids'), form.get('author_id')]);
     const categoryId = parseNullableInt(form.get('category_id'));
     const coverField = form.get('cover');
+    const uploadedCoverUrl = String(form.get('uploaded_cover_url') || '').trim();
     const coverUrlRaw = String(form.get('cover_image') || '').trim();
 
     if (!title || !Number.isFinite(price) || !Number.isInteger(stock) || stock < 0) {
@@ -110,11 +96,6 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
       return null;
     }
 
-    let coverImage: string | null = coverUrlRaw || null;
-    if (coverField instanceof File && coverField.size > 0) {
-      coverImage = await saveCoverFile(coverField);
-    }
-
     return {
       title,
       price,
@@ -122,7 +103,8 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
       description: descriptionRaw || null,
       authorIds,
       categoryId,
-      coverImage,
+      coverImage: uploadedCoverUrl || coverUrlRaw || null,
+      coverFile: coverField instanceof File && coverField.size > 0 ? coverField : null,
     };
   }
 
@@ -135,13 +117,17 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
     author_ids?: Array<number | string> | string | null;
     category_id?: number | string | null;
     cover_image?: string | null;
+    uploaded_cover_url?: string | null;
   } | null;
 
   const title = String(body?.title || '').trim();
   const price = Number(body?.price);
   const stock = Number(body?.stock);
   const description = body?.description ? String(body.description).trim() : null;
-  const coverImage = body?.cover_image ? String(body.cover_image).trim() : null;
+  const coverImage =
+    (body?.uploaded_cover_url ? String(body.uploaded_cover_url).trim() : '')
+    || (body?.cover_image ? String(body.cover_image).trim() : '')
+    || null;
   const authorIds = parseAuthorIds(
     body?.author_ids !== undefined
       ? Array.isArray(body.author_ids)
@@ -167,6 +153,7 @@ async function normalizePayload(request: NextRequest): Promise<BookPayload | nul
     authorIds,
     categoryId,
     coverImage,
+    coverFile: null,
   };
 }
 
@@ -254,13 +241,19 @@ async function createAdminBook(request: NextRequest) {
     }
   }
 
+  let coverImageUrl = payload.coverImage;
+  if (payload.coverFile) {
+    const uploaded = await uploadImageToStorage(payload.coverFile);
+    coverImageUrl = uploaded.url;
+  }
+
   const created = await prisma.book.create({
     data: {
       title: payload.title,
       price: payload.price,
       stock: payload.stock,
       description: payload.description,
-      coverImage: payload.coverImage,
+      coverImage: coverImageUrl,
       categoryId: payload.categoryId,
       ...(payload.authorIds.length > 0
         ? {
@@ -283,7 +276,7 @@ export const GET = withApiSecurity(getAdminBooks, {
 
 export const POST = withApiSecurity(createAdminBook, {
   bucket: 'api',
-  maxBodyBytes: 2 * 1024 * 1024,
+  maxBodyBytes: 12 * 1024 * 1024,
   schemaByMethod: {
     POST: adminCreateBookSchema,
   },

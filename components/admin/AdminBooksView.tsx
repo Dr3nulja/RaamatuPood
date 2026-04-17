@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type {
   AdminBook,
   AdminBooksResponse,
@@ -8,7 +8,9 @@ import type {
   AdminAuthorOption,
 } from '@/lib/api/adminTypes';
 import Button from '@/components/ui/Button';
-import { normalizeCover } from '@/components/admin/shared';
+import AddableSelect from '@/components/admin/AddableSelect';
+import EditBookModal from '@/components/admin/EditBookModal';
+import BookCard from '@/components/admin/BookCard';
 
 type BookFormState = {
   title: string;
@@ -16,6 +18,7 @@ type BookFormState = {
   stock: string;
   description: string;
   cover_image: string;
+  uploaded_cover_url: string;
   author_id: string;
   category_id: string;
   cover_file: File | null;
@@ -27,6 +30,7 @@ const initialBookForm: BookFormState = {
   stock: '',
   description: '',
   cover_image: '',
+  uploaded_cover_url: '',
   author_id: '',
   category_id: '',
   cover_file: null,
@@ -45,14 +49,104 @@ export default function AdminBooksView() {
   const [booksQuery, setBooksQuery] = useState('');
   const [booksCategoryFilter, setBooksCategoryFilter] = useState('all');
 
-  const [editingBookId, setEditingBookId] = useState<number | null>(null);
-  const [editingDraft, setEditingDraft] = useState<BookFormState>(initialBookForm);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEditBook, setSelectedEditBook] = useState<AdminBook | null>(null);
+
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState<AdminBook | null>(null);
 
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(null), 2200);
+  };
+
+  const uploadCoverFile = async (file: File): Promise<string> => {
+    try {
+      const uploadData = new FormData();
+      uploadData.set('file', file);
+
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadData,
+      });
+
+      const uploadPayload = (await uploadResponse.json().catch(() => null)) as { url?: string; error?: string } | null;
+
+      if (!uploadResponse.ok) {
+        const errorMessage = uploadPayload?.error || 'Не удалось загрузить файл обложки';
+        console.error('Cover upload failed:', errorMessage);
+        
+        // Show warning toast but don't crash the flow
+        showToast(`Предупреждение: ${errorMessage}. Используйте URL обложки или попробуйте снова.`);
+        return '';
+      }
+
+      if (!uploadPayload?.url) {
+        console.error('Cover upload: No URL returned');
+        showToast('Предупреждение: Сервер не вернул URL обложки. Используйте URL вручную.');
+        return '';
+      }
+
+      return uploadPayload.url;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка при загрузке';
+      console.error('Cover upload exception:', errorMessage);
+      showToast(`Ошибка загрузки: ${errorMessage}`);
+      return '';
+    }
+  };
+
+  const createAuthor = async (name: string) => {
+    const response = await fetch('/api/authors', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as { author?: { id: number; name: string }; error?: string } | null;
+
+    if (!response.ok || !payload?.author) {
+      throw new Error(payload?.error || 'Не удалось создать автора');
+    }
+
+    // Reload authors after creation
+    const updatedAuthors = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
+      .then((r) => r.json() as Promise<{ authors?: AdminAuthorOption[] }>)
+      .then((data) => data.authors || [])
+      .catch(() => authors);
+
+    setAuthors(updatedAuthors);
+
+    return payload.author;
+  };
+
+  const createCategory = async (name: string) => {
+    const response = await fetch('/api/categories', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as { category?: { id: number; name: string }; error?: string } | null;
+
+    if (!response.ok || !payload?.category) {
+      throw new Error(payload?.error || 'Не удалось создать категорию');
+    }
+
+    // Reload categories after creation
+    const updatedCategories = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
+      .then((r) => r.json() as Promise<{ categories?: AdminCategoryOption[] }>)
+      .then((data) => data.categories || [])
+      .catch(() => categories);
+
+    setCategories(updatedCategories);
+
+    return payload.category;
   };
 
   const loadBooksData = async () => {
@@ -67,6 +161,9 @@ export default function AdminBooksView() {
       setBooks(data.books || []);
       setAuthors(data.authors || []);
       setCategories(data.categories || []);
+
+      // Reset form if any new items were created
+      setBookForm((prev) => ({ ...prev, author_id: '', category_id: '' }));
     } catch (error) {
       console.error('Books load failed:', error);
       showToast('Ошибка загрузки книг');
@@ -95,22 +192,13 @@ export default function AdminBooksView() {
   }, [books, booksCategoryFilter, booksQuery]);
 
   const startEditingBook = (book: AdminBook) => {
-    setEditingBookId(book.id);
-    setEditingDraft({
-      title: book.title,
-      price: String(book.price),
-      stock: String(book.stock),
-      description: book.description || '',
-      cover_image: book.cover_image || '',
-      author_id: book.author_id ? String(book.author_id) : '',
-      category_id: book.category_id ? String(book.category_id) : '',
-      cover_file: null,
-    });
+    setSelectedEditBook(book);
+    setIsEditModalOpen(true);
   };
 
   const cancelEditingBook = () => {
-    setEditingBookId(null);
-    setEditingDraft(initialBookForm);
+    setIsEditModalOpen(false);
+    setSelectedEditBook(null);
   };
 
   const handleCreateBook = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -126,9 +214,9 @@ export default function AdminBooksView() {
       formData.set('cover_image', bookForm.cover_image);
       formData.set('author_id', bookForm.author_id);
       formData.set('category_id', bookForm.category_id);
-      if (bookForm.cover_file) {
-        formData.set('cover', bookForm.cover_file);
-      }
+
+      const uploadedCoverUrl = bookForm.cover_file ? await uploadCoverFile(bookForm.cover_file) : '';
+      formData.set('uploaded_cover_url', uploadedCoverUrl);
 
       const response = await fetch('/api/admin/books', {
         method: 'POST',
@@ -145,14 +233,24 @@ export default function AdminBooksView() {
       await loadBooksData();
     } catch (error) {
       console.error(error);
-      showToast('Не удалось создать книгу');
+      showToast(error instanceof Error ? error.message : 'Не удалось создать книгу');
     } finally {
       setIsCreatingBook(false);
     }
   };
 
-  const handleDeleteBook = async (id: number) => {
+  const openDeleteConfirm = (book: AdminBook) => {
+    setBookToDelete(book);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteBook = async () => {
+    if (!bookToDelete) return;
+    
+    const id = bookToDelete.id;
     setBookActionLoadingId(id);
+    setIsDeleteConfirmOpen(false);
+    
     try {
       const response = await fetch(`/api/admin/books/${id}`, {
         method: 'DELETE',
@@ -170,40 +268,12 @@ export default function AdminBooksView() {
       showToast('Не удалось удалить книгу');
     } finally {
       setBookActionLoadingId(null);
+      setBookToDelete(null);
     }
   };
 
-  const handleSaveBook = async (bookId: number) => {
-    if (editingBookId !== bookId) {
-      return;
-    }
-
-    if (!editingDraft.title.trim()) {
-      showToast('Название книги обязательно');
-      return;
-    }
-
-    const nextPrice = Number(editingDraft.price);
-    const nextStock = Number(editingDraft.stock);
-    if (!Number.isFinite(nextPrice) || !Number.isInteger(nextStock) || nextStock < 0) {
-      showToast('Неверные price/stock');
-      return;
-    }
-
-    setBookActionLoadingId(bookId);
+  const handleSaveBook = async (bookId: number, formData: FormData) => {
     try {
-      const formData = new FormData();
-      formData.set('title', editingDraft.title.trim());
-      formData.set('price', String(nextPrice));
-      formData.set('stock', String(nextStock));
-      formData.set('description', editingDraft.description);
-      formData.set('cover_image', editingDraft.cover_image);
-      formData.set('author_id', editingDraft.author_id);
-      formData.set('category_id', editingDraft.category_id);
-      if (editingDraft.cover_file) {
-        formData.set('cover', editingDraft.cover_file);
-      }
-
       const response = await fetch(`/api/admin/books/${bookId}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -219,9 +289,8 @@ export default function AdminBooksView() {
       showToast('Книга обновлена');
     } catch (error) {
       console.error(error);
-      showToast('Не удалось обновить книгу');
-    } finally {
-      setBookActionLoadingId(null);
+      showToast(error instanceof Error ? error.message : 'Не удалось обновить книгу');
+      throw error;
     }
   };
 
@@ -269,27 +338,27 @@ export default function AdminBooksView() {
           onChange={(event) => setBookForm((prev) => ({ ...prev, cover_image: event.target.value }))}
         />
 
-        <select
-          className="rounded-xl border border-amber-200 px-3 py-2"
-          value={bookForm.author_id}
-          onChange={(event) => setBookForm((prev) => ({ ...prev, author_id: event.target.value }))}
-        >
-          <option value="">Автор (не выбран)</option>
-          {authors.map((author) => (
-            <option key={author.id} value={author.id}>{author.name}</option>
-          ))}
-        </select>
+        <div>
+          <AddableSelect
+            items={authors}
+            value={bookForm.author_id}
+            onChange={(value) => setBookForm((prev) => ({ ...prev, author_id: value }))}
+            onCreateNew={createAuthor}
+            placeholder="Выбрать автора..."
+            label="Author"
+          />
+        </div>
 
-        <select
-          className="rounded-xl border border-amber-200 px-3 py-2"
-          value={bookForm.category_id}
-          onChange={(event) => setBookForm((prev) => ({ ...prev, category_id: event.target.value }))}
-        >
-          <option value="">Категория (не выбрана)</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>{category.name}</option>
-          ))}
-        </select>
+        <div>
+          <AddableSelect
+            items={categories}
+            value={bookForm.category_id}
+            onChange={(value) => setBookForm((prev) => ({ ...prev, category_id: value }))}
+            onCreateNew={createCategory}
+            placeholder="Выбрать категорию..."
+            label="Category"
+          />
+        </div>
 
         <input
           className="rounded-xl border border-amber-200 px-3 py-2"
@@ -308,6 +377,10 @@ export default function AdminBooksView() {
         >
           {isCreatingBook ? 'Creating...' : 'Add Book'}
         </Button>
+
+        <p className="text-xs text-zinc-500 md:col-span-2 xl:col-span-4">
+          Обложка: можно вставить URL или загрузить файл. Если выбраны оба варианта, файл имеет приоритет.
+        </p>
 
         <textarea
           className="rounded-xl border border-amber-200 px-3 py-2 md:col-span-2 xl:col-span-4"
@@ -337,198 +410,74 @@ export default function AdminBooksView() {
         </select>
       </div>
 
-      <div className="mt-6 overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="border-b border-amber-100 text-left text-zinc-500">
-              <th className="px-3 py-2">Cover</th>
-              <th className="px-3 py-2">Title</th>
-              <th className="px-3 py-2">Price</th>
-              <th className="px-3 py-2">Stock</th>
-              <th className="px-3 py-2">Author</th>
-              <th className="px-3 py-2">Category</th>
-              <th className="px-3 py-2">Description</th>
-              <th className="px-3 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td className="px-3 py-4 text-zinc-500" colSpan={8}>Loading books...</td>
-              </tr>
-            ) : filteredBooks.length === 0 ? (
-              <tr>
-                <td className="px-3 py-4 text-zinc-500" colSpan={8}>Книги не найдены</td>
-              </tr>
-            ) : (
-              filteredBooks.map((book) => {
-                const isEditing = editingBookId === book.id;
-
-                return (
-                  <tr key={book.id} className="border-b border-amber-50 align-top">
-                    <td className="px-3 py-3">
-                      <div className="h-16 w-12 overflow-hidden rounded bg-amber-100">
-                        {normalizeCover(book.cover_image) ? (
-                          <img src={normalizeCover(book.cover_image) || ''} alt={book.title} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-amber-700">No cover</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3">
-                      {isEditing ? (
-                        <input
-                          className="w-52 rounded-lg border border-amber-200 px-2 py-1"
-                          value={editingDraft.title}
-                          onChange={(event) => setEditingDraft((prev) => ({ ...prev, title: event.target.value }))}
-                        />
-                      ) : (
-                        <span className="font-medium text-zinc-800">{book.title}</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      {isEditing ? (
-                        <input
-                          className="w-24 rounded-lg border border-amber-200 px-2 py-1"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={editingDraft.price}
-                          onChange={(event) => setEditingDraft((prev) => ({ ...prev, price: event.target.value }))}
-                        />
-                      ) : (
-                        `€${book.price.toFixed(2)}`
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      {isEditing ? (
-                        <input
-                          className="w-20 rounded-lg border border-amber-200 px-2 py-1"
-                          type="number"
-                          min="0"
-                          value={editingDraft.stock}
-                          onChange={(event) => setEditingDraft((prev) => ({ ...prev, stock: event.target.value }))}
-                        />
-                      ) : (
-                        book.stock
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      {isEditing ? (
-                        <select
-                          className="rounded-lg border border-amber-200 px-2 py-1"
-                          value={editingDraft.author_id}
-                          onChange={(event) => setEditingDraft((prev) => ({ ...prev, author_id: event.target.value }))}
-                        >
-                          <option value="">-</option>
-                          {authors.map((author) => (
-                            <option key={author.id} value={author.id}>{author.name}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        book.author_name || '-'
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      {isEditing ? (
-                        <select
-                          className="rounded-lg border border-amber-200 px-2 py-1"
-                          value={editingDraft.category_id}
-                          onChange={(event) => setEditingDraft((prev) => ({ ...prev, category_id: event.target.value }))}
-                        >
-                          <option value="">-</option>
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.id}>{category.name}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        book.category_name || '-'
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      {isEditing ? (
-                        <div className="space-y-2">
-                          <textarea
-                            className="w-64 rounded-lg border border-amber-200 px-2 py-1"
-                            rows={2}
-                            value={editingDraft.description}
-                            onChange={(event) => setEditingDraft((prev) => ({ ...prev, description: event.target.value }))}
-                          />
-                          <input
-                            className="w-64 rounded-lg border border-amber-200 px-2 py-1"
-                            placeholder="Cover URL"
-                            value={editingDraft.cover_image}
-                            onChange={(event) => setEditingDraft((prev) => ({ ...prev, cover_image: event.target.value }))}
-                          />
-                          <input
-                            className="w-64 rounded-lg border border-amber-200 px-2 py-1"
-                            type="file"
-                            accept="image/*"
-                            onChange={(event) =>
-                              setEditingDraft((prev) => ({ ...prev, cover_file: event.target.files?.[0] || null }))
-                            }
-                          />
-                        </div>
-                      ) : (
-                        <p className="line-clamp-2 max-w-xs text-xs text-zinc-600">{book.description || '-'}</p>
-                      )}
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex flex-wrap gap-2">
-                        {isEditing ? (
-                          <>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="small"
-                              disabled={bookActionLoadingId === book.id}
-                              onClick={() => void handleSaveBook(book.id)}
-                              className="rounded-lg border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="small"
-                              disabled={bookActionLoadingId === book.id}
-                              onClick={cancelEditingBook}
-                              className="rounded-lg px-2 py-1 text-xs font-semibold disabled:opacity-60"
-                            >
-                              Cancel
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="small"
-                            disabled={bookActionLoadingId === book.id}
-                            onClick={() => startEditingBook(book)}
-                            className="rounded-lg px-2 py-1 text-xs font-semibold disabled:opacity-60"
-                          >
-                            Edit
-                          </Button>
-                        )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="small"
-                          disabled={bookActionLoadingId === book.id}
-                          onClick={() => void handleDeleteBook(book.id)}
-                          className="rounded-lg border border-red-300 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        {isLoading ? (
+          <div className="rounded-3xl border border-amber-100 bg-amber-50/40 px-6 py-10 text-center text-sm text-zinc-500 shadow-sm">
+            Loading books...
+          </div>
+        ) : filteredBooks.length === 0 ? (
+          <div className="rounded-3xl border border-amber-100 bg-white px-6 py-10 text-center text-sm text-zinc-500 shadow-sm">
+            Книги не найдены
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {filteredBooks.map((book) => (
+              <BookCard
+                key={book.id}
+                book={book}
+                onEdit={startEditingBook}
+                onDelete={openDeleteConfirm}
+                isDeleting={bookActionLoadingId === book.id}
+              />
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Edit Book Modal */}
+      <EditBookModal
+        isOpen={isEditModalOpen}
+        onClose={cancelEditingBook}
+        book={selectedEditBook}
+        authors={authors}
+        categories={categories}
+        onSave={handleSaveBook}
+        setAuthors={setAuthors}
+        setCategories={setCategories}
+      />
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteConfirmOpen && bookToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="font-serif text-xl font-bold text-zinc-900 mb-2">Удалить книгу?</h2>
+            <p className="mb-4 text-zinc-600">
+              Вы действительно хотите удалить «<span className="font-semibold">{bookToDelete.title}</span>»? Это действие нельзя отменить.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteConfirmOpen(false);
+                  setBookToDelete(null);
+                }}
+                className="rounded-lg px-4 py-2 font-semibold"
+              >
+                Отмена
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void handleDeleteBook()}
+                disabled={bookActionLoadingId === bookToDelete.id}
+                className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
+              >
+                Удалить
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
