@@ -63,17 +63,21 @@ export default async function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FDF8F0] via-white to-[#F9F4EC] text-zinc-900">
+    <div className="min-h-screen bg-gradient-to-b from-background via-white to-background-muted text-zinc-900">
       <section className="relative overflow-hidden border-b border-amber-100 bg-gradient-to-r from-amber-900 via-amber-800 to-amber-700">
         <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-amber-200/20 blur-3xl" />
         <div className="absolute -bottom-16 right-0 h-72 w-72 rounded-full bg-yellow-200/20 blur-3xl" />
 
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-16">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-100">Онлайн-магазин книг</p>
-            <h1 className="mt-4 text-4xl font-bold leading-tight text-white md:text-6xl">
+            <h1 className="mt-4 text-4xl font-bold leading-tight !text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] md:text-6xl">
               Найди свою следующую любимую книгу
             </h1>
+            <div className="mt-6 max-w-2xl rounded-2xl border border-white/35 bg-white/95 p-4 shadow-xl backdrop-blur md:p-5">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-secondary">Поиск книги</p>
+              <HomeBookSearch />
+            </div>
             <p className="mt-5 max-w-xl text-base text-amber-50 md:text-lg">
               Открывайте бестселлеры, классику и новинки в одном месте. Выбирайте книгу по интересам и начинайте читать уже сегодня.
             </p>
@@ -97,11 +101,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl space-y-16 px-4 py-10 md:py-14">
-        <section className="relative z-20 -mt-20 rounded-3xl border border-amber-100 bg-white p-5 shadow-xl md:p-7">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Поиск книги</p>
-          <HomeBookSearch />
-        </section>
+      <main className="mx-auto max-w-7xl space-y-16 px-4 py-8 md:py-12">
 
         <section>
           <div className="mb-8 flex items-end justify-between gap-4">

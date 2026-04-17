@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Button from '@/components/ui/Button';
 
 type AuthStatusResponse = {
   state: 'unauthenticated' | 'verify-email' | 'profile-setup' | 'ready';
@@ -129,9 +130,9 @@ export default function ProfileSetupPage() {
 
   if (authState === 'loading') {
     return (
-      <main className="min-h-screen bg-[#FDF8F0] px-4 py-10">
+      <main className="min-h-screen bg-background px-4 py-10">
         <section className="mx-auto max-w-xl rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-          <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Profile Setup</h1>
+          <h1 className="font-serif text-3xl font-bold text-secondary">Profile Setup</h1>
           <p className="mt-3 text-zinc-700">Checking your authentication status...</p>
         </section>
       </main>
@@ -139,9 +140,9 @@ export default function ProfileSetupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FDF8F0] px-4 py-10">
+    <main className="min-h-screen bg-background px-4 py-10">
       <section className="mx-auto max-w-xl rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-        <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Complete Your Profile</h1>
+        <h1 className="font-serif text-3xl font-bold text-secondary">Complete Your Profile</h1>
         <p className="mt-2 text-zinc-700">Set your username and avatar to continue.</p>
         {authEmail ? <p className="mt-1 text-sm text-zinc-600">Signed in as {authEmail}</p> : null}
 
@@ -156,7 +157,7 @@ export default function ProfileSetupPage() {
               minLength={3}
               maxLength={20}
               pattern="[A-Za-z0-9_-]{3,20}"
-              className="w-full rounded-xl border border-amber-200 px-3 py-2 text-zinc-900 outline-none ring-amber-200 focus:ring"
+              className="ui-input"
               placeholder="your_username"
             />
             <span className="mt-1 block text-xs text-zinc-500">{USERNAME_HINT}</span>
@@ -169,7 +170,7 @@ export default function ProfileSetupPage() {
               accept="image/*"
               required
               onChange={(event) => setAvatarFile(event.target.files?.[0] || null)}
-              className="block w-full rounded-xl border border-amber-200 px-3 py-2 text-sm text-zinc-800"
+              className="ui-input block text-sm"
             />
             <span className="mt-1 block text-xs text-zinc-500">Image only, max 2MB.</span>
           </label>
@@ -177,13 +178,13 @@ export default function ProfileSetupPage() {
           {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
           {success ? <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p> : null}
 
-          <button
+          <Button
             type="submit"
             disabled={submitting || !isUsernameLocallyValid || !avatarFile}
-            className="rounded-xl bg-[#D97706] px-5 py-3 font-semibold text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+            loading={submitting}
           >
             {submitting ? 'Saving...' : 'Save Profile'}
-          </button>
+          </Button>
         </form>
       </section>
     </main>

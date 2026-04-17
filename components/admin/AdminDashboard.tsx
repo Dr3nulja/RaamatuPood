@@ -23,6 +23,7 @@ import type {
   AdminOrdersResponse,
   AdminAuthorOption,
 } from '@/lib/api/adminTypes';
+import Button from '@/components/ui/Button';
 
 type BookFormState = {
   title: string;
@@ -53,7 +54,13 @@ type AdminSection = 'dashboard' | 'books' | 'orders';
 const sectionButtonClass =
   'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition';
 
-const chartPalette = ['#D97706', '#F59E0B', '#FBBF24', '#A16207', '#92400E'];
+const chartPalette = [
+  'var(--ds-primary)',
+  'var(--ds-primary-hover)',
+  'var(--ds-primary-soft)',
+  'var(--ds-secondary)',
+  'var(--ds-secondary-soft)',
+];
 
 function normalizeCover(url: string | null) {
   if (!url) {
@@ -372,34 +379,40 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-4 py-8">
+    <main className="min-h-screen bg-background-muted px-4 py-8">
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[260px_1fr]">
         <aside className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm lg:sticky lg:top-24 lg:h-fit">
-          <h1 className="font-serif text-2xl font-bold text-[#8B5E3C]">Admin Panel</h1>
+          <h1 className="font-serif text-2xl font-bold text-secondary">Admin Panel</h1>
           <p className="mt-1 text-sm text-zinc-500">CRM интернет-библиотеки</p>
 
           <nav className="mt-5 space-y-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="medium"
               onClick={() => setActiveSection('dashboard')}
               className={`${sectionButtonClass} ${activeSection === 'dashboard' ? 'bg-amber-100 text-amber-900' : 'text-zinc-700 hover:bg-amber-50'}`}
             >
               Dashboard
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="medium"
               onClick={() => setActiveSection('books')}
               className={`${sectionButtonClass} ${activeSection === 'books' ? 'bg-amber-100 text-amber-900' : 'text-zinc-700 hover:bg-amber-50'}`}
             >
               Управление книгами
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="medium"
               onClick={() => setActiveSection('orders')}
               className={`${sectionButtonClass} ${activeSection === 'orders' ? 'bg-amber-100 text-amber-900' : 'text-zinc-700 hover:bg-amber-50'}`}
             >
               Заказы
-            </button>
+            </Button>
           </nav>
 
           {toast && (
@@ -462,7 +475,7 @@ export default function AdminDashboard() {
                         <XAxis dataKey="month" />
                         <YAxis />
                         <Tooltip />
-                        <Line type="monotone" dataKey="revenue" stroke="#D97706" strokeWidth={3} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="revenue" stroke="var(--ds-primary)" strokeWidth={3} dot={{ r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -510,7 +523,7 @@ export default function AdminDashboard() {
 
           {activeSection === 'books' && (
             <article className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-              <h2 className="font-serif text-2xl font-bold text-[#8B5E3C]">Управление книгами</h2>
+              <h2 className="font-serif text-2xl font-bold text-secondary">Управление книгами</h2>
 
               <form onSubmit={handleCreateBook} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <input
@@ -577,13 +590,14 @@ export default function AdminDashboard() {
                   }
                 />
 
-                <button
+                <Button
                   type="submit"
+                  loading={isCreatingBook}
                   disabled={isCreatingBook}
-                  className="rounded-xl bg-[#D97706] px-4 py-2 font-semibold text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl px-4 py-2"
                 >
                   {isCreatingBook ? 'Creating...' : 'Add Book'}
-                </button>
+                </Button>
 
                 <textarea
                   className="rounded-xl border border-amber-200 px-3 py-2 md:col-span-2 xl:col-span-4"
@@ -753,41 +767,49 @@ export default function AdminDashboard() {
                               <div className="flex flex-wrap gap-2">
                                 {isEditing ? (
                                   <>
-                                    <button
+                                    <Button
                                       type="button"
+                                      variant="ghost"
+                                      size="small"
                                       disabled={bookActionLoadingId === book.id}
                                       onClick={() => void handleSaveBook(book.id)}
                                       className="rounded-lg border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
                                     >
                                       Save
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                       type="button"
+                                      variant="outline"
+                                      size="small"
                                       disabled={bookActionLoadingId === book.id}
                                       onClick={cancelEditingBook}
-                                      className="rounded-lg border border-zinc-300 px-2 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                                      className="rounded-lg px-2 py-1 text-xs font-semibold disabled:opacity-60"
                                     >
                                       Cancel
-                                    </button>
+                                    </Button>
                                   </>
                                 ) : (
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="outline"
+                                    size="small"
                                     disabled={bookActionLoadingId === book.id}
                                     onClick={() => startEditingBook(book)}
-                                    className="rounded-lg border border-zinc-300 px-2 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                                    className="rounded-lg px-2 py-1 text-xs font-semibold disabled:opacity-60"
                                   >
                                     Edit
-                                  </button>
+                                  </Button>
                                 )}
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="small"
                                   disabled={bookActionLoadingId === book.id}
                                   onClick={() => void handleDeleteBook(book.id)}
                                   className="rounded-lg border border-red-300 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
                                 >
                                   Delete
-                                </button>
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -802,7 +824,7 @@ export default function AdminDashboard() {
 
           {activeSection === 'orders' && (
             <article className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-              <h2 className="font-serif text-2xl font-bold text-[#8B5E3C]">Управление заказами</h2>
+              <h2 className="font-serif text-2xl font-bold text-secondary">Управление заказами</h2>
 
               <div className="mt-4 flex items-center gap-3">
                 <label className="text-sm font-medium text-zinc-700">Фильтр статуса</label>

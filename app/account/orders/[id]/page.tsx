@@ -44,10 +44,10 @@ export default async function AccountOrderDetailsPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#FDF8F0] px-4 py-10">
+    <main className="min-h-screen bg-background px-4 py-10">
       <section className="mx-auto max-w-3xl rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Заказ #{order.id}</h1>
+          <h1 className="font-serif text-3xl font-bold text-secondary">Заказ #{order.id}</h1>
           <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
             {order.status.toLowerCase()}
           </span>
@@ -85,7 +85,7 @@ export default async function AccountOrderDetailsPage({
                   <div className="mt-2">
                     <Link
                       href={`/catalog/${item.bookId}`}
-                      className="inline-flex rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-[#8B5E3C] transition hover:bg-amber-100"
+                      className="inline-flex rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-secondary transition hover:bg-amber-100"
                     >
                       Оставить отзыв
                     </Link>
@@ -98,13 +98,13 @@ export default async function AccountOrderDetailsPage({
 
         <div className="mt-6 flex items-center justify-between border-t border-amber-100 pt-4">
           <span className="text-zinc-700">Итого</span>
-          <span className="text-xl font-bold text-[#8B5E3C]">€{Number(order.totalPrice ?? 0).toFixed(2)}</span>
+          <span className="text-xl font-bold text-secondary">€{Number(order.totalPrice ?? 0).toFixed(2)}</span>
         </div>
 
         <div className="mt-6">
           <Link
             href="/account"
-            className="rounded-xl border border-[#A0785A] bg-white px-5 py-3 text-sm font-semibold text-[#8B5E3C] transition hover:bg-amber-50"
+            className="rounded-xl border border-secondary-soft bg-white px-5 py-3 text-sm font-semibold text-secondary transition hover:bg-amber-50"
           >
             Назад в кабинет
           </Link>

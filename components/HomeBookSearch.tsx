@@ -109,8 +109,8 @@ export default function HomeBookSearch({
 
   return (
     <div ref={rootRef} className="relative">
-      <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-white px-4 py-3 shadow-sm">
-        <svg className="h-5 w-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
+        <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 6 6a7.5 7.5 0 0 0 10.65 10.65Z" />
         </svg>
         <input
@@ -121,28 +121,28 @@ export default function HomeBookSearch({
             setIsPanelOpen(true);
           }}
           placeholder={placeholder}
-          className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500"
+          className="w-full bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
         />
       </div>
 
       <div
-        className={`absolute left-0 right-0 z-30 mt-3 origin-top rounded-2xl border border-amber-100 bg-white shadow-xl transition-all duration-300 ${
+        className={`absolute left-0 right-0 z-30 mt-3 origin-top rounded-2xl border border-border bg-surface shadow-xl transition-all duration-300 ${
           showPanel ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-2 scale-[0.98] opacity-0'
         }`}
       >
         <div className="max-h-[440px] overflow-y-auto p-3">
           {isLoading ? (
-            <p className="px-3 py-6 text-sm text-zinc-500">Ищем книги...</p>
+            <p className="px-3 py-6 text-sm text-text-secondary">Ищем книги...</p>
           ) : results.length === 0 ? (
-            <p className="px-3 py-6 text-sm text-zinc-500">Ничего не найдено</p>
+            <p className="px-3 py-6 text-sm text-text-secondary">Ничего не найдено</p>
           ) : (
             <div className="space-y-2">
               {results.map((book) => (
                 <article
                   key={book.id}
-                  className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/40 p-3"
+                  className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-xl border border-border bg-surface-muted p-3"
                 >
-                  <div className="h-14 w-14 overflow-hidden rounded-lg bg-amber-100">
+                  <div className="h-14 w-14 overflow-hidden rounded-lg bg-background-muted">
                     {resolveCover(book.cover_image || book.cover_url) ? (
                       <img
                         src={resolveCover(book.cover_image || book.cover_url) || ''}
@@ -150,18 +150,18 @@ export default function HomeBookSearch({
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-amber-700">No cover</div>
+                      <div className="flex h-full w-full items-center justify-center text-xs text-secondary">No cover</div>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-zinc-900">{book.title}</p>
-                    <p className="truncate text-xs text-zinc-600">{book.author?.name || 'Автор не указан'}</p>
-                    <p className="text-xs text-amber-700">★ {(book.rating ?? 0).toFixed(1)}</p>
+                    <p className="truncate text-sm font-semibold text-text-primary">{book.title}</p>
+                    <p className="truncate text-xs text-text-secondary">{book.author?.name || 'Автор не указан'}</p>
+                    <p className="text-xs text-secondary">★ {(book.rating ?? 0).toFixed(1)}</p>
                   </div>
                   <Link
                     href={`/catalog/${book.id}`}
                     onClick={() => setIsPanelOpen(false)}
-                    className="rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
+                    className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-secondary transition hover:bg-primary-soft"
                   >
                     Подробнее
                   </Link>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import CartDrawer from './CartDrawer';
 import { useCartStore } from '@/stores/cartStore';
+import Button from '@/components/ui/Button';
 
 type HeaderProps = {
   userEmail?: string | null;
@@ -27,7 +28,13 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
   const safeTotalItems = mounted ? totalItems : 0;
 
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
@@ -127,11 +134,13 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
 
           {/* Auth Buttons and Mobile Menu Button */}
           <div className="flex items-center gap-4">
-            <button
+            <Button
               type="button"
               aria-label="Open cart"
               onClick={() => setIsCartOpen(true)}
-              className="relative rounded-lg p-2 text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50 hover:text-amber-700 hover:shadow-sm active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+              variant="ghost"
+              size="small"
+              className="relative !p-2 text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50 hover:text-amber-700 hover:shadow-sm active:scale-[0.96] dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
               <svg
                 className="h-6 w-6"
@@ -151,7 +160,7 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
                   {safeTotalItems}
                 </span>
               )}
-            </button>
+            </Button>
 
             {!isAuthenticated ? (
               <>
@@ -211,19 +220,23 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
                     Admin
                   </Link>
                 )}
-                <button
+                <Button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-[background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md hover:shadow-red-600/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-zinc-950"
+                  variant="danger"
+                  className="rounded-lg px-4 py-2 font-medium transition-[background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:shadow-md hover:shadow-red-600/40 active:scale-[0.98]"
                 >
                   Выход
-                </button>
+                </Button>
               </div>
             )}
 
             {/* Mobile Menu Button */}
-            <button
-              className="rounded-lg p-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950 md:hidden"
+            <Button
+              type="button"
+              variant="ghost"
+              size="small"
+              className="rounded-lg !p-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 md:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <svg
@@ -239,7 +252,7 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -333,13 +346,14 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
                     Admin
                   </Link>
                 )}
-                <button
+                <Button
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full rounded-lg px-4 py-2 text-left text-red-600 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-red-50 active:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-red-400 dark:hover:bg-red-900/20 dark:active:bg-red-900/30 dark:focus-visible:ring-red-400 dark:focus-visible:ring-offset-zinc-950"
+                  variant="ghost"
+                  className="block w-full justify-start rounded-lg px-4 py-2 text-left text-red-600 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-red-50 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/20 dark:active:bg-red-900/30"
                 >
                   Выход
-                </button>
+                </Button>
               </>
             )}
           </nav>

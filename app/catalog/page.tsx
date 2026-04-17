@@ -226,13 +226,13 @@ export default function CatalogPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-[#F5F0E8] px-4 py-10 text-zinc-900">
+    <main className="min-h-screen bg-gradient-to-b from-background to-background-muted px-4 py-10 text-zinc-900">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 rounded-3xl border border-amber-100 bg-white px-6 py-7 shadow-sm md:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Каталог</p>
-              <h1 className="mt-2 font-serif text-4xl font-bold text-[#8B5E3C]">Книги</h1>
+              <h1 className="mt-2 font-serif text-4xl font-bold text-secondary">Книги</h1>
               <p className="mt-2 text-sm text-zinc-600">Поиск, фильтрация и сортировка в реальном времени</p>
             </div>
 

@@ -22,9 +22,9 @@ export default async function VerifyEmailPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#FDF8F0] px-4 py-10">
+    <main className="min-h-screen bg-background px-4 py-10">
       <section className="mx-auto max-w-xl rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-        <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Verify Your Email</h1>
+        <h1 className="font-serif text-3xl font-bold text-secondary">Verify Your Email</h1>
         <p className="mt-3 text-zinc-700">
           Please verify your email before continuing.
         </p>
@@ -36,13 +36,13 @@ export default async function VerifyEmailPage({
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link
             href="/auth/login"
-            className="rounded-xl bg-[#D97706] px-5 py-3 text-center font-semibold text-white transition hover:bg-amber-500"
+            className="rounded-xl bg-primary px-5 py-3 text-center font-semibold text-white transition hover:bg-primary-hover"
           >
             I verified, continue
           </Link>
           <Link
             href="/auth/logout"
-            className="rounded-xl border border-[#A0785A] bg-white px-5 py-3 text-center font-semibold text-[#8B5E3C] transition hover:bg-amber-50"
+            className="rounded-xl border border-secondary-soft bg-white px-5 py-3 text-center font-semibold text-secondary transition hover:bg-amber-50"
           >
             Logout
           </Link>

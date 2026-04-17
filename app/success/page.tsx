@@ -33,7 +33,7 @@ function formatDate(date: Date) {
 
 function ErrorShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4 py-12">
+    <main className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="mx-auto w-full max-w-md rounded-3xl border border-amber-100 bg-white px-8 py-12 text-center shadow-lg">
         {children}
       </div>
@@ -50,7 +50,7 @@ function NotFoundUI() {
             d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
         </svg>
       </div>
-      <h1 className="font-serif text-2xl font-bold text-[#8B5E3C]">Заказ не найден</h1>
+      <h1 className="font-serif text-2xl font-bold text-secondary">Заказ не найден</h1>
       <p className="mt-3 text-zinc-600 text-sm leading-relaxed">
         Мы не смогли найти ваш заказ. Возможно, он ещё обрабатывается — попробуйте обновить страницу через минуту.
         Если проблема сохраняется, свяжитесь с нами.
@@ -58,13 +58,13 @@ function NotFoundUI() {
       <div className="mt-8 flex flex-col gap-3">
         <Link
           href="/contacts"
-          className="rounded-xl bg-[#D97706] px-5 py-3 font-semibold text-white transition hover:bg-amber-500"
+          className="rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:bg-primary-hover"
         >
           Связаться с поддержкой
         </Link>
         <Link
           href="/catalog"
-          className="rounded-xl border border-[#A0785A] bg-white px-5 py-3 font-semibold text-[#8B5E3C] transition hover:bg-amber-50"
+          className="rounded-xl border border-secondary-soft bg-white px-5 py-3 font-semibold text-secondary transition hover:bg-amber-50"
         >
           Вернуться в каталог
         </Link>
@@ -145,7 +145,7 @@ export default async function SuccessPage({
   const badge      = statusBadge(order.status);
 
   return (
-    <main className="min-h-screen bg-[#FDF8F0] px-4 py-12 md:py-16">
+    <main className="min-h-screen bg-background px-4 py-12 md:py-16">
       <div className="mx-auto max-w-2xl space-y-5">
 
         {/* ── SUCCESS HEADER ─────────────────────────────────────── */}
@@ -155,17 +155,17 @@ export default async function SuccessPage({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="font-serif text-3xl font-bold text-[#8B5E3C] md:text-4xl">
+          <h1 className="font-serif text-3xl font-bold text-secondary md:text-4xl">
             Спасибо за ваш заказ!
           </h1>
-          <p className="mt-2 text-[#A0785A]">
-            Заказ <span className="font-semibold text-[#8B5E3C]">#{order.id}</span> успешно оформлен
+          <p className="mt-2 text-secondary-soft">
+            Заказ <span className="font-semibold text-secondary">#{order.id}</span> успешно оформлен
           </p>
         </div>
 
         {/* ── ORDER DETAILS ──────────────────────────────────────── */}
         <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-[#8B5E3C]">Детали заказа</h2>
+          <h2 className="mb-4 text-base font-semibold text-secondary">Детали заказа</h2>
           <dl className="divide-y divide-amber-50 text-sm">
 
             <Row label="Номер заказа">
@@ -206,7 +206,7 @@ export default async function SuccessPage({
         {/* ── BOOK LIST ──────────────────────────────────────────── */}
         {(hasDbItems || stripeItems.length > 0) && (
           <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-base font-semibold text-[#8B5E3C]">Состав заказа</h2>
+            <h2 className="mb-4 text-base font-semibold text-secondary">Состав заказа</h2>
 
             <ul className="space-y-3">
               {hasDbItems
@@ -227,7 +227,7 @@ export default async function SuccessPage({
                         <p className="text-zinc-500">
                           {item.quantity ?? 1} × €{Number(item.price ?? 0).toFixed(2)}
                         </p>
-                        <p className="font-semibold text-[#8B5E3C]">
+                        <p className="font-semibold text-secondary">
                           €{(Number(item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
                         </p>
                       </div>
@@ -245,7 +245,7 @@ export default async function SuccessPage({
                         <p className="text-zinc-500">
                           {item.quantity} × €{(item.unitCents / 100).toFixed(2)}
                         </p>
-                        <p className="font-semibold text-[#8B5E3C]">
+                        <p className="font-semibold text-secondary">
                           €{(item.totalCents / 100).toFixed(2)}
                         </p>
                       </div>
@@ -256,7 +256,7 @@ export default async function SuccessPage({
             {/* Total */}
             <div className="mt-4 flex items-center justify-between border-t border-amber-100 pt-4">
               <span className="font-semibold text-zinc-700">Итого</span>
-              <span className="text-xl font-bold text-[#8B5E3C]">€{total.toFixed(2)}</span>
+              <span className="text-xl font-bold text-secondary">€{total.toFixed(2)}</span>
             </div>
           </section>
         )}
@@ -264,7 +264,7 @@ export default async function SuccessPage({
         {/* ── DELIVERY ───────────────────────────────────────────── */}
         {(order.shippingMethod?.name || deliveryMethod || deliveryAddress) && (
           <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-base font-semibold text-[#8B5E3C]">Доставка</h2>
+            <h2 className="mb-4 text-base font-semibold text-secondary">Доставка</h2>
             <dl className="divide-y divide-amber-50 text-sm">
               {(order.shippingMethod?.name || deliveryMethod) && (
                 <Row label="Способ доставки">
@@ -291,13 +291,13 @@ export default async function SuccessPage({
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             href="/catalog"
-            className="flex-1 rounded-xl bg-[#D97706] px-5 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-amber-500 active:scale-[0.98]"
+            className="flex-1 rounded-xl bg-primary px-5 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-[0.98]"
           >
             Вернуться в каталог
           </Link>
           <Link
             href="/contacts"
-            className="flex-1 rounded-xl border border-[#A0785A] bg-white px-5 py-3 text-center font-semibold text-[#8B5E3C] shadow-sm transition hover:bg-amber-50 active:scale-[0.98]"
+            className="flex-1 rounded-xl border border-secondary-soft bg-white px-5 py-3 text-center font-semibold text-secondary shadow-sm transition hover:bg-amber-50 active:scale-[0.98]"
           >
             Задать вопрос
           </Link>

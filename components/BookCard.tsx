@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { BookWithRelations } from '@/lib/api/catalogTypes';
+import Button from '@/components/ui/Button';
 
 type BookCardProps = {
   book?: BookWithRelations | null;
@@ -25,10 +26,6 @@ function normalizeImageUrl(url: string | null) {
 }
 
 export default function BookCard({ book, onAddToCart, title, author, cover }: BookCardProps) {
-  if (!book && !title) {
-    return null;
-  }
-
   const resolvedTitle = book?.title ?? title ?? '';
   const resolvedAuthor = book?.author?.name ?? author ?? 'Автор не указан';
   const resolvedCategory = book?.category?.name ?? 'Без категории';
@@ -45,6 +42,10 @@ export default function BookCard({ book, onAddToCart, title, author, cover }: Bo
     [book?.cover_image, cover]
   );
   const inStock = resolvedStock > 0;
+
+  if (!book && !title) {
+    return null;
+  }
 
   const handleAdd = async () => {
     if (!book?.id || !onAddToCart || !inStock || isAdding) {
@@ -97,7 +98,7 @@ export default function BookCard({ book, onAddToCart, title, author, cover }: Bo
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-xl font-bold text-amber-800">
+          <p className="text-xl font-bold text-secondary">
             {resolvedPrice === null ? '—' : `€${resolvedPrice.toFixed(2)}`}
           </p>
           {isCatalogMode && (
@@ -111,14 +112,16 @@ export default function BookCard({ book, onAddToCart, title, author, cover }: Bo
 
         <div className="flex gap-2">
           {isCatalogMode && (
-            <button
+            <Button
               type="button"
               onClick={() => void handleAdd()}
+              variant="secondary"
               disabled={!book?.id || !onAddToCart || !inStock || isAdding}
-              className="flex-1 rounded-xl bg-amber-800 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-900 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              loading={isAdding}
+              className="flex-1 disabled:bg-zinc-300"
             >
               {isAdding ? 'Adding...' : 'Add to cart'}
-            </button>
+            </Button>
           )}
           <Link
             href={detailsHref}

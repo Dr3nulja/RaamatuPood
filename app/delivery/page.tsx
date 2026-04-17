@@ -72,14 +72,14 @@ const faq = [
 
 export default function DeliveryPage() {
   return (
-    <main className="min-h-screen bg-[#FDF8F0] text-zinc-900 font-sans">
-      <section className="relative overflow-hidden border-b border-amber-100 bg-gradient-to-br from-[#FDF8F0] via-[#F5F0E8] to-[#FDF8F0]">
+    <main className="min-h-screen bg-background text-zinc-900 font-sans">
+      <section className="relative overflow-hidden border-b border-amber-100 bg-gradient-to-br from-background via-background-muted to-background">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 md:grid-cols-2 md:py-20 lg:px-6">
           <div>
-            <p className="mb-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-[#8B5E3C]">
+            <p className="mb-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-secondary">
               Доставка RaamatuPood
             </p>
-            <h1 className="font-serif text-3xl font-bold leading-tight text-[#8B5E3C] md:text-5xl">
+            <h1 className="font-serif text-3xl font-bold leading-tight text-secondary md:text-5xl">
               Быстрая и бережная доставка книг
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-zinc-700 md:text-lg">
@@ -89,13 +89,13 @@ export default function DeliveryPage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/catalog"
-                className="rounded-xl bg-[#8B5E3C] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#A0785A] hover:shadow-md"
+                className="rounded-xl bg-secondary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-secondary-hover hover:shadow-md"
               >
                 Перейти в каталог
               </Link>
               <Link
                 href="/contacts"
-                className="rounded-xl border border-[#A0785A] bg-white px-5 py-3 text-sm font-semibold text-[#8B5E3C] transition hover:bg-amber-50"
+                className="rounded-xl border border-secondary-soft bg-white px-5 py-3 text-sm font-semibold text-secondary transition hover:bg-amber-50"
               >
                 Задать вопрос
               </Link>
@@ -113,7 +113,7 @@ export default function DeliveryPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12 lg:px-6">
-        <h2 className="font-serif text-2xl font-bold text-[#8B5E3C] md:text-3xl">Способы доставки</h2>
+        <h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Способы доставки</h2>
         <p className="mt-2 text-zinc-700">Выберите вариант, который лучше подходит по скорости и формату получения.</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {methods.map((item) => (
@@ -121,10 +121,10 @@ export default function DeliveryPage() {
               key={item.title}
               className="group rounded-2xl border border-amber-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className="mb-4 inline-flex rounded-xl bg-amber-100 p-2 text-[#D97706] transition group-hover:bg-amber-200">
+              <div className="mb-4 inline-flex rounded-xl bg-amber-100 p-2 text-primary transition group-hover:bg-amber-200">
                 {item.icon}
               </div>
-              <h3 className="font-serif text-xl font-semibold text-[#8B5E3C]">{item.title}</h3>
+              <h3 className="font-serif text-xl font-semibold text-secondary">{item.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-700">{item.description}</p>
             </article>
           ))}
@@ -132,9 +132,9 @@ export default function DeliveryPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-12 lg:px-6">
-        <h2 className="font-serif text-2xl font-bold text-[#8B5E3C] md:text-3xl">Стоимость, сроки и регионы</h2>
+        <h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Стоимость, сроки и регионы</h2>
         <div className="mt-6 overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm">
-          <div className="hidden grid-cols-4 bg-[#F5F0E8] px-5 py-3 text-sm font-semibold text-[#8B5E3C] md:grid">
+          <div className="hidden grid-cols-4 bg-background-muted px-5 py-3 text-sm font-semibold text-secondary md:grid">
             <div>Регион</div>
             <div>Стоимость</div>
             <div>Сроки</div>
@@ -154,11 +154,11 @@ export default function DeliveryPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-12 lg:px-6">
-        <h2 className="font-serif text-2xl font-bold text-[#8B5E3C] md:text-3xl">Важно знать</h2>
+        <h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Важно знать</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {faq.map((item) => (
             <article key={item.q} className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm transition hover:shadow-md">
-              <h3 className="font-serif text-lg font-semibold text-[#8B5E3C]">{item.q}</h3>
+              <h3 className="font-serif text-lg font-semibold text-secondary">{item.q}</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-700">{item.a}</p>
             </article>
           ))}
@@ -166,7 +166,7 @@ export default function DeliveryPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-16 lg:px-6">
-        <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-[#8B5E3C] to-[#A0785A] p-7 text-white shadow-lg md:p-10">
+        <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-secondary to-secondary-hover p-7 text-white shadow-lg md:p-10">
           <h2 className="font-serif text-2xl font-bold md:text-3xl">Готовы оформить заказ?</h2>
           <p className="mt-2 max-w-2xl text-amber-50">
             Перейдите в каталог и выберите книги — мы быстро подготовим заказ и отправим удобным способом.
@@ -174,7 +174,7 @@ export default function DeliveryPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/catalog"
-              className="rounded-xl bg-[#F59E0B] px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-[#D97706] hover:text-white"
+              className="rounded-xl bg-primary-soft px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-primary hover:text-white"
             >
               Перейти в каталог
             </Link>

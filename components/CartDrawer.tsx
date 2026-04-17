@@ -3,6 +3,7 @@
 import { useCartStore } from '@/stores/cartStore';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Button from '@/components/ui/Button';
 
 type CartDrawerProps = {
   isOpen: boolean;
@@ -19,7 +20,13 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
@@ -119,10 +126,12 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
       className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
       aria-hidden={!isOpen}
     >
-      <button
+      <Button
         type="button"
         aria-label="Close cart"
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ease-in-out ${
+        variant="ghost"
+        size="small"
+        className={`fixed inset-0 z-40 !p-0 bg-black/40 transition-opacity duration-300 ease-in-out ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onClose}
@@ -133,7 +142,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
           fixed top-0 right-0
           h-screen
           w-[360px] max-w-[92vw]
-          bg-white dark:bg-zinc-950
+          bg-surface
           z-50
           shadow-xl
           flex flex-col
@@ -141,75 +150,86 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
       >
-        <header className="shrink-0 border-b border-amber-100 bg-amber-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <header className="shrink-0 border-b border-border bg-surface-muted px-4 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-amber-900 dark:text-amber-100">Cart ({safeTotalItems})</h2>
-            <button
+            <h2 className="text-lg font-bold text-secondary">Cart ({safeTotalItems})</h2>
+            <Button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-zinc-700 transition-colors hover:bg-white hover:text-amber-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              variant="ghost"
+              size="small"
+              className="rounded-lg !p-2 text-text-secondary transition-colors hover:bg-background hover:text-secondary"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </Button>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4">
           {safeCart.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-amber-200 bg-amber-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
-              <p className="text-base font-semibold text-zinc-700 dark:text-zinc-200">Your cart is empty</p>
-              <p className="mt-1 text-sm text-zinc-500">Add books to start checkout</p>
+            <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-muted p-6 text-center">
+              <p className="text-base font-semibold text-text-primary">Your cart is empty</p>
+              <p className="mt-1 text-sm text-text-secondary">Add books to start checkout</p>
             </div>
           ) : (
             <div className="space-y-3">
               {safeCart.map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-xl border border-amber-100 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+                  className="rounded-xl border border-border bg-surface p-3 shadow-sm"
                 >
                   <div className="flex gap-3">
                     {item.cover_image ? (
-                      <div className="h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-amber-100 dark:bg-zinc-800">
+                      <div className="h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-background-muted">
                         <img src={item.cover_image} alt={item.title} className="h-full w-full object-cover" />
                       </div>
                     ) : (
-                      <div className="h-20 w-14 shrink-0 rounded-lg bg-amber-100 dark:bg-zinc-800" />
+                      <div className="h-20 w-14 shrink-0 rounded-lg bg-background-muted" />
                     )}
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.title}</h3>
-                      {item.author && <p className="mt-0.5 text-xs text-zinc-500">{item.author}</p>}
+                      <h3 className="line-clamp-2 text-sm font-semibold text-text-primary">{item.title}</h3>
+                      {item.author && <p className="mt-0.5 text-xs text-text-secondary">{item.author}</p>}
                       <div className="mt-1 flex items-center gap-2">
-                        <p className="text-sm font-bold text-amber-800 dark:text-amber-400">
+                        <p className="text-sm font-bold text-primary">
                           €{typeof item.price === 'string' ? item.price : item.price.toFixed(2)}
                         </p>
-                        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Qty: {item.quantity}</span>
+                        <span className="text-xs font-semibold text-text-secondary">Qty: {item.quantity}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-3 flex items-center gap-2">
-                    <button
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="small"
                       onClick={() => void handleUpdateQuantity(item.id, item.quantity - 1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 text-amber-800 transition hover:bg-amber-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                      className="flex h-8 w-8 items-center justify-center !px-0 !py-0 text-secondary transition hover:bg-primary-soft"
                     >
                       -
-                    </button>
-                    <span className="min-w-[72px] text-center text-sm font-semibold text-zinc-700 dark:text-zinc-200">Qty: {item.quantity}</span>
-                    <button
+                    </Button>
+                    <span className="min-w-[72px] text-center text-sm font-semibold text-text-secondary">Qty: {item.quantity}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="small"
                       onClick={() => void handleUpdateQuantity(item.id, item.quantity + 1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 text-amber-800 transition hover:bg-amber-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                      className="flex h-8 w-8 items-center justify-center !px-0 !py-0 text-secondary transition hover:bg-primary-soft"
                     >
                       +
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="small"
                       onClick={() => void handleRemove(item.id)}
-                      className="ml-auto rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      className="ml-auto px-2 py-1 text-xs font-semibold"
                     >
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 </article>
               ))}
@@ -217,20 +237,23 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
           )}
         </div>
 
-        <footer className="shrink-0 border-t border-amber-100 bg-amber-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="mb-3 flex items-center justify-between text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+        <footer className="shrink-0 border-t border-border bg-surface-muted p-4">
+          <div className="mb-3 flex items-center justify-between text-sm font-semibold text-text-secondary">
             <span>Total</span>
-            <span className="text-lg font-bold text-amber-800 dark:text-amber-400">€{safeTotalPrice.toFixed(2)}</span>
+            <span className="text-lg font-bold text-primary">€{safeTotalPrice.toFixed(2)}</span>
           </div>
-          <button
-            className="w-full rounded-xl bg-amber-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-800"
+          <Button
+            type="button"
+            variant="primary"
+            fullWidth
+            className="rounded-xl text-sm"
             onClick={() => {
               onClose();
               router.push('/checkout');
             }}
           >
             Checkout
-          </button>
+          </Button>
         </footer>
       </aside>
     </div>

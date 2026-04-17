@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import type { CreateReviewApiResponse, ReviewsApiResponse } from '@/lib/api/catalogTypes';
 import type { ApiErrorResponse } from '@/lib/api/types';
+import Button from '@/components/ui/Button';
 
 type BookReviewsProps = {
   bookId: number;
@@ -124,13 +125,13 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
   };
 
   return (
-    <section className="rounded-3xl bg-white p-8 shadow-sm dark:bg-gray-800">
+    <section className="rounded-3xl bg-white p-8 shadow-sm">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">Отзывы</h2>
-        <span className="text-sm text-gray-500 dark:text-gray-300">
-          Средний рейтинг: <span className="font-semibold text-amber-600 dark:text-amber-400">★ {reviewsData.averageRating.toFixed(1)}</span>
+        <span className="text-sm text-zinc-500">
+          Средний рейтинг: <span className="font-semibold text-amber-600">★ {reviewsData.averageRating.toFixed(1)}</span>
           {' · '}
-          Отзывов: <span className="font-semibold text-gray-700 dark:text-gray-100">{reviewsData.reviewCount}</span>
+          Отзывов: <span className="font-semibold text-zinc-700">{reviewsData.reviewCount}</span>
         </span>
       </div>
 
@@ -139,13 +140,13 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
           {error}
         </div>
       ) : isLoading ? (
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-200">
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-600">
           Загрузка отзывов...
         </div>
       ) : (
         <>
           {canShowForm ? (
-            <form onSubmit={handleSubmit} className="mb-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-500/30 dark:bg-amber-900/20">
+            <form onSubmit={handleSubmit} className="mb-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
               <h3 className="text-lg font-semibold">Оставить отзыв</h3>
 
               <div className="space-y-2">
@@ -154,7 +155,7 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
                   id="review-rating"
                   value={rating}
                   onChange={(event) => setRating(Number(event.target.value))}
-                  className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400 dark:bg-gray-800"
+                  className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
                 >
                   <option value={5}>5 — Отлично</option>
                   <option value={4}>4 — Хорошо</option>
@@ -173,44 +174,45 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
                   rows={4}
                   maxLength={2000}
                   placeholder="Поделитесь впечатлениями о книге"
-                  className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400 dark:bg-gray-800"
+                  className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
                 />
               </div>
 
-              {submitError && <p className="text-sm text-red-700 dark:text-red-300">{submitError}</p>}
+              {submitError && <p className="text-sm text-red-700">{submitError}</p>}
 
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                loading={isSubmitting}
+                className="bg-primary hover:bg-primary-hover"
               >
                 {isSubmitting ? 'Отправка...' : 'Отправить отзыв'}
-              </button>
+              </Button>
             </form>
           ) : (
-            <div className="mb-6 rounded-2xl border border-dashed border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-900/20 dark:text-amber-100">
+            <div className="mb-6 rounded-2xl border border-dashed border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900">
               {blockedMessage}
             </div>
           )}
 
           {reviewsData.reviews.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
+            <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600">
               У этой книги пока нет отзывов.
             </div>
           ) : (
             <div className="space-y-4">
               {reviewsData.reviews.map((review) => (
-                <article key={review.id} className="rounded-2xl bg-gray-50 p-5 dark:bg-gray-700">
+                <article key={review.id} className="rounded-2xl bg-gray-50 p-5">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <div className="font-semibold">{review.user.name || 'Покупатель'}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-300">{formatDate(review.created_at)}</div>
+                      <div className="text-sm text-gray-500">{formatDate(review.created_at)}</div>
                     </div>
-                    <div className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                    <div className="text-sm font-semibold text-amber-600">
                       ★ {review.rating.toFixed(1)}
                     </div>
                   </div>
-                  <p className="text-sm leading-7 text-gray-700 dark:text-gray-200">
+                  <p className="text-sm leading-7 text-gray-700">
                     {review.comment || 'Без текста отзыва.'}
                   </p>
                 </article>

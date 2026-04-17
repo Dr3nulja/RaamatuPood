@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useCartStore } from '@/stores/cartStore';
 import { createCheckoutSession } from '@/app/actions/checkout';
+import Button from '@/components/ui/Button';
 
 interface DeliveryOption {
   id: string;
@@ -44,7 +45,14 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     void useCartStore.persist.rehydrate();
-    setIsMounted(true);
+
+    const frame = window.requestAnimationFrame(() => {
+      setIsMounted(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   const [formData, setFormData] = useState<FormData>({
@@ -156,9 +164,9 @@ export default function CheckoutPage() {
 
   if (!isMounted) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-[#F5F0E8] px-4 py-12 flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-b from-background to-background-muted px-4 py-12 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#D97706]"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           <p className="mt-4 text-zinc-700">Загрузка корзины...</p>
         </div>
       </main>
@@ -167,14 +175,14 @@ export default function CheckoutPage() {
 
   if (cart.length === 0) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-[#F5F0E8] px-4 py-12">
+      <main className="min-h-screen bg-gradient-to-b from-background to-background-muted px-4 py-12">
         <div className="mx-auto max-w-3xl">
           <div className="rounded-3xl border border-amber-100 bg-white px-6 py-8 text-center shadow-sm md:px-8 md:py-10">
-            <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Корзина пуста</h1>
+            <h1 className="font-serif text-3xl font-bold text-secondary">Корзина пуста</h1>
             <p className="mt-3 text-zinc-700">Добавьте книги для оформления заказа</p>
             <Link
               href="/catalog"
-              className="mt-5 inline-flex rounded-xl bg-[#D97706] px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-500"
+              className="mt-5 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
             >
               Перейти в каталог
             </Link>
@@ -185,17 +193,17 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#FDF8F0] to-[#F5F0E8] px-4 py-12">
+    <main className="min-h-screen bg-gradient-to-b from-background to-background-muted px-4 py-12">
       <div className="mx-auto flex max-w-6xl gap-6 lg:grid lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <section className="rounded-3xl border border-amber-100 bg-white px-6 py-8 shadow-sm md:px-8">
-            <h1 className="font-serif text-3xl font-bold text-[#8B5E3C]">Оформление заказа</h1>
+            <h1 className="font-serif text-3xl font-bold text-secondary">Оформление заказа</h1>
             <p className="mt-2 text-zinc-700">Шаг 1: Ваши данные и доставка</p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-[#8B5E3C]">
+                  <label htmlFor="name" className="block text-sm font-semibold text-secondary">
                     Имя *
                   </label>
                   <input
@@ -204,15 +212,15 @@ export default function CheckoutPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className={`mt-1 w-full rounded-xl border px-3 py-2 text-zinc-900 outline-none transition ${
-                      errors.name ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-amber-50 focus:border-amber-400'
+                    className={`ui-input mt-1 ${
+                      errors.name ? 'border-red-400 bg-red-50 focus:border-red-500' : ''
                     }`}
                     placeholder="Ваше имя"
                   />
                   {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-[#8B5E3C]">
+                  <label htmlFor="email" className="block text-sm font-semibold text-secondary">
                     Email *
                   </label>
                   <input
@@ -221,8 +229,8 @@ export default function CheckoutPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`mt-1 w-full rounded-xl border px-3 py-2 text-zinc-900 outline-none transition ${
-                      errors.email ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-amber-50 focus:border-amber-400'
+                    className={`ui-input mt-1 ${
+                      errors.email ? 'border-red-400 bg-red-50 focus:border-red-500' : ''
                     }`}
                     placeholder="your@email.com"
                   />
@@ -231,7 +239,7 @@ export default function CheckoutPage() {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-semibold text-[#8B5E3C]">
+                <label htmlFor="phone" className="block text-sm font-semibold text-secondary">
                   Телефон
                 </label>
                 <input
@@ -240,16 +248,16 @@ export default function CheckoutPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 w-full rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-zinc-900 outline-none transition focus:border-amber-400"
+                  className="ui-input mt-1"
                   placeholder="+372 5xxxxxxxx"
                 />
               </div>
 
               <div className="border-t border-amber-100 pt-4">
-                <h2 className="font-serif text-lg font-semibold text-[#8B5E3C]">Адрес доставки</h2>
+                <h2 className="font-serif text-lg font-semibold text-secondary">Адрес доставки</h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
-                    <label htmlFor="street" className="block text-sm font-semibold text-[#8B5E3C]">
+                    <label htmlFor="street" className="block text-sm font-semibold text-secondary">
                       Улица *
                     </label>
                     <input
@@ -258,15 +266,15 @@ export default function CheckoutPage() {
                       name="street"
                       value={formData.street}
                       onChange={handleInputChange}
-                      className={`mt-1 w-full rounded-xl border px-3 py-2 text-zinc-900 outline-none transition ${
-                        errors.street ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-amber-50 focus:border-amber-400'
+                      className={`ui-input mt-1 ${
+                        errors.street ? 'border-red-400 bg-red-50 focus:border-red-500' : ''
                       }`}
                       placeholder="Улица"
                     />
                     {errors.street && <p className="mt-1 text-xs text-red-600">{errors.street}</p>}
                   </div>
                   <div>
-                    <label htmlFor="houseNumber" className="block text-sm font-semibold text-[#8B5E3C]">
+                    <label htmlFor="houseNumber" className="block text-sm font-semibold text-secondary">
                       Номер дома *
                     </label>
                     <input
@@ -275,8 +283,8 @@ export default function CheckoutPage() {
                       name="houseNumber"
                       value={formData.houseNumber}
                       onChange={handleInputChange}
-                      className={`mt-1 w-full rounded-xl border px-3 py-2 text-zinc-900 outline-none transition ${
-                        errors.houseNumber ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-amber-50 focus:border-amber-400'
+                      className={`ui-input mt-1 ${
+                        errors.houseNumber ? 'border-red-400 bg-red-50 focus:border-red-500' : ''
                       }`}
                       placeholder="10"
                     />
@@ -286,7 +294,7 @@ export default function CheckoutPage() {
 
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                   <div>
-                    <label htmlFor="postalCode" className="block text-sm font-semibold text-[#8B5E3C]">
+                    <label htmlFor="postalCode" className="block text-sm font-semibold text-secondary">
                       Почтовый индекс *
                     </label>
                     <input
@@ -295,15 +303,15 @@ export default function CheckoutPage() {
                       name="postalCode"
                       value={formData.postalCode}
                       onChange={handleInputChange}
-                      className={`mt-1 w-full rounded-xl border px-3 py-2 text-zinc-900 outline-none transition ${
-                        errors.postalCode ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-amber-50 focus:border-amber-400'
+                      className={`ui-input mt-1 ${
+                        errors.postalCode ? 'border-red-400 bg-red-50 focus:border-red-500' : ''
                       }`}
                       placeholder="10001"
                     />
                     {errors.postalCode && <p className="mt-1 text-xs text-red-600">{errors.postalCode}</p>}
                   </div>
                   <div>
-                    <label htmlFor="city" className="block text-sm font-semibold text-[#8B5E3C]">
+                    <label htmlFor="city" className="block text-sm font-semibold text-secondary">
                       Город *
                     </label>
                     <input
@@ -312,15 +320,15 @@ export default function CheckoutPage() {
                       name="city"
                       value={formData.city}
                       onChange={handleInputChange}
-                      className={`mt-1 w-full rounded-xl border px-3 py-2 text-zinc-900 outline-none transition ${
-                        errors.city ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-amber-50 focus:border-amber-400'
+                      className={`ui-input mt-1 ${
+                        errors.city ? 'border-red-400 bg-red-50 focus:border-red-500' : ''
                       }`}
                       placeholder="Tallinn"
                     />
                     {errors.city && <p className="mt-1 text-xs text-red-600">{errors.city}</p>}
                   </div>
                   <div>
-                    <label htmlFor="country" className="block text-sm font-semibold text-[#8B5E3C]">
+                    <label htmlFor="country" className="block text-sm font-semibold text-secondary">
                       Страна
                     </label>
                     <select
@@ -328,7 +336,7 @@ export default function CheckoutPage() {
                       name="country"
                       value={formData.country}
                       onChange={handleInputChange}
-                      className="mt-1 w-full rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-zinc-900 outline-none transition focus:border-amber-400"
+                      className="ui-select mt-1"
                     >
                       <option value="EE">Эстония</option>
                       <option value="LV">Латвия</option>
@@ -340,15 +348,15 @@ export default function CheckoutPage() {
               </div>
 
               <div className="border-t border-amber-100 pt-4">
-                <h2 className="font-serif text-lg font-semibold text-[#8B5E3C]">Способ доставки</h2>
+                <h2 className="font-serif text-lg font-semibold text-secondary">Способ доставки</h2>
                 <div className="mt-4 space-y-3">
                   {deliveryOptions.map((option) => (
                     <label
                       key={option.id}
                       className="flex items-center gap-3 rounded-xl border-2 border-amber-100 px-4 py-3 transition cursor-pointer hover:border-amber-300 hover:bg-amber-50"
                       style={{
-                        borderColor: formData.deliveryMethod === option.id ? '#D97706' : undefined,
-                        backgroundColor: formData.deliveryMethod === option.id ? '#FEF3C7' : undefined,
+                        borderColor: formData.deliveryMethod === option.id ? 'var(--ds-primary)' : undefined,
+                        backgroundColor: formData.deliveryMethod === option.id ? 'var(--ds-primary-soft)' : undefined,
                       }}
                     >
                       <input
@@ -360,10 +368,10 @@ export default function CheckoutPage() {
                         className="cursor-pointer"
                       />
                       <div className="flex-1">
-                        <p className="font-semibold text-[#8B5E3C]">{option.name}</p>
+                        <p className="font-semibold text-secondary">{option.name}</p>
                         <p className="text-xs text-zinc-600">{option.description}</p>
                       </div>
-                      <p className="font-semibold text-[#8B5E3C]">
+                      <p className="font-semibold text-secondary">
                         {option.price === 0 ? 'Бесплатно' : `€${option.price.toFixed(2)}`}
                       </p>
                     </label>
@@ -377,20 +385,22 @@ export default function CheckoutPage() {
 
               <input type="hidden" name="cartItems" value={JSON.stringify(cartItemsPayload)} />
 
-              <button
+              <Button
                 type="submit"
+                fullWidth
+                size="large"
+                loading={isPending}
                 disabled={isPending || cart.length === 0}
-                className="w-full rounded-xl bg-[#D97706] px-5 py-3 font-semibold text-white transition hover:bg-amber-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {isPending ? 'Переход к оплате...' : `Оплатить €${total.toFixed(2)}`}
-              </button>
+              </Button>
             </form>
           </section>
         </div>
 
         <div className="space-y-6">
           <section className="rounded-3xl border border-amber-100 bg-white px-6 py-6 shadow-sm md:sticky md:top-4">
-            <h2 className="font-serif text-lg font-bold text-[#8B5E3C]">Ваш заказ</h2>
+            <h2 className="font-serif text-lg font-bold text-secondary">Ваш заказ</h2>
 
             <div className="mt-4 space-y-3 border-b border-amber-100 pb-4">
               {cart.map((item) => {
@@ -421,13 +431,13 @@ export default function CheckoutPage() {
             </div>
 
             <div className="mt-4 flex justify-between text-lg font-bold">
-              <p className="text-[#8B5E3C]">Итого:</p>
-              <p className="text-[#D97706]">€{total.toFixed(2)}</p>
+              <p className="text-secondary">Итого:</p>
+              <p className="text-primary">€{total.toFixed(2)}</p>
             </div>
 
             <Link
               href="/cart"
-              className="mt-4 block text-center text-sm text-[#8B5E3C] transition hover:text-[#A0785A] hover:underline"
+              className="mt-4 block text-center text-sm text-secondary transition hover:text-secondary-soft hover:underline"
             >
               К корзине
             </Link>
