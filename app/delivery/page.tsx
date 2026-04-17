@@ -62,7 +62,7 @@ const faq = [
   },
   {
     q: "Можно ли отследить посылку?",
-    a: "Да, после отправки вы получите трек-номер на e-mail.",
+    a: "Да, после отправки вы получите возможность отслеживать статус заказа через личный кабинет",
   },
   {
     q: "Что делать, если посылка задерживается?",
@@ -89,13 +89,15 @@ export default function DeliveryPage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/catalog"
-                className="rounded-xl bg-secondary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-secondary-hover hover:shadow-md"
+                className="rounded-xl px-5 py-3 text-sm font-semibold !text-white shadow-sm transition hover:shadow-md"
+                style={{ backgroundColor: '#2d1408', color: '#ffffff' }}
               >
                 Перейти в каталог
               </Link>
               <Link
                 href="/contacts"
-                className="rounded-xl border border-secondary-soft bg-white px-5 py-3 text-sm font-semibold text-secondary transition hover:bg-amber-50"
+                className="rounded-xl border px-5 py-3 text-sm font-semibold !text-white transition"
+                style={{ backgroundColor: '#6b442a', borderColor: '#6b442a', color: '#ffffff' }}
               >
                 Задать вопрос
               </Link>
@@ -166,21 +168,31 @@ export default function DeliveryPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-16 lg:px-6">
-        <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-secondary to-secondary-hover p-7 text-white shadow-lg md:p-10">
-          <h2 className="font-serif text-2xl font-bold md:text-3xl">Готовы оформить заказ?</h2>
-          <p className="mt-2 max-w-2xl text-amber-50">
+        <div
+          className="rounded-3xl border border-amber-900/60 p-7 text-white shadow-lg md:p-10"
+          style={{ backgroundColor: '#8E5724', color: '#ffffff' }}
+        >
+          <h2
+            className="font-serif text-2xl font-bold !text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.35)] md:text-3xl"
+            style={{ color: '#ffffff' }}
+          >
+            Готовы оформить заказ?
+          </h2>
+          <p className="mt-2 max-w-2xl !text-white" style={{ color: '#ffffff', opacity: 0.96 }}>
             Перейдите в каталог и выберите книги — мы быстро подготовим заказ и отправим удобным способом.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/catalog"
-              className="rounded-xl bg-primary-soft px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-primary hover:text-white"
+              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-amber-950 transition hover:bg-amber-100"
+              style={{ color: '#2d1408' }}
             >
               Перейти в каталог
             </Link>
             <Link
               href="/contacts"
-              className="rounded-xl border border-white/70 bg-transparent px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="rounded-xl border border-white bg-transparent px-5 py-3 text-sm font-semibold !text-white transition hover:bg-white/15"
+              style={{ color: '#ffffff' }}
             >
               Задать вопрос
             </Link>
