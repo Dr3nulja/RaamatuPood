@@ -10,15 +10,40 @@ import Button from '@/components/ui/Button';
 interface DeliveryOption {
   id: string;
   name: string;
+  checkoutValue: string;
   price: number;
   description: string;
 }
 
 const deliveryOptions: DeliveryOption[] = [
-  { id: 'omniva', name: 'Omniva pakiautomaat', price: 3.99, description: 'Самовывоз из постамата' },
-  { id: 'itella', name: 'Itella Smartpost', price: 4.49, description: 'Самовывоз из пункта выдачи' },
-  { id: 'courier', name: 'Курьер по Таллину', price: 6.0, description: 'Доставка до двери' },
-  { id: 'pickup', name: 'Самовывоз', price: 0, description: 'Забрать в нашем магазине' },
+  {
+    id: 'omniva',
+    name: 'Omniva pakiautomaat',
+    checkoutValue: 'Omniva pakiautomaat',
+    price: 3.99,
+    description: 'Самовывоз из постамата',
+  },
+  {
+    id: 'itella',
+    name: 'Itella Smartpost',
+    checkoutValue: 'Itella Smartpost',
+    price: 4.49,
+    description: 'Самовывоз из пункта выдачи',
+  },
+  {
+    id: 'courier',
+    name: 'Курьер по Таллину',
+    checkoutValue: 'Tallinn Courier',
+    price: 6.0,
+    description: 'Доставка до двери',
+  },
+  {
+    id: 'pickup',
+    name: 'Самовывоз',
+    checkoutValue: 'Self-call',
+    price: 0,
+    description: 'Забрать в нашем магазине',
+  },
 ];
 
 interface FormData {
@@ -77,6 +102,7 @@ export default function CheckoutPage() {
     const map: Record<string, string> = {
       missing_fields: 'Пожалуйста, заполните обязательные поля.',
       empty_cart: 'Корзина пуста.',
+      invalid_shipping_method: 'Выбранный способ доставки недоступен. Обновите страницу и попробуйте снова.',
       checkout_failed: 'Ошибка при создании сессии оплаты. Попробуйте ещё раз.',
     };
 
@@ -152,7 +178,7 @@ export default function CheckoutPage() {
     payload.set('email', formData.email);
     payload.set('phone', formData.phone);
     payload.set('address', `${formData.street} ${formData.houseNumber}, ${formData.postalCode} ${formData.city}, ${formData.country}`);
-    payload.set('delivery', selectedDelivery.name);
+    payload.set('delivery', selectedDelivery.checkoutValue);
     // ИСПРАВЛЕНО: передача корзины в Server Action через hidden/serialized payload
     payload.set('cartItems', JSON.stringify(cartItemsPayload));
 

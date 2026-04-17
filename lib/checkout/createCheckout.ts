@@ -29,6 +29,41 @@ function normalizeSiteUrl(siteUrl?: string) {
   return (siteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 }
 
+function normalizeShippingName(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+function buildShippingCandidates(value: string) {
+  const raw = String(value || '').trim();
+  const normalized = normalizeShippingName(raw);
+  const aliases = new Set<string>([raw]);
+
+  const aliasMap: Record<string, string[]> = {
+    courier: ['Tallinn Courier', 'Курьер по Таллину'],
+    pickup: ['Self-call', 'Самовывоз'],
+    'tallinn courier': ['Tallinn Courier', 'Курьер по Таллину'],
+    'self-call': ['Self-call', 'Самовывоз'],
+    'курьер по таллину': ['Tallinn Courier', 'Курьер по Таллину'],
+    'самовывоз': ['Self-call', 'Самовывоз'],
+    omniva: ['Omniva pakiautomaat'],
+    itella: ['Itella Smartpost'],
+    'omniva pakiautomaat': ['Omniva pakiautomaat'],
+    'itella smartpost': ['Itella Smartpost'],
+  };
+
+  for (const alias of aliasMap[normalized] || []) {
+    aliases.add(alias);
+  }
+
+  return {
+    normalized,
+    names: Array.from(aliases).filter(Boolean),
+  };
+}
+
 function parseAddress(input: CheckoutInput) {
   const combinedAddress = String(input.address || '').trim();
   let street = String(input.street || '').trim();
@@ -132,15 +167,30 @@ export async function createCheckout(input: CheckoutInput): Promise<CheckoutResp
   }
 
   const numericDeliveryId = Number(deliveryMethod);
-  const shippingMethod = await prisma.shippingMethod.findFirst({
+  const shippingCandidates = buildShippingCandidates(deliveryMethod);
+
+  let shippingMethod = await prisma.shippingMethod.findFirst({
     where:
       Number.isInteger(numericDeliveryId) && numericDeliveryId > 0
         ? {
-            OR: [{ id: numericDeliveryId }, { name: deliveryMethod }],
+            OR: [{ id: numericDeliveryId }, { name: { in: shippingCandidates.names } }],
           }
-        : { name: deliveryMethod },
+        : { name: { in: shippingCandidates.names } },
     select: { id: true, name: true, price: true },
   });
+
+  if (!shippingMethod) {
+    const allShippingMethods = await prisma.shippingMethod.findMany({
+      select: { id: true, name: true, price: true },
+    });
+
+    shippingMethod =
+      allShippingMethods.find((method) =>
+        shippingCandidates.names.some(
+          (candidate) => normalizeShippingName(method.name || '') === normalizeShippingName(candidate)
+        )
+      ) || null;
+  }
 
   if (!shippingMethod) {
     return toError('invalid_shipping_method', 'Invalid shipping method');
