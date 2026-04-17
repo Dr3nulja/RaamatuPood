@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import pool from "../../../lib/db";
 import BookReviews from "@/components/BookReviews";
-import Button from "@/components/ui/Button";
+import AddToCartButton from "@/components/AddToCartButton";
 
 type BookPageProps = {
   params: Promise<{
@@ -207,14 +207,17 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Button
-                variant="primary"
-                size="large"
-                disabled={!inStock}
+              <AddToCartButton
+                book={{
+                  id: book.id,
+                  title: book.title,
+                  author: book.author || undefined,
+                  price: Number(book.price),
+                  cover_image: cover || undefined,
+                  stock: book.stock,
+                }}
                 className={!inStock ? "bg-zinc-400 hover:bg-zinc-400" : ""}
-              >
-                Добавить в корзину
-              </Button>
+              />
               <Link
                 href="/catalog"
                 className="rounded-xl border border-amber-300 px-5 py-3 text-sm font-medium text-secondary transition hover:bg-amber-50"
