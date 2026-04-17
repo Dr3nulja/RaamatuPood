@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button';
 import AddableSelect from '@/components/admin/AddableSelect';
 import EditBookModal from '@/components/admin/EditBookModal';
 import BookCard from '@/components/admin/BookCard';
+import Modal from '@/components/ui/Modal';
 
 type BookFormState = {
   title: string;
@@ -447,37 +448,42 @@ export default function AdminBooksView() {
       />
 
       {/* Delete Confirmation Modal */}
-      {isDeleteConfirmOpen && bookToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="font-serif text-xl font-bold text-zinc-900 mb-2">Удалить книгу?</h2>
-            <p className="mb-4 text-zinc-600">
-              Вы действительно хотите удалить «<span className="font-semibold">{bookToDelete.title}</span>»? Это действие нельзя отменить.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsDeleteConfirmOpen(false);
-                  setBookToDelete(null);
-                }}
-                className="rounded-lg px-4 py-2 font-semibold"
-              >
-                Отмена
-              </Button>
-              <Button
-                type="button"
-                onClick={() => void handleDeleteBook()}
-                disabled={bookActionLoadingId === bookToDelete.id}
-                className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
-              >
-                Удалить
-              </Button>
-            </div>
+      <Modal
+        isOpen={isDeleteConfirmOpen && Boolean(bookToDelete)}
+        onClose={() => {
+          setIsDeleteConfirmOpen(false);
+          setBookToDelete(null);
+        }}
+        title="Удалить книгу?"
+        size="md"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsDeleteConfirmOpen(false);
+                setBookToDelete(null);
+              }}
+              className="rounded-lg px-4 py-2 font-semibold"
+            >
+              Отмена
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleDeleteBook()}
+              disabled={!bookToDelete || bookActionLoadingId === bookToDelete.id}
+              className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 font-semibold text-red-300 hover:bg-red-100 disabled:opacity-60"
+            >
+              Удалить
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p className="text-zinc-600">
+          Вы действительно хотите удалить «<span className="font-semibold">{bookToDelete?.title}</span>»? Это действие нельзя отменить.
+        </p>
+      </Modal>
     </article>
   );
 }

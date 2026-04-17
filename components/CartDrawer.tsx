@@ -131,7 +131,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
         aria-label="Close cart"
         variant="ghost"
         size="small"
-        className={`fixed inset-0 z-40 !p-0 bg-black/40 transition-opacity duration-300 ease-in-out ${
+        className={`fixed inset-0 z-40 !p-0 bg-white/20 backdrop-blur-sm transition-opacity duration-300 ease-in-out ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onClose}

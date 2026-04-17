@@ -22,7 +22,23 @@ async function isUsernameTakenCaseInsensitive(username: string, excludeUserId: n
   return rows.length > 0;
 }
 
-export async function POST(request: Request) {
+function parseFormAvatar(file: File) {
+  if (!file.type.startsWith('image/')) {
+    return { ok: false as const, error: 'invalid_avatar_type' };
+  }
+
+  if (file.size > MAX_AVATAR_BYTES) {
+    return { ok: false as const, error: 'avatar_too_large' };
+  }
+
+  if (!SUPPORTED_AVATAR_TYPES.has(file.type)) {
+    return { ok: false as const, error: 'unsupported_avatar_type' };
+  }
+
+  return { ok: true as const };
+}
+
+export async function PATCH(request: Request) {
   const session = await auth0.getSession();
   const authUser = session?.user;
 
@@ -38,30 +54,34 @@ export async function POST(request: Request) {
   const usernameRaw = String(formData.get('username') || '').trim();
   const avatar = formData.get('avatar');
 
-  if (!isValidUsername(usernameRaw)) {
+  const hasUsernameUpdate = usernameRaw.length > 0;
+  const hasAvatarUpdate = avatar instanceof File && avatar.size > 0;
+
+  if (!hasUsernameUpdate && !hasAvatarUpdate) {
+    return NextResponse.json({ error: 'nothing_to_update' }, { status: 400 });
+  }
+
+  if (hasUsernameUpdate && !isValidUsername(usernameRaw)) {
     return NextResponse.json(
       { error: 'invalid_username', message: 'Username must be 3-20 chars and use only letters, numbers, _ or -' },
       { status: 400 }
     );
   }
 
-  if (!(avatar instanceof File)) {
-    return NextResponse.json({ error: 'avatar_required', message: 'Avatar image is required' }, { status: 400 });
-  }
+  if (hasAvatarUpdate) {
+    const avatarCheck = parseFormAvatar(avatar);
+    if (!avatarCheck.ok) {
+      const avatarErrors: Record<string, string> = {
+        invalid_avatar_type: 'Avatar must be an image file',
+        avatar_too_large: 'Avatar must be <= 2MB',
+        unsupported_avatar_type: 'Use jpg, png, webp or gif avatar image',
+      };
 
-  if (!avatar.type.startsWith('image/')) {
-    return NextResponse.json({ error: 'invalid_avatar_type', message: 'Avatar must be an image file' }, { status: 400 });
-  }
-
-  if (avatar.size > MAX_AVATAR_BYTES) {
-    return NextResponse.json({ error: 'avatar_too_large', message: 'Avatar must be <= 2MB' }, { status: 400 });
-  }
-
-  if (!SUPPORTED_AVATAR_TYPES.has(avatar.type)) {
-    return NextResponse.json(
-      { error: 'unsupported_avatar_type', message: 'Use jpg, png, webp or gif avatar image' },
-      { status: 400 }
-    );
+      return NextResponse.json(
+        { error: avatarCheck.error, message: avatarErrors[avatarCheck.error] },
+        { status: 400 }
+      );
+    }
   }
 
   const existingUser =
@@ -73,21 +93,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'user_not_found' }, { status: 404 });
   }
 
-  const usernameTaken = await isUsernameTakenCaseInsensitive(usernameRaw, existingUser.id);
+  if (hasUsernameUpdate) {
+    const usernameTaken = await isUsernameTakenCaseInsensitive(usernameRaw, existingUser.id);
 
-  if (usernameTaken) {
-    return NextResponse.json({ error: 'username_taken', message: 'Username is already in use' }, { status: 409 });
+    if (usernameTaken) {
+      return NextResponse.json({ error: 'username_taken', message: 'Username is already in use' }, { status: 409 });
+    }
   }
 
-  const buffer = Buffer.from(await avatar.arrayBuffer());
-  const avatarBase64 = buffer.toString('base64');
-  const avatarDataUrl = `data:${avatar.type};base64,${avatarBase64}`;
+  let avatarDataUrl: string | null = null;
+  if (hasAvatarUpdate) {
+    const buffer = Buffer.from(await avatar.arrayBuffer());
+    avatarDataUrl = `data:${avatar.type};base64,${buffer.toString('base64')}`;
+  }
 
   const user = await prisma.user.update({
     where: { id: existingUser.id },
     data: {
-      name: usernameRaw,
-      picture: avatarDataUrl,
+      ...(hasUsernameUpdate ? { name: usernameRaw } : {}),
+      ...(avatarDataUrl ? { picture: avatarDataUrl } : {}),
       email: authUser.email?.trim() || existingUser.email,
     },
     select: {
@@ -103,12 +127,12 @@ export async function POST(request: Request) {
   try {
     await updateAuth0ProfileMetadata({
       auth0UserId: authUser.sub,
-      username: usernameRaw,
+      username: user.name || usernameRaw || existingUser.name || '',
       avatarUrl: '/api/profile/avatar',
     });
   } catch (error) {
     metadataSyncWarning = error instanceof Error ? error.message : 'Failed to sync Auth0 metadata';
-    console.error('Auth0 metadata sync failed after profile setup:', metadataSyncWarning);
+    console.error('Auth0 metadata sync failed after profile update:', metadataSyncWarning);
   }
 
   return NextResponse.json(
