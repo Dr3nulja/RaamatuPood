@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import Button from '@/components/ui/Button';
 
 type OrderItem = {
   id: number;
@@ -78,13 +79,15 @@ export default function OrderCard({ order }: OrderCardProps) {
       <div className="mt-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Books</h4>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="small"
             onClick={() => setIsExpanded((value) => !value)}
-            className="rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-amber-50"
+            className="rounded-full border-amber-200 bg-white text-zinc-700 hover:bg-amber-50"
           >
             {isExpanded ? 'Скрыть' : 'Подробнее'}
-          </button>
+          </Button>
         </div>
 
         <div className={`grid gap-2 ${isExpanded ? '' : 'max-h-32 overflow-hidden'}`}>

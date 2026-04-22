@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Button from '@/components/ui/Button';
 
 type AvatarUploaderProps = {
   name: string;
@@ -20,8 +21,9 @@ export default function AvatarUploader({ name, currentAvatarUrl, previewUrl, onP
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => inputRef.current?.click()}
         className="group relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-amber-100 via-amber-50 to-white text-3xl font-bold text-amber-800 shadow-md ring-4 ring-amber-50 transition hover:scale-[1.02]"
       >
@@ -34,7 +36,7 @@ export default function AvatarUploader({ name, currentAvatarUrl, previewUrl, onP
         <span className="absolute inset-0 flex items-center justify-center bg-white/0 text-sm font-semibold text-zinc-700 opacity-0 transition group-hover:bg-white/55 group-hover:opacity-100">
           Change
         </span>
-      </button>
+      </Button>
 
       <input
         ref={inputRef}

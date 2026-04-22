@@ -104,11 +104,10 @@ export default function Contacts() {
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d184.9884995179597!2d27.393560111662485!3d59.36091456438828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x469465605dd01af3%3A0xef1cb4f518b677e!2sRohuaia%20tn%2067%2C%20J%C3%B5hvi%2C%2041533%20Ida-Viru%20maakond!5e0!3m2!1sru!2see!4v1773660938972!5m2!1sru!2see"
               width="100%"
               height="450"
-              style={{ border: 0 }}
               allowFullScreen={true}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="w-full"
+              className="w-full border-0"
             ></iframe>
           </div>
         </div>

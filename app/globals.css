@@ -145,37 +145,24 @@
   --color-emerald-900: #1a5f40;
 }
 
-html,
-body {
-  height: 100%;
-}
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
 
-body {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--ds-background);
-  color: var(--ds-text-primary);
-  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
-  line-height: 1.5;
-}
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.01em;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  color: var(--ds-secondary);
-  letter-spacing: -0.01em;
-}
-
-a {
-  color: inherit;
-}
-
-:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--ds-accent) 82%, white 18%);
-  outline-offset: 2px;
-  border-radius: var(--ds-radius-sm);
+  :focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--ds-accent) 82%, white 18%);
+    outline-offset: 2px;
+    border-radius: var(--ds-radius-sm);
+  }
 }
 
 .ui-page {

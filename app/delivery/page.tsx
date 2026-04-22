@@ -89,15 +89,13 @@ export default function DeliveryPage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/catalog"
-                className="rounded-xl px-5 py-3 text-sm font-semibold !text-white shadow-sm transition hover:shadow-md"
-                style={{ backgroundColor: '#2d1408', color: '#ffffff' }}
+                className="rounded-xl bg-amber-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-900 hover:shadow-md"
               >
                 Перейти в каталог
               </Link>
               <Link
                 href="/contacts"
-                className="rounded-xl border px-5 py-3 text-sm font-semibold !text-white transition"
-                style={{ backgroundColor: '#6b442a', borderColor: '#6b442a', color: '#ffffff' }}
+                className="rounded-xl border border-secondary bg-secondary px-5 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover"
               >
                 Задать вопрос
               </Link>
@@ -168,31 +166,23 @@ export default function DeliveryPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-16 lg:px-6">
-        <div
-          className="rounded-3xl border border-amber-900/60 p-7 text-white shadow-lg md:p-10"
-          style={{ backgroundColor: '#8E5724', color: '#ffffff' }}
-        >
-          <h2
-            className="font-serif text-2xl font-bold !text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.35)] md:text-3xl"
-            style={{ color: '#ffffff' }}
-          >
+        <div className="rounded-3xl border border-amber-900/60 bg-secondary-soft p-7 text-white shadow-lg md:p-10">
+          <h2 className="font-serif text-2xl font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.35)] md:text-3xl">
             Готовы оформить заказ?
           </h2>
-          <p className="mt-2 max-w-2xl !text-white" style={{ color: '#ffffff', opacity: 0.96 }}>
+          <p className="mt-2 max-w-2xl text-white/95">
             Перейдите в каталог и выберите книги — мы быстро подготовим заказ и отправим удобным способом.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/catalog"
-              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-amber-950 transition hover:bg-amber-100"
-              style={{ color: '#2d1408' }}
+              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-amber-950 transition hover:bg-amber-100"
             >
               Перейти в каталог
             </Link>
             <Link
               href="/contacts"
-              className="rounded-xl border border-white bg-transparent px-5 py-3 text-sm font-semibold !text-white transition hover:bg-white/15"
-              style={{ color: '#ffffff' }}
+              className="rounded-xl border border-white bg-transparent px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
             >
               Задать вопрос
             </Link>

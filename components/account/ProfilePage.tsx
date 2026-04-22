@@ -6,6 +6,7 @@ import ProfileHeader from '@/components/account/ProfileHeader';
 import AccountSidebar from '@/components/account/AccountSidebar';
 import OrderCard from '@/components/account/OrderCard';
 import EditProfileModal from '@/components/account/EditProfileModal';
+import Button from '@/components/ui/Button';
 
 type AccountOrder = {
   id: number;
@@ -141,13 +142,14 @@ export default function ProfilePage({ name, email, avatarUrl, orders }: ProfileP
                 <h2 className="mt-2 text-2xl font-bold text-zinc-900">Profile controls</h2>
                 <p className="mt-2 text-sm text-zinc-500">Edit your avatar and nickname when needed.</p>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setIsEditOpen(true)}
-                className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-amber-100"
+                className="rounded-full border-amber-200 bg-amber-50 text-zinc-700 hover:bg-amber-100"
               >
                 Edit profile
-              </button>
+              </Button>
             </div>
           </section>
         </div>

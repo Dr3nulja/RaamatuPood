@@ -70,7 +70,6 @@ export default async function Home() {
 
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-16">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-100">Онлайн-магазин книг</p>
             <h1 className="mt-4 text-4xl font-bold leading-tight !text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] md:text-6xl">
               Найди свою следующую любимую книгу
             </h1>

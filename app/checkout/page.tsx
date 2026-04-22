@@ -379,11 +379,11 @@ export default function CheckoutPage() {
                   {deliveryOptions.map((option) => (
                     <label
                       key={option.id}
-                      className="flex items-center gap-3 rounded-xl border-2 border-amber-100 px-4 py-3 transition cursor-pointer hover:border-amber-300 hover:bg-amber-50"
-                      style={{
-                        borderColor: formData.deliveryMethod === option.id ? 'var(--ds-primary)' : undefined,
-                        backgroundColor: formData.deliveryMethod === option.id ? 'var(--ds-primary-soft)' : undefined,
-                      }}
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3 transition hover:border-amber-300 hover:bg-amber-50 ${
+                        formData.deliveryMethod === option.id
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-amber-100'
+                      }`}
                     >
                       <input
                         type="radio"

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AdminOrder, AdminOrdersResponse } from '@/lib/api/adminTypes';
 import { orderStatuses, type OrderStatus } from '@/components/admin/shared';
+import Button from '@/components/ui/Button';
 
 function getStatusColor(status: OrderStatus): { bg: string; badge: string; text: string } {
   const colors: Record<OrderStatus, { bg: string; badge: string; text: string }> = {
@@ -128,17 +129,19 @@ export default function AdminOrdersView() {
         <span className="text-sm font-medium text-zinc-700">Filter by status:</span>
         <div className="flex flex-wrap gap-2">
           {(['all', ...orderStatuses] as const).map((status) => (
-            <button
+            <Button
               key={status}
               onClick={() => setOrdersStatusFilter(status)}
+              size="small"
+              variant={ordersStatusFilter === status ? 'primary' : 'outline'}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
                 ordersStatusFilter === status
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'border border-amber-200 bg-white text-zinc-700 hover:border-amber-300 hover:bg-amber-50'
+                  ? 'shadow-md'
+                  : 'border-amber-200 bg-white text-zinc-700 hover:border-amber-300 hover:bg-amber-50'
               }`}
             >
               {status === 'all' ? 'All Orders' : getStatusLabel(status)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

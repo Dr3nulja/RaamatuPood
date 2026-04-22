@@ -47,7 +47,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col bg-background text-text-primary font-sans antialiased`}
       >
         <CartHydration isAuthenticated={isAuthenticated} />
         <Header

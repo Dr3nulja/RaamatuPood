@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Button from '@/components/ui/Button';
 
 interface ModalProps {
   isOpen: boolean;
@@ -65,15 +66,17 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
         {/* Header */}
         <div className="flex items-center justify-between border-b border-amber-100/70 px-6 py-4">
           <h2 className="font-serif text-xl font-bold text-secondary">{title}</h2>
-          <button
+          <Button
             onClick={onClose}
+            variant="ghost"
+            size="small"
             className="rounded-full bg-white/70 p-1 text-zinc-500 transition-colors hover:bg-white hover:text-zinc-700"
             aria-label="Close modal"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
