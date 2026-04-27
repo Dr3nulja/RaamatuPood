@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import type { CreateReviewApiResponse, ReviewsApiResponse } from '@/lib/api/catalogTypes';
 import type { ApiErrorResponse } from '@/lib/api/types';
 import Button from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type BookReviewsProps = {
   bookId: number;
@@ -18,21 +19,8 @@ const emptyReviewsState: ReviewsApiResponse = {
   isAuthenticated: false,
 };
 
-function formatDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Дата не указана';
-  }
-
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(date);
-}
-
 export default function BookReviews({ bookId }: BookReviewsProps) {
+  const { t, formatDate } = useTranslation();
   const [reviewsData, setReviewsData] = useState<ReviewsApiResponse>(emptyReviewsState);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,11 +50,11 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
     } catch (loadError) {
       console.error('Failed to load reviews:', loadError);
       setReviewsData(emptyReviewsState);
-      setError('Не удалось загрузить отзывы. Попробуйте обновить страницу.');
+      setError(t('reviews.loadError'));
     } finally {
       setIsLoading(false);
     }
-  }, [bookId]);
+  }, [bookId, t]);
 
   useEffect(() => {
     void loadReviews();
@@ -79,15 +67,15 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
 
   const blockedMessage = useMemo(() => {
     if (!reviewsData.isAuthenticated) {
-      return 'Войдите в аккаунт, чтобы оставить отзыв.';
+      return t('reviews.loginToReview');
     }
 
     if (reviewsData.hasReviewed) {
-      return 'Вы уже оставили отзыв на эту книгу.';
+      return t('reviews.alreadyReviewed');
     }
 
-    return 'You can review this book only after delivery';
-  }, [reviewsData]);
+    return t('reviews.deliveredOnly');
+  }, [reviewsData, t]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -110,7 +98,7 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
 
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as ApiErrorResponse | null;
-        throw new Error(payload?.error || 'Не удалось отправить отзыв');
+        throw new Error(payload?.error || t('reviews.submitError'));
       }
 
       await response.json().catch(() => null as CreateReviewApiResponse | null);
@@ -118,20 +106,22 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
       setComment('');
       await loadReviews();
     } catch (createError) {
-      setSubmitError(createError instanceof Error ? createError.message : 'Не удалось отправить отзыв');
+      setSubmitError(createError instanceof Error ? createError.message : t('reviews.submitError'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const formatReviewDate = (value: string) => formatDate(value) || t('reviews.dateUnknown');
+
   return (
     <section className="rounded-3xl bg-white p-8 shadow-sm">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold">Отзывы</h2>
+        <h2 className="text-2xl font-bold">{t('reviews.title')}</h2>
         <span className="text-sm text-zinc-500">
-          Средний рейтинг: <span className="font-semibold text-amber-600">★ {reviewsData.averageRating.toFixed(1)}</span>
+          {t('reviews.averageRating')}: <span className="font-semibold text-amber-600">★ {reviewsData.averageRating.toFixed(1)}</span>
           {' · '}
-          Отзывов: <span className="font-semibold text-zinc-700">{reviewsData.reviewCount}</span>
+          {t('reviews.totalReviews')}: <span className="font-semibold text-zinc-700">{reviewsData.reviewCount}</span>
         </span>
       </div>
 
@@ -141,39 +131,39 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
         </div>
       ) : isLoading ? (
         <div className="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-600">
-          Загрузка отзывов...
+          {t('reviews.loading')}
         </div>
       ) : (
         <>
           {canShowForm ? (
             <form onSubmit={handleSubmit} className="mb-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-              <h3 className="text-lg font-semibold">Оставить отзыв</h3>
+              <h3 className="text-lg font-semibold">{t('reviews.leaveReview')}</h3>
 
               <div className="space-y-2">
-                <label htmlFor="review-rating" className="text-sm font-medium">Оценка</label>
+                <label htmlFor="review-rating" className="text-sm font-medium">{t('reviews.ratingLabel')}</label>
                 <select
                   id="review-rating"
                   value={rating}
                   onChange={(event) => setRating(Number(event.target.value))}
                   className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
                 >
-                  <option value={5}>5 — Отлично</option>
-                  <option value={4}>4 — Хорошо</option>
-                  <option value={3}>3 — Нормально</option>
-                  <option value={2}>2 — Плохо</option>
-                  <option value={1}>1 — Очень плохо</option>
+                  <option value={5}>5 - {t('reviews.ratingOption5')}</option>
+                  <option value={4}>4 - {t('reviews.ratingOption4')}</option>
+                  <option value={3}>3 - {t('reviews.ratingOption3')}</option>
+                  <option value={2}>2 - {t('reviews.ratingOption2')}</option>
+                  <option value={1}>1 - {t('reviews.ratingOption1')}</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="review-comment" className="text-sm font-medium">Комментарий</label>
+                <label htmlFor="review-comment" className="text-sm font-medium">{t('reviews.commentLabel')}</label>
                 <textarea
                   id="review-comment"
                   value={comment}
                   onChange={(event) => setComment(event.target.value)}
                   rows={4}
                   maxLength={2000}
-                  placeholder="Поделитесь впечатлениями о книге"
+                  placeholder={t('reviews.commentPlaceholder')}
                   className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-400"
                 />
               </div>
@@ -186,7 +176,7 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
                 loading={isSubmitting}
                 className="bg-primary hover:bg-primary-hover"
               >
-                {isSubmitting ? 'Отправка...' : 'Отправить отзыв'}
+                {isSubmitting ? t('reviews.submitting') : t('reviews.submit')}
               </Button>
             </form>
           ) : (
@@ -197,7 +187,7 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
 
           {reviewsData.reviews.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-sm text-gray-600">
-              У этой книги пока нет отзывов.
+              {t('reviews.noReviews')}
             </div>
           ) : (
             <div className="space-y-4">
@@ -205,15 +195,15 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
                 <article key={review.id} className="rounded-2xl bg-gray-50 p-5">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <div className="font-semibold">{review.user.name || 'Покупатель'}</div>
-                      <div className="text-sm text-gray-500">{formatDate(review.created_at)}</div>
+                      <div className="font-semibold">{review.user.name || t('reviews.reviewerFallback')}</div>
+                      <div className="text-sm text-gray-500">{formatReviewDate(review.created_at)}</div>
                     </div>
                     <div className="text-sm font-semibold text-amber-600">
                       ★ {review.rating.toFixed(1)}
                     </div>
                   </div>
                   <p className="text-sm leading-7 text-gray-700">
-                    {review.comment || 'Без текста отзыва.'}
+                    {review.comment || t('reviews.emptyText')}
                   </p>
                 </article>
               ))}

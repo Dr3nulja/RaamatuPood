@@ -77,25 +77,25 @@ export default function AdminBooksView() {
       const uploadPayload = (await uploadResponse.json().catch(() => null)) as { url?: string; error?: string } | null;
 
       if (!uploadResponse.ok) {
-        const errorMessage = uploadPayload?.error || 'Не удалось загрузить файл обложки';
+        const errorMessage = uploadPayload?.error || 'Failed to upload cover file';
         console.error('Cover upload failed:', errorMessage);
         
         // Show warning toast but don't crash the flow
-        showToast(`Предупреждение: ${errorMessage}. Используйте URL обложки или попробуйте снова.`);
+        showToast(`Warning: ${errorMessage}. Use cover URL or try again.`);
         return '';
       }
 
       if (!uploadPayload?.url) {
         console.error('Cover upload: No URL returned');
-        showToast('Предупреждение: Сервер не вернул URL обложки. Используйте URL вручную.');
+        showToast('Warning: Server did not return a cover URL. Use a manual URL.');
         return '';
       }
 
       return uploadPayload.url;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка при загрузке';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
       console.error('Cover upload exception:', errorMessage);
-      showToast(`Ошибка загрузки: ${errorMessage}`);
+      showToast(`Upload error: ${errorMessage}`);
       return '';
     }
   };
@@ -111,7 +111,7 @@ export default function AdminBooksView() {
     const payload = (await response.json().catch(() => null)) as { author?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.author) {
-      throw new Error(payload?.error || 'Не удалось создать автора');
+      throw new Error(payload?.error || 'Failed to create author');
     }
 
     // Reload authors after creation
@@ -136,7 +136,7 @@ export default function AdminBooksView() {
     const payload = (await response.json().catch(() => null)) as { category?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.category) {
-      throw new Error(payload?.error || 'Не удалось создать категорию');
+      throw new Error(payload?.error || 'Failed to create category');
     }
 
     // Reload categories after creation
@@ -167,7 +167,7 @@ export default function AdminBooksView() {
       setBookForm((prev) => ({ ...prev, author_id: '', category_id: '' }));
     } catch (error) {
       console.error('Books load failed:', error);
-      showToast('Ошибка загрузки книг');
+      showToast('Failed to load books');
     } finally {
       setIsLoading(false);
     }
@@ -230,11 +230,11 @@ export default function AdminBooksView() {
       }
 
       setBookForm(initialBookForm);
-      showToast('Книга добавлена');
+      showToast('Book added');
       await loadBooksData();
     } catch (error) {
       console.error(error);
-      showToast(error instanceof Error ? error.message : 'Не удалось создать книгу');
+      showToast(error instanceof Error ? error.message : 'Failed to create book');
     } finally {
       setIsCreatingBook(false);
     }
@@ -263,10 +263,10 @@ export default function AdminBooksView() {
       }
 
       setBooks((prev) => prev.filter((book) => book.id !== id));
-      showToast('Книга удалена');
+      showToast('Book deleted');
     } catch (error) {
       console.error(error);
-      showToast('Не удалось удалить книгу');
+      showToast('Failed to delete book');
     } finally {
       setBookActionLoadingId(null);
       setBookToDelete(null);
@@ -287,17 +287,17 @@ export default function AdminBooksView() {
 
       await loadBooksData();
       cancelEditingBook();
-      showToast('Книга обновлена');
+      showToast('Book updated');
     } catch (error) {
       console.error(error);
-      showToast(error instanceof Error ? error.message : 'Не удалось обновить книгу');
+      showToast(error instanceof Error ? error.message : 'Failed to update book');
       throw error;
     }
   };
 
   return (
     <article className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-      <h2 className="font-serif text-2xl font-bold text-secondary">Управление книгами</h2>
+      <h2 className="font-serif text-2xl font-bold text-secondary">Books management</h2>
 
       {toast && (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">
@@ -345,7 +345,7 @@ export default function AdminBooksView() {
             value={bookForm.author_id}
             onChange={(value) => setBookForm((prev) => ({ ...prev, author_id: value }))}
             onCreateNew={createAuthor}
-            placeholder="Выбрать автора..."
+            placeholder="Select author..."
             label="Author"
           />
         </div>
@@ -356,7 +356,7 @@ export default function AdminBooksView() {
             value={bookForm.category_id}
             onChange={(value) => setBookForm((prev) => ({ ...prev, category_id: value }))}
             onCreateNew={createCategory}
-            placeholder="Выбрать категорию..."
+            placeholder="Select category..."
             label="Category"
           />
         </div>
@@ -380,7 +380,7 @@ export default function AdminBooksView() {
         </Button>
 
         <p className="text-xs text-zinc-500 md:col-span-2 xl:col-span-4">
-          Обложка: можно вставить URL или загрузить файл. Если выбраны оба варианта, файл имеет приоритет.
+          Cover: paste URL or upload a file. If both are provided, uploaded file has priority.
         </p>
 
         <textarea
@@ -395,7 +395,7 @@ export default function AdminBooksView() {
       <div className="mt-6 grid gap-3 md:grid-cols-[1fr_220px]">
         <input
           className="rounded-xl border border-amber-200 px-3 py-2"
-          placeholder="Поиск по title / author / description"
+          placeholder="Search by title / author / description"
           value={booksQuery}
           onChange={(event) => setBooksQuery(event.target.value)}
         />
@@ -404,7 +404,7 @@ export default function AdminBooksView() {
           value={booksCategoryFilter}
           onChange={(event) => setBooksCategoryFilter(event.target.value)}
         >
-          <option value="all">Все категории</option>
+          <option value="all">All categories</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>{category.name}</option>
           ))}
@@ -418,7 +418,7 @@ export default function AdminBooksView() {
           </div>
         ) : filteredBooks.length === 0 ? (
           <div className="rounded-3xl border border-amber-100 bg-white px-6 py-10 text-center text-sm text-zinc-500 shadow-sm">
-            Книги не найдены
+            No books found
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -454,7 +454,7 @@ export default function AdminBooksView() {
           setIsDeleteConfirmOpen(false);
           setBookToDelete(null);
         }}
-        title="Удалить книгу?"
+        title="Delete book?"
         size="md"
         footer={
           <div className="flex justify-end gap-3">
@@ -467,7 +467,7 @@ export default function AdminBooksView() {
               }}
               className="rounded-lg px-4 py-2 font-semibold"
             >
-              Отмена
+              Cancel
             </Button>
             <Button
               type="button"
@@ -475,13 +475,13 @@ export default function AdminBooksView() {
               disabled={!bookToDelete || bookActionLoadingId === bookToDelete.id}
               className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 font-semibold text-red-300 hover:bg-red-100 disabled:opacity-60"
             >
-              Удалить
+              Delete
             </Button>
           </div>
         }
       >
         <p className="text-zinc-600">
-          Вы действительно хотите удалить «<span className="font-semibold">{bookToDelete?.title}</span>»? Это действие нельзя отменить.
+          Are you sure you want to delete "<span className="font-semibold">{bookToDelete?.title}</span>"? This action cannot be undone.
         </p>
       </Modal>
     </article>

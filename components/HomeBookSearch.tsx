@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BooksApiResponse, BookWithRelations } from '@/lib/api/catalogTypes';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type HomeBookSearchProps = {
   placeholder?: string;
@@ -18,8 +19,9 @@ function resolveCover(url: string | null | undefined) {
 }
 
 export default function HomeBookSearch({
-  placeholder = 'Найдите книгу по названию, автору или описанию',
+  placeholder,
 }: HomeBookSearchProps) {
+  const { t } = useTranslation();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -106,6 +108,7 @@ export default function HomeBookSearch({
     () => isPanelOpen && (Boolean(debouncedQuery) || isLoading),
     [debouncedQuery, isLoading, isPanelOpen]
   );
+  const resolvedPlaceholder = placeholder || t('catalog.searchPlaceholder');
 
   return (
     <div ref={rootRef} className="relative">
@@ -120,7 +123,7 @@ export default function HomeBookSearch({
             setQuery(event.target.value);
             setIsPanelOpen(true);
           }}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           className="w-full bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
         />
       </div>
@@ -132,9 +135,9 @@ export default function HomeBookSearch({
       >
         <div className="max-h-[440px] overflow-y-auto p-3">
           {isLoading ? (
-            <p className="px-3 py-6 text-sm text-text-secondary">Ищем книги...</p>
+            <p className="px-3 py-6 text-sm text-text-secondary">{t('catalog.loading')}</p>
           ) : results.length === 0 ? (
-            <p className="px-3 py-6 text-sm text-text-secondary">Ничего не найдено</p>
+            <p className="px-3 py-6 text-sm text-text-secondary">{t('catalog.noResults')}</p>
           ) : (
             <div className="space-y-2">
               {results.map((book) => (
@@ -155,7 +158,7 @@ export default function HomeBookSearch({
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-text-primary">{book.title}</p>
-                    <p className="truncate text-xs text-text-secondary">{book.author?.name || 'Автор не указан'}</p>
+                    <p className="truncate text-xs text-text-secondary">{book.author?.name || t('catalog.unknownAuthor')}</p>
                     <p className="text-xs text-secondary">★ {(book.rating ?? 0).toFixed(1)}</p>
                   </div>
                   <Link
@@ -163,7 +166,7 @@ export default function HomeBookSearch({
                     onClick={() => setIsPanelOpen(false)}
                     className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-secondary transition hover:bg-primary-soft"
                   >
-                    Подробнее
+                    {t('catalog.details')}
                   </Link>
                 </article>
               ))}

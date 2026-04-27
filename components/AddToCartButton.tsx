@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { useCartStore } from '@/stores/cartStore';
 import { createClickGuard } from '@/lib/security/frontend';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type AddToCartButtonProps = {
   book: {
@@ -19,6 +20,7 @@ type AddToCartButtonProps = {
 
 export default function AddToCartButton({ book, className }: AddToCartButtonProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const { t } = useTranslation();
   const canClickAddToCart = useMemo(() => createClickGuard(500), []);
   const [isAdding, setIsAdding] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export default function AddToCartButton({ book, className }: AddToCartButtonProp
     }
 
     if (!canClickAddToCart()) {
-      setFeedback('Слишком часто. Попробуйте через секунду.');
+      setFeedback(t('catalog.tooFrequent'));
       return;
     }
 
@@ -50,13 +52,13 @@ export default function AddToCartButton({ book, className }: AddToCartButtonProp
       });
 
       if (response.status === 401) {
-        setFeedback('Войдите в аккаунт для добавления в корзину');
+        setFeedback(t('catalog.loginToAdd'));
         return;
       }
 
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok) {
-        setFeedback(payload?.error || 'Не удалось добавить книгу в корзину');
+        setFeedback(payload?.error || t('catalog.addFailed'));
         return;
       }
 
@@ -68,9 +70,9 @@ export default function AddToCartButton({ book, className }: AddToCartButtonProp
         cover_image: book.cover_image,
       });
 
-      setFeedback('Книга добавлена в корзину');
+      setFeedback(t('catalog.addedToCart'));
     } catch {
-      setFeedback('Не удалось выполнить действие. Попробуйте позже.');
+      setFeedback(t('catalog.actionFailed'));
     } finally {
       setIsAdding(false);
       window.setTimeout(() => setFeedback(null), 1800);
@@ -88,7 +90,7 @@ export default function AddToCartButton({ book, className }: AddToCartButtonProp
         className={className}
         onClick={() => void handleAddToCart()}
       >
-        {isAdding ? 'Добавление...' : 'Добавить в корзину'}
+        {isAdding ? t('catalog.adding') : t('catalog.addToCart')}
       </Button>
       {feedback && <p className="text-sm font-medium text-amber-700">{feedback}</p>}
     </div>

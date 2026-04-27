@@ -6,8 +6,8 @@ import { withApiSecurity } from '@/lib/security/api-guard';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// В Next.js App Router raw body доступен через request.arrayBuffer(),
-// поэтому отдельный bodyParser: false здесь не требуется.
+// In Next.js App Router, raw body is available via request.arrayBuffer(),
+// so a separate bodyParser: false setting is not required here.
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-02-25.clover',

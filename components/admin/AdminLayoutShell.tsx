@@ -31,7 +31,7 @@ export default function AdminLayoutShell({ children }: AdminLayoutShellProps) {
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[260px_1fr]">
         <aside className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm lg:sticky lg:top-24 lg:h-fit">
           <h1 className="font-serif text-2xl font-bold text-secondary">Admin Panel</h1>
-          <p className="mt-1 text-sm text-zinc-500">CRM интернет-библиотеки</p>
+          <p className="mt-1 text-sm text-zinc-500">Online bookstore CRM</p>
 
           <nav className="mt-5 space-y-2">
             {links.map((link) => {

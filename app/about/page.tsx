@@ -2,27 +2,27 @@ import Link from 'next/link';
 
 const whyChooseUs = [
   {
-    title: 'Подборки, которые экономят время',
-    description: 'Мы помогаем быстро найти книгу по настроению, теме и интересам, чтобы вы меньше искали и больше читали.',
+    title: 'Curated picks that save time',
+    description: 'We help you quickly find a book by mood, topic, and interest, so you spend less time searching and more time reading.',
   },
   {
-    title: 'Книги, которые хочется рекомендовать',
-    description: 'Каталог собран с фокусом на качество: бестселлеры, сильная классика и достойные новинки без случайных позиций.',
+    title: 'Books worth recommending',
+    description: 'Our catalog is built around quality: bestsellers, strong classics, and worthy new releases without random entries.',
   },
   {
-    title: 'Понятный и честный сервис',
-    description: 'Прозрачное оформление заказа, быстрая доставка и поддержка, которая говорит по делу и действительно помогает.',
+    title: 'Clear and honest service',
+    description: 'Transparent checkout, fast delivery, and support that gives practical answers and truly helps.',
   },
   {
-    title: 'Опыт, удобный для читателя',
-    description: 'От поиска до оформления заказа интерфейс сделан так, чтобы вы чувствовали уверенность на каждом шаге.',
+    title: 'Reader-first experience',
+    description: 'From discovery to checkout, the interface is designed to keep you confident at every step.',
   },
 ];
 
 const values = [
-  'Чтение должно быть доступным и вдохновляющим каждый день.',
-  'Мы ценим внимание к деталям: от описаний книг до качества сервиса.',
-  'Доверие клиента важнее краткосрочных акций и громких обещаний.',
+  'Reading should be accessible and inspiring every day.',
+  'We value attention to detail: from book descriptions to service quality.',
+  'Customer trust matters more than short-term campaigns and loud promises.',
 ];
 
 export default function About() {
@@ -33,12 +33,12 @@ export default function About() {
         <div className="absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-yellow-200/20 blur-3xl" />
 
         <div className="ui-container relative px-4 py-14 md:py-20">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-100">О RaamatuPood</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-100">About RaamatuPood</p>
           <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight !text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] md:text-6xl">
-            Мы создаем место, где книгу можно найти с удовольствием
+            We create a place where finding a book feels effortless
           </h1>
           <p className="mt-6 max-w-2xl text-base text-amber-50 md:text-lg">
-            RaamatuPood - это книжный онлайн-магазин для тех, кто ценит хороший выбор, удобный сервис и атмосферу, в которой хочется возвращаться за новой историей.
+            RaamatuPood is an online bookstore for readers who value great selection, convenient service, and an atmosphere that keeps you coming back for your next story.
           </p>
         </div>
       </section>
@@ -46,21 +46,21 @@ export default function About() {
       <section className="ui-container px-4 py-10 md:py-14">
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <article className="ui-card p-6 md:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Кто мы</p>
-            <h2 className="mt-3 text-3xl font-bold text-secondary md:text-4xl">Книжный магазин с человеческим подходом</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Who we are</p>
+            <h2 className="mt-3 text-3xl font-bold text-secondary md:text-4xl">A bookstore with a human touch</h2>
             <p className="mt-4 text-base leading-relaxed text-zinc-700 md:text-lg">
-              Мы начали RaamatuPood с простой идеи: покупка книги в интернете должна быть такой же приятной, как прогулка по любимому книжному.
-              Поэтому мы сочетаем продуманный каталог, понятный интерфейс и сервис, который помогает, а не усложняет.
+              We started RaamatuPood with a simple idea: buying a book online should feel as pleasant as visiting your favorite bookstore.
+              That is why we combine a well-curated catalog, intuitive interface, and service that helps instead of complicating.
             </p>
             <p className="mt-4 text-base leading-relaxed text-zinc-700 md:text-lg">
-              Для нас каждая книга - это не просто товар, а потенциально важная встреча с новой мыслью, эмоцией или вдохновением.
+              For us, every book is not just a product, but a chance to meet a new idea, emotion, or inspiration.
             </p>
           </article>
 
           <aside className="ui-card overflow-hidden p-3 md:p-4">
             <img
               src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=80"
-              alt="Уютное пространство с книгами"
+              alt="Cozy space with books"
               className="h-64 w-full rounded-xl object-cover md:h-full"
             />
           </aside>
@@ -70,8 +70,8 @@ export default function About() {
       <section className="bg-surface-muted/75 py-10 md:py-14">
         <div className="ui-container px-4">
           <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Почему выбирают нас</p>
-            <h2 className="mt-2 text-3xl font-bold text-secondary md:text-4xl">Все, что важно для комфортного чтения</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Why readers choose us</p>
+            <h2 className="mt-2 text-3xl font-bold text-secondary md:text-4xl">Everything that matters for comfortable reading</h2>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -87,8 +87,8 @@ export default function About() {
 
       <section className="ui-container px-4 py-10 md:py-14">
         <div className="ui-card p-6 md:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Наша миссия и ценности</p>
-          <h2 className="mt-3 text-3xl font-bold text-secondary md:text-4xl">Помогать людям читать больше и с радостью</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Our mission and values</p>
+          <h2 className="mt-3 text-3xl font-bold text-secondary md:text-4xl">Helping people read more with joy</h2>
 
           <ul className="mt-6 space-y-4">
             {values.map((value) => (
@@ -107,13 +107,13 @@ export default function About() {
               href="/catalog"
               className="inline-flex items-center rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
             >
-              Перейти в каталог
+              Browse catalog
             </Link>
             <Link
               href="/contacts"
               className="inline-flex items-center rounded-xl border border-amber-200 bg-white px-6 py-3 text-sm font-semibold text-secondary transition hover:bg-amber-50"
             >
-              Связаться с нами
+              Contact us
             </Link>
           </div>
         </div>

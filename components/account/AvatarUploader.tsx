@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import Button from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type AvatarUploaderProps = {
   name: string;
@@ -15,6 +16,7 @@ function getInitial(name: string) {
 }
 
 export default function AvatarUploader({ name, currentAvatarUrl, previewUrl, onPickFile }: AvatarUploaderProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const visibleUrl = previewUrl || currentAvatarUrl;
   const initial = getInitial(name);
@@ -34,7 +36,7 @@ export default function AvatarUploader({ name, currentAvatarUrl, previewUrl, onP
         )}
 
         <span className="absolute inset-0 flex items-center justify-center bg-white/0 text-sm font-semibold text-zinc-700 opacity-0 transition group-hover:bg-white/55 group-hover:opacity-100">
-          Change
+          {t('profile.changeAvatar')}
         </span>
       </Button>
 
@@ -46,7 +48,7 @@ export default function AvatarUploader({ name, currentAvatarUrl, previewUrl, onP
         onChange={(event) => onPickFile(event.target.files?.[0] || null)}
       />
 
-      <p className="text-xs text-zinc-500">Click avatar to upload a new image</p>
+      <p className="text-xs text-zinc-500">{t('profile.avatarHint')}</p>
     </div>
   );
 }

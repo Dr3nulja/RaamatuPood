@@ -4,23 +4,23 @@ interface CategoryCardProps {
   name: string;
 }
 
-const categoryIcons: Record<string, string> = {
-  "Фантастика": "🚀",
-  "Детектив": "🔍",
-  "Романтика": "💕",
-  "Фэнтези": "🐉",
-  "Ужасы": "👻",
-  "История": "📜",
-  "Биография": "👤",
-  "Научный": "🔬",
-  "Философия": "💭",
-  "Поэзия": "✨",
-  "Комедия": "😂",
-  "Приключения": "🗺️",
-};
+const CATEGORY_ICONS = ["📚", "🚀", "🔍", "💕", "🐉", "👻", "📜", "👤", "🔬", "💭", "✨", "😂", "🗺️"];
+
+function getCategoryIcon(name: string) {
+  if (!name) {
+    return CATEGORY_ICONS[0];
+  }
+
+  let hash = 0;
+  for (const char of name) {
+    hash = (hash + (char.codePointAt(0) || 0)) % CATEGORY_ICONS.length;
+  }
+
+  return CATEGORY_ICONS[hash];
+}
 
 export default function CategoryCard({ name }: CategoryCardProps) {
-  const icon = categoryIcons[name] || "📚";
+  const icon = getCategoryIcon(name);
 
   return (
     <div

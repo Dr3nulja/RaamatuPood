@@ -2,30 +2,30 @@ import Link from "next/link";
 
 const rules = [
 	{
-		title: "Срок возврата — 14 дней",
-		text: "Вы можете оформить возврат в течение 14 календарных дней с момента получения заказа.",
+		title: "Return period — 14 days",
+		text: "You can request a return within 14 calendar days from the date you received the order.",
 	},
 	{
-		title: "Состояние товара",
-		text: "Книга должна быть без следов использования, с сохранённым товарным видом и полной комплектацией.",
+		title: "Item condition",
+		text: "The book must be unused, in resale condition, and include all original parts.",
 	},
 	{
-		title: "Как оформить",
-		text: "Свяжитесь с нами любым удобным способом, и мы подскажем порядок возврата и дальнейшие шаги.",
+		title: "How to request",
+		text: "Contact us in any convenient way and we will guide you through the return process and next steps.",
 	},
 ];
 
 const steps = [
-	"Напишите нам номер заказа и причину возврата.",
-	"Получите подтверждение и инструкцию от менеджера.",
-	"Передайте товар в пункт отправки или курьеру.",
-	"После проверки книги мы оформим возврат средств или обмен.",
+	"Send us your order number and return reason.",
+	"Receive confirmation and instructions from support.",
+	"Hand the item over at a drop-off point or to a courier.",
+	"After inspection, we process a refund or exchange.",
 ];
 
 const exceptions = [
-	"Книги с автографом или персональной подписью автора.",
-	"Товары с индивидуальной упаковкой, повреждённой после получения.",
-	"Цифровые товары и подарочные сертификаты после активации.",
+	"Books with an autograph or personalized author signature.",
+	"Items with custom packaging damaged after delivery.",
+	"Digital goods and gift certificates after activation.",
 ];
 
 export default function ReturnsPage() {
@@ -34,11 +34,11 @@ export default function ReturnsPage() {
 			<div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
 				<section className="rounded-3xl border border-amber-100 bg-white px-6 py-8 shadow-sm md:px-10 md:py-12">
 					<p className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-secondary">
-						Возвраты и обмен
+						Returns and exchanges
 					</p>
-					<h1 className="mt-4 font-serif text-3xl font-bold text-secondary md:text-5xl">Простые и прозрачные правила</h1>
+					<h1 className="mt-4 font-serif text-3xl font-bold text-secondary md:text-5xl">Simple and transparent rules</h1>
 					<p className="mt-4 max-w-3xl text-base leading-relaxed text-zinc-700 md:text-lg">
-						Мы ценим ваше доверие. Если книга не подошла, поможем быстро оформить возврат или обмен без лишней бюрократии.
+						We value your trust. If a book is not right for you, we will help you arrange a return or exchange quickly and without hassle.
 					</p>
 				</section>
 
@@ -55,7 +55,7 @@ export default function ReturnsPage() {
 				</section>
 
 				<section className="rounded-3xl border border-amber-100 bg-white p-6 shadow-sm md:p-8">
-					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Пошаговая инструкция</h2>
+					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Step-by-step guide</h2>
 					<ol className="mt-6 grid gap-4 md:grid-cols-2">
 						{steps.map((step, index) => (
 							<li
@@ -72,7 +72,7 @@ export default function ReturnsPage() {
 				</section>
 
 				<section className="rounded-3xl border border-amber-100 bg-white p-6 shadow-sm md:p-8">
-					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Что не подлежит возврату</h2>
+					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Items not eligible for return</h2>
 					<ul className="mt-4 space-y-3">
 						{exceptions.map((item) => (
 							<li key={item} className="rounded-xl bg-background-muted px-4 py-3 text-sm text-zinc-700">
@@ -83,32 +83,32 @@ export default function ReturnsPage() {
 				</section>
 
 				<section className="rounded-3xl border border-amber-200 bg-white p-6 shadow-sm md:p-8">
-					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Контакты для возврата</h2>
+					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Return contacts</h2>
 					<p className="mt-3 text-zinc-700">Email: infobook@raamatu.com</p>
-					<p className="text-zinc-700">Телефон: +372 53425673</p>
-					<p className="text-zinc-700">Время ответа: ежедневно, 09:00–20:00</p>
+					<p className="text-zinc-700">Phone: +372 53425673</p>
+					<p className="text-zinc-700">Response time: daily, 09:00-20:00</p>
 					<Link
 						href="/contacts"
 						className="mt-5 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-amber-300"
 					>
-						Написать нам
+						Write to us
 					</Link>
 				</section>
 
 				<section className="rounded-2xl border border-amber-100 bg-white px-5 py-4 text-sm text-zinc-700 shadow-sm">
-					Нужны дополнительные детали? Загляните в
+					Need more details? Visit
 					<Link
 						href="/faq"
 						className="ml-1 font-semibold text-secondary underline-offset-4 transition hover:text-secondary-soft hover:underline focus:outline-none focus:ring-2 focus:ring-amber-300"
 					>
 						FAQ
 					</Link>
-					или перейдите в
+					or go to
 					<Link
 						href="/catalog"
 						className="ml-1 font-semibold text-secondary underline-offset-4 transition hover:text-secondary-soft hover:underline focus:outline-none focus:ring-2 focus:ring-amber-300"
 					>
-						каталог
+						catalog
 					</Link>
 					.
 				</section>

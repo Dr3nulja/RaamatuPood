@@ -12,6 +12,7 @@ export default async function AccountPage() {
     select: {
       picture: true,
       name: true,
+      createdAt: true,
       orders: {
         include: {
           address: true,
@@ -47,7 +48,7 @@ export default async function AccountPage() {
     items: order.orderItems.map((item) => ({
       id: item.id,
       bookId: item.bookId,
-      title: item.book?.title || 'Книга',
+      title: item.book?.title || 'Book',
       quantity: item.quantity ?? 1,
       price: Number(item.price ?? 0),
     })),
@@ -58,6 +59,7 @@ export default async function AccountPage() {
       name={user?.name || currentUser.name || session.user.nickname || 'User'}
       email={session.user.email || '—'}
       avatarUrl={user?.picture || session.user.picture || null}
+      registeredAt={user?.createdAt?.toISOString() || null}
       orders={formattedOrders}
     />
   );

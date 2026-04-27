@@ -2,59 +2,59 @@ import Link from "next/link";
 
 const faqItems = [
 	{
-		question: "Как быстро придёт заказ?",
+		question: "How fast will my order arrive?",
 		answer:
-			"По Эстонии заказ обычно приходит за 1–3 рабочих дня. Для стран Балтии — 2–5 дней, для других стран ЕС сроки могут быть больше.",
+			"In Estonia, orders usually arrive within 1–3 business days. For Baltic countries it is typically 2–5 days, and for other EU countries delivery can take longer.",
 	},
 	{
-		question: "Можно ли оплатить при получении?",
+		question: "Can I pay on delivery?",
 		answer:
-			"Да, в некоторых способах доставки доступна оплата при получении. Точная опция зависит от выбранного перевозчика и региона.",
+			"Yes, cash on delivery is available for some shipping methods. Availability depends on the selected carrier and region.",
 	},
 	{
-		question: "Что делать, если книга повреждена?",
+		question: "What if my book is damaged?",
 		answer:
-			"Свяжитесь с нами в течение 48 часов после получения заказа и приложите фото. Мы предложим замену или возврат средств.",
+			"Contact us within 48 hours after delivery and attach photos. We will offer a replacement or a refund.",
 	},
 	{
-		question: "Как отменить заказ?",
+		question: "How can I cancel an order?",
 		answer:
-			"Если заказ ещё не отправлен, отмена возможна сразу через поддержку. Если уже отправлен — поможем оформить возврат после получения.",
+			"If your order has not shipped yet, support can cancel it immediately. If it has already shipped, we will help you arrange a return after delivery.",
 	},
 	{
-		question: "Есть ли доставка за границу?",
+		question: "Do you ship internationally?",
 		answer:
-			"Да, мы доставляем по странам Балтии, в Финляндию и другие страны ЕС. Стоимость и сроки зависят от страны назначения.",
+			"Yes, we ship across the Baltics, Finland, and other EU countries. Cost and delivery time depend on destination.",
 	},
 	{
-		question: "Как зарегистрироваться на сайте?",
+		question: "How do I register on the site?",
 		answer:
-			"Нажмите кнопку входа/регистрации, укажите e-mail и пароль. После подтверждения почты вы сможете оформлять заказы быстрее.",
+			"Click the sign in / sign up button and enter your email and password. After confirming your email, checkout becomes faster.",
 	},
 	{
-		question: "Можно ли вернуть книгу?",
+		question: "Can I return a book?",
 		answer:
-			"Да, возврат возможен в течение 14 дней при сохранении товарного вида. Подробные условия указаны на странице возвратов.",
+			"Yes, returns are possible within 14 days if the item remains in resale condition. Full details are on the returns page.",
 	},
 	{
-		question: "Как отследить посылку?",
+		question: "How do I track my package?",
 		answer:
-			"После отправки вы получите письмо с трек-номером и ссылкой на отслеживание. Если письма нет, напишите нам — поможем.",
+			"After shipment, you will receive an email with a tracking number and link. If the email did not arrive, contact us and we will help.",
 	},
 	{
-		question: "Можно ли изменить адрес доставки после заказа?",
+		question: "Can I change the delivery address after ordering?",
 		answer:
-			"Да, если заказ ещё не передан службе доставки. Обратитесь в поддержку как можно раньше, и мы внесём изменения.",
+			"Yes, if the order has not yet been handed to the carrier. Contact support as soon as possible and we will update it.",
 	},
 	{
-		question: "Есть ли скидки для постоянных клиентов?",
+		question: "Do loyal customers get discounts?",
 		answer:
-			"Да, мы регулярно запускаем акции и специальные предложения. Следите за обновлениями на главной странице и в рассылке.",
+			"Yes, we regularly run promotions and special offers. Follow updates on the homepage and in our newsletter.",
 	},
 	{
-		question: "Как быстро отвечает поддержка?",
+		question: "How quickly does support respond?",
 		answer:
-			"Обычно мы отвечаем в течение 1–3 часов в рабочее время. В периоды высокой нагрузки ответ может занять немного больше времени.",
+			"We usually respond within 1–3 hours during working time. During high load periods it may take a bit longer.",
 	},
 ];
 
@@ -63,9 +63,9 @@ export default function FaqPage() {
 		<main className="min-h-screen bg-gradient-to-b from-background to-background-muted px-4 py-12 md:px-6">
 			<div className="mx-auto w-full max-w-5xl">
 				<section className="rounded-3xl border border-amber-100 bg-white px-6 py-8 shadow-sm md:px-10 md:py-12">
-					<h1 className="font-serif text-3xl font-bold text-secondary md:text-5xl">Часто задаваемые вопросы</h1>
+					<h1 className="font-serif text-3xl font-bold text-secondary md:text-5xl">Frequently asked questions</h1>
 					<p className="mt-4 max-w-3xl text-base leading-relaxed text-zinc-700 md:text-lg">
-						Здесь собрали самые популярные вопросы о заказах, доставке, оплате и возвратах. Не нашли ответ? Напишите нам!
+						Here are the most common questions about orders, delivery, payments, and returns. Did not find your answer? Contact us.
 					</p>
 				</section>
 
@@ -90,13 +90,13 @@ export default function FaqPage() {
 				</section>
 
 				<section className="mt-8 rounded-3xl border border-amber-200 bg-white px-6 py-7 shadow-sm md:px-8 md:py-9">
-					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Всё ещё есть вопросы?</h2>
-					<p className="mt-2 text-zinc-700">Наша команда с радостью поможет и подскажет лучший вариант решения.</p>
+					<h2 className="font-serif text-2xl font-bold text-secondary md:text-3xl">Still have questions?</h2>
+					<p className="mt-2 text-zinc-700">Our team will gladly help and suggest the best solution.</p>
 					<Link
 						href="/contacts"
 						className="mt-5 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-amber-300"
 					>
-						Написать нам
+						Write to us
 					</Link>
 				</section>
 			</div>

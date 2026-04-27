@@ -63,7 +63,7 @@ export default function MetadataManager({
       setItems(sortItems(list));
     } catch (error) {
       console.error(error);
-      showToast(`Не удалось загрузить ${entityLabel.toLowerCase()}s`);
+      showToast(`Failed to load ${entityLabel.toLowerCase()}s`);
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +100,7 @@ export default function MetadataManager({
   const saveItem = async () => {
     const name = draftName.trim();
     if (!name) {
-      showToast('Название не может быть пустым');
+      showToast('Name cannot be empty');
       return;
     }
 
@@ -134,11 +134,11 @@ export default function MetadataManager({
         return sortItems(next);
       });
 
-      showToast(`${itemLabel} сохранён`);
+      showToast(`${itemLabel} saved`);
       closeForm();
     } catch (error) {
       console.error(error);
-      showToast(error instanceof Error ? error.message : `Не удалось сохранить ${itemLabel.toLowerCase()}`);
+      showToast(error instanceof Error ? error.message : `Failed to save ${itemLabel.toLowerCase()}`);
     } finally {
       setIsSaving(false);
     }
@@ -155,15 +155,15 @@ export default function MetadataManager({
       });
 
       if (!response.ok) {
-        throw new Error(await readErrorMessage(response, `Не удалось удалить ${itemLabel.toLowerCase()}`));
+        throw new Error(await readErrorMessage(response, `Failed to delete ${itemLabel.toLowerCase()}`));
       }
 
       setItems((prev) => prev.filter((item) => item.id !== deleteTarget.id));
-      showToast(`${itemLabel} удалён`);
+      showToast(`${itemLabel} deleted`);
       setDeleteTarget(null);
     } catch (error) {
       console.error(error);
-      showToast(error instanceof Error ? error.message : `Не удалось удалить ${itemLabel.toLowerCase()}`);
+      showToast(error instanceof Error ? error.message : `Failed to delete ${itemLabel.toLowerCase()}`);
     } finally {
       setIsSaving(false);
     }

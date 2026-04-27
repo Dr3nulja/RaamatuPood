@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type NavItem = {
   href: string;
@@ -12,10 +13,12 @@ type AccountSidebarProps = {
 };
 
 export default function AccountSidebar({ items }: AccountSidebarProps) {
+  const { t } = useTranslation();
+
   return (
     <aside className="rounded-[2rem] border border-amber-100 bg-white p-4 shadow-sm md:sticky md:top-24 md:p-5">
       <div className="mb-4 hidden md:block">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Account</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">{t('nav.account')}</p>
       </div>
 
       <nav className="flex gap-2 overflow-x-auto md:flex-col md:gap-2">

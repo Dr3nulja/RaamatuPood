@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { BookWithRelations } from '@/lib/api/catalogTypes';
 import Button from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type BookCardProps = {
   book?: BookWithRelations | null;
@@ -26,9 +27,10 @@ function normalizeImageUrl(url: string | null) {
 }
 
 export default function BookCard({ book, onAddToCart, title, author, cover }: BookCardProps) {
+  const { t, formatPrice } = useTranslation();
   const resolvedTitle = book?.title ?? title ?? '';
-  const resolvedAuthor = book?.author?.name ?? author ?? 'Автор не указан';
-  const resolvedCategory = book?.category?.name ?? 'Без категории';
+  const resolvedAuthor = book?.author?.name ?? author ?? t('catalog.unknownAuthor');
+  const resolvedCategory = book?.category?.name ?? t('catalog.uncategorized');
   const resolvedRating = book?.rating ?? null;
   const resolvedPrice = book?.price ?? null;
   const resolvedStock = book?.stock ?? 0;
@@ -99,11 +101,11 @@ export default function BookCard({ book, onAddToCart, title, author, cover }: Bo
 
         <div className="flex items-center justify-between">
           <p className="text-xl font-bold text-secondary">
-            {resolvedPrice === null ? '—' : `€${resolvedPrice.toFixed(2)}`}
+            {resolvedPrice === null ? '—' : formatPrice(resolvedPrice)}
           </p>
           {isCatalogMode && (
             <span className={`text-xs font-semibold ${inStock ? 'text-emerald-700' : 'text-red-600'}`}>
-              {inStock ? `In stock: ${resolvedStock}` : 'Out of stock'}
+              {inStock ? t('catalog.inStock', { count: resolvedStock }) : t('catalog.outOfStock')}
             </span>
           )}
         </div>
@@ -120,14 +122,14 @@ export default function BookCard({ book, onAddToCart, title, author, cover }: Bo
               loading={isAdding}
               className="flex-1 disabled:bg-zinc-300"
             >
-              {isAdding ? 'Adding...' : 'Add to cart'}
+              {isAdding ? t('catalog.adding') : t('catalog.addToCart')}
             </Button>
           )}
           <Link
             href={detailsHref}
             className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm font-semibold text-amber-900 transition hover:bg-amber-100"
           >
-            Подробнее
+            {t('catalog.details')}
           </Link>
         </div>
       </div>

@@ -41,13 +41,18 @@ function buildShippingCandidates(value: string) {
   const normalized = normalizeShippingName(raw);
   const aliases = new Set<string>([raw]);
 
+  const legacyCourierRu = decodeURIComponent('%D0%9A%D1%83%D1%80%D1%8C%D0%B5%D1%80%20%D0%BF%D0%BE%20%D0%A2%D0%B0%D0%BB%D0%BB%D0%B8%D0%BD%D1%83');
+  const legacyPickupRu = decodeURIComponent('%D0%A1%D0%B0%D0%BC%D0%BE%D0%B2%D1%8B%D0%B2%D0%BE%D0%B7');
+  const legacyCourierKey = normalizeShippingName(legacyCourierRu);
+  const legacyPickupKey = normalizeShippingName(legacyPickupRu);
+
   const aliasMap: Record<string, string[]> = {
-    courier: ['Tallinn Courier', 'Курьер по Таллину'],
-    pickup: ['Self-call', 'Самовывоз'],
-    'tallinn courier': ['Tallinn Courier', 'Курьер по Таллину'],
-    'self-call': ['Self-call', 'Самовывоз'],
-    'курьер по таллину': ['Tallinn Courier', 'Курьер по Таллину'],
-    'самовывоз': ['Self-call', 'Самовывоз'],
+    courier: ['Tallinn Courier', legacyCourierRu],
+    pickup: ['Self-call', legacyPickupRu],
+    'tallinn courier': ['Tallinn Courier', legacyCourierRu],
+    'self-call': ['Self-call', legacyPickupRu],
+    [legacyCourierKey]: ['Tallinn Courier', legacyCourierRu],
+    [legacyPickupKey]: ['Self-call', legacyPickupRu],
     omniva: ['Omniva pakiautomaat'],
     itella: ['Itella Smartpost'],
     'omniva pakiautomaat': ['Omniva pakiautomaat'],
@@ -216,7 +221,7 @@ export async function createCheckout(input: CheckoutInput): Promise<CheckoutResp
     lineItems.push({
       price_data: {
         currency: 'eur',
-        product_data: { name: shippingMethod.name || 'Доставка' },
+        product_data: { name: shippingMethod.name || 'Delivery' },
         unit_amount: Math.round(shippingPrice * 100),
       },
       quantity: 1,

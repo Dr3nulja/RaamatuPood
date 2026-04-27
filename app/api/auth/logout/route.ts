@@ -63,15 +63,19 @@ function buildLogoutResponse(request: Request) {
   response.headers.set('Expires', '0');
   response.headers.set('Clear-Site-Data', '"cache", "cookies", "storage"');
 
-  // Auth0 + app cookies (ASCII + кириллица) очищаем безопасно через encoded Set-Cookie
+  // Clear Auth0 and app cookies safely via encoded Set-Cookie headers.
+  const legacyCookieNames = [
+    decodeURIComponent('raamatupood-%D1%81%D0%B5%D1%81%D1%81%D0%B8%D1%8F'),
+    decodeURIComponent('raamatupood-%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8C'),
+  ];
+
   const cookiesToClear = [
     '__session',
     'appSession',
     'auth_verification',
     'raamatupood-session',
     'raamatupood-user',
-    'raamatupood-сессия',
-    'raamatupood-пользователь',
+    ...legacyCookieNames,
   ];
 
   for (const cookieName of cookiesToClear) {

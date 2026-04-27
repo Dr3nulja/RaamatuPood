@@ -61,7 +61,7 @@ export default function AdminOrdersView() {
       } catch (error) {
         console.error('Orders load failed:', error);
         if (isMounted) {
-          showToast('Ошибка загрузки заказов');
+          showToast('Failed to load orders');
         }
       } finally {
         if (isMounted) {
@@ -99,11 +99,11 @@ export default function AdminOrdersView() {
         throw new Error('Order status update failed');
       }
 
-      showToast(`Заказ #${orderId}: статус обновлён`);
+      showToast(`Order #${orderId}: status updated`);
     } catch (error) {
       console.error(error);
       setOrders(previousOrders);
-      showToast('Не удалось обновить статус заказа');
+      showToast('Failed to update order status');
     } finally {
       setOrderActionLoadingId(null);
     }
@@ -154,7 +154,7 @@ export default function AdminOrdersView() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="rounded-xl border border-amber-100 bg-white p-8 text-center text-zinc-500">
-            <p className="text-lg font-medium">Заказы не найдены</p>
+            <p className="text-lg font-medium">No orders found</p>
             <p className="mt-1 text-sm">Try adjusting your filters</p>
           </div>
         ) : (

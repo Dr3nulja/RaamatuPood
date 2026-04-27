@@ -18,7 +18,7 @@ async function uploadToExternalProvider(file: File): Promise<UploadResult> {
   const endpoint = getStorageUploadEndpoint();
 
   if (!endpoint) {
-    throw new Error('Внешний сервер загрузки не настроен. Используется локальное хранилище.');
+    throw new Error('External upload server is not configured. Falling back to local storage.');
   }
 
   const formData = new FormData();
@@ -43,13 +43,13 @@ async function uploadToExternalProvider(file: File): Promise<UploadResult> {
     | null;
 
   if (!response.ok) {
-    throw new Error('Внешний сервер отклонил загрузку файла.');
+    throw new Error('External server rejected the upload.');
   }
 
   const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
 
   if (!url || typeof url !== 'string') {
-    throw new Error('Внешний сервер не вернул URL файла.');
+    throw new Error('External server did not return a file URL.');
   }
 
   return { url: url.trim() };
@@ -75,7 +75,7 @@ async function uploadToLocalStorage(file: File): Promise<UploadResult> {
     // Return public URL path
     return { url: `/uploads/books/${filename}` };
   } catch (error) {
-    throw new Error(`Локальная загрузка не удалась: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Local upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

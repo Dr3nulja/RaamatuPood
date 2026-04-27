@@ -43,7 +43,7 @@ async function getAdminOrders() {
       items: order.orderItems.map((item) => ({
         id: item.id,
         book_id: item.bookId,
-        title: item.book?.title || 'Книга',
+        title: item.book?.title || 'Book',
         quantity: item.quantity ?? 0,
         price: Number(item.price ?? 0),
       })),

@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import type { OrderStatus, Prisma } from '@prisma/client';
 import { ClearCartAfterSuccess } from '@/components/ClearCartAfterSuccess';
+import { createServerTranslator, detectServerLocale } from '@/lib/i18n/server';
 
 type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
@@ -13,20 +14,14 @@ type OrderWithRelations = Prisma.OrderGetPayload<{
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function statusBadge(status: OrderStatus): { label: string; cls: string } {
+function statusBadge(status: OrderStatus, t: (key: string, params?: Record<string, string | number>) => string): { label: string; cls: string } {
   switch (status) {
-    case 'PAID':      return { label: 'Оплачено',            cls: 'bg-green-100 text-green-700' };
-    case 'SHIPPED':   return { label: 'Отправлено',          cls: 'bg-blue-100 text-blue-700' };
-    case 'DELIVERED': return { label: 'Доставлено',          cls: 'bg-emerald-100 text-emerald-700' };
-    case 'CANCELLED': return { label: 'Отменён',             cls: 'bg-red-100 text-red-700' };
-    default:          return { label: 'Ожидает обработки',   cls: 'bg-amber-100 text-amber-700' };
+    case 'PAID':      return { label: t('success.statusPaid'),               cls: 'bg-green-100 text-green-700' };
+    case 'SHIPPED':   return { label: t('success.statusShipped'),            cls: 'bg-blue-100 text-blue-700' };
+    case 'DELIVERED': return { label: t('success.statusDelivered'),          cls: 'bg-emerald-100 text-emerald-700' };
+    case 'CANCELLED': return { label: t('success.statusCancelled'),          cls: 'bg-red-100 text-red-700' };
+    default:          return { label: t('success.statusPendingProcessing'),  cls: 'bg-amber-100 text-amber-700' };
   }
-}
-
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  }).format(date);
 }
 
 // ─── error states ────────────────────────────────────────────────────────────
@@ -41,7 +36,7 @@ function ErrorShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NotFoundUI() {
+function NotFoundUI({ t }: { t: (key: string, params?: Record<string, string | number>) => string }) {
   return (
     <ErrorShell>
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
@@ -50,23 +45,22 @@ function NotFoundUI() {
             d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
         </svg>
       </div>
-      <h1 className="font-serif text-2xl font-bold text-secondary">Заказ не найден</h1>
+      <h1 className="font-serif text-2xl font-bold text-secondary">{t('success.notFoundTitle')}</h1>
       <p className="mt-3 text-zinc-600 text-sm leading-relaxed">
-        Мы не смогли найти ваш заказ. Возможно, он ещё обрабатывается — попробуйте обновить страницу через минуту.
-        Если проблема сохраняется, свяжитесь с нами.
+        {t('success.notFoundDescription')}
       </p>
       <div className="mt-8 flex flex-col gap-3">
         <Link
           href="/contacts"
           className="rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:bg-primary-hover"
         >
-          Связаться с поддержкой
+          {t('success.contactSupport')}
         </Link>
         <Link
           href="/catalog"
           className="rounded-xl border border-secondary-soft bg-white px-5 py-3 font-semibold text-secondary transition hover:bg-amber-50"
         >
-          Вернуться в каталог
+          {t('success.backToCatalog')}
         </Link>
       </div>
     </ErrorShell>
@@ -80,10 +74,12 @@ export default async function SuccessPage({
 }: {
   searchParams: Promise<{ session_id?: string }>;
 }) {
+  const locale = detectServerLocale();
+  const { t, formatDate, formatPrice } = createServerTranslator(locale);
   const { session_id } = await searchParams;
 
   if (!session_id) {
-    return <NotFoundUI />;
+    return <NotFoundUI t={t} />;
   }
 
   // 1. Find the order in the database
@@ -103,7 +99,7 @@ export default async function SuccessPage({
   }
 
   if (!order) {
-    return <NotFoundUI />;
+    return <NotFoundUI t={t} />;
   }
 
   // 2. Fetch Stripe session for guest info + line items (not stored in DB yet)
@@ -142,7 +138,7 @@ export default async function SuccessPage({
   // Prefer DB order items (more data); fall back to Stripe line items
   const hasDbItems = order.orderItems.length > 0;
   const total      = Number(order.totalPrice ?? 0);
-  const badge      = statusBadge(order.status);
+  const badge      = statusBadge(order.status, t);
 
   return (
     <main className="min-h-screen bg-background px-4 py-12 md:py-16">
@@ -156,45 +152,45 @@ export default async function SuccessPage({
             </svg>
           </div>
           <h1 className="font-serif text-3xl font-bold text-secondary md:text-4xl">
-            Спасибо за ваш заказ!
+            {t('success.thankYou')}
           </h1>
           <p className="mt-2 text-secondary-soft">
-            Заказ <span className="font-semibold text-secondary">#{order.id}</span> успешно оформлен
+            {t('success.placedSuccessfully', { id: order.id })}
           </p>
         </div>
 
         {/* ── ORDER DETAILS ──────────────────────────────────────── */}
         <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-secondary">Детали заказа</h2>
+          <h2 className="mb-4 text-base font-semibold text-secondary">{t('success.orderDetails')}</h2>
           <dl className="divide-y divide-amber-50 text-sm">
 
-            <Row label="Номер заказа">
+            <Row label={t('success.orderNumber')}>
               <span className="font-semibold text-zinc-800">#{order.id}</span>
             </Row>
 
-            <Row label="Дата оформления">
+            <Row label={t('success.date')}>
               <span className="text-zinc-700">{formatDate(order.createdAt)}</span>
             </Row>
 
             {guestName && (
-              <Row label="Получатель">
+              <Row label={t('success.recipient')}>
                 <span className="text-zinc-700">{guestName}</span>
               </Row>
             )}
 
             {customerEmail && (
-              <Row label="Email">
+              <Row label={t('profile.email')}>
                 <span className="text-zinc-700">{customerEmail}</span>
               </Row>
             )}
 
             {phone && (
-              <Row label="Телефон">
+              <Row label={t('profile.phone')}>
                 <span className="text-zinc-700">{phone}</span>
               </Row>
             )}
 
-            <Row label="Статус">
+            <Row label={t('success.status')}>
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>
                 {badge.label}
               </span>
@@ -206,7 +202,7 @@ export default async function SuccessPage({
         {/* ── BOOK LIST ──────────────────────────────────────────── */}
         {(hasDbItems || stripeItems.length > 0) && (
           <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-base font-semibold text-secondary">Состав заказа</h2>
+            <h2 className="mb-4 text-base font-semibold text-secondary">{t('success.orderItems')}</h2>
 
             <ul className="space-y-3">
               {hasDbItems
@@ -225,10 +221,10 @@ export default async function SuccessPage({
                       </div>
                       <div className="shrink-0 text-right text-sm">
                         <p className="text-zinc-500">
-                          {item.quantity ?? 1} × €{Number(item.price ?? 0).toFixed(2)}
+                          {item.quantity ?? 1} × {formatPrice(Number(item.price ?? 0))}
                         </p>
                         <p className="font-semibold text-secondary">
-                          €{(Number(item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+                          {formatPrice(Number(item.price ?? 0) * (item.quantity ?? 1))}
                         </p>
                       </div>
                     </li>
@@ -243,10 +239,10 @@ export default async function SuccessPage({
                       </p>
                       <div className="shrink-0 text-right text-sm">
                         <p className="text-zinc-500">
-                          {item.quantity} × €{(item.unitCents / 100).toFixed(2)}
+                          {item.quantity} × {formatPrice(item.unitCents / 100)}
                         </p>
                         <p className="font-semibold text-secondary">
-                          €{(item.totalCents / 100).toFixed(2)}
+                          {formatPrice(item.totalCents / 100)}
                         </p>
                       </div>
                     </li>
@@ -255,8 +251,8 @@ export default async function SuccessPage({
 
             {/* Total */}
             <div className="mt-4 flex items-center justify-between border-t border-amber-100 pt-4">
-              <span className="font-semibold text-zinc-700">Итого</span>
-              <span className="text-xl font-bold text-secondary">€{total.toFixed(2)}</span>
+              <span className="font-semibold text-zinc-700">{t('success.total')}</span>
+              <span className="text-xl font-bold text-secondary">{formatPrice(total)}</span>
             </div>
           </section>
         )}
@@ -264,17 +260,17 @@ export default async function SuccessPage({
         {/* ── DELIVERY ───────────────────────────────────────────── */}
         {(order.shippingMethod?.name || deliveryMethod || deliveryAddress) && (
           <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-base font-semibold text-secondary">Доставка</h2>
+            <h2 className="mb-4 text-base font-semibold text-secondary">{t('success.delivery')}</h2>
             <dl className="divide-y divide-amber-50 text-sm">
               {(order.shippingMethod?.name || deliveryMethod) && (
-                <Row label="Способ доставки">
+                <Row label={t('success.deliveryMethod')}>
                   <span className="text-zinc-700">
                     {order.shippingMethod?.name ?? deliveryMethod}
                   </span>
                 </Row>
               )}
               {deliveryAddress && (
-                <Row label="Адрес">
+                <Row label={t('success.address')}>
                   <span className="text-right text-zinc-700">{deliveryAddress}</span>
                 </Row>
               )}
@@ -293,13 +289,13 @@ export default async function SuccessPage({
             href="/catalog"
             className="flex-1 rounded-xl bg-primary px-5 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-[0.98]"
           >
-            Вернуться в каталог
+            {t('success.backToCatalog')}
           </Link>
           <Link
             href="/contacts"
             className="flex-1 rounded-xl border border-secondary-soft bg-white px-5 py-3 text-center font-semibold text-secondary shadow-sm transition hover:bg-amber-50 active:scale-[0.98]"
           >
-            Задать вопрос
+            {t('success.askQuestion')}
           </Link>
         </div>
 

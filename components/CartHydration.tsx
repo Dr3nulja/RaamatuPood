@@ -11,7 +11,7 @@ export default function CartHydration({ isAuthenticated }: CartHydrationProps) {
   const setCart = useCartStore((state) => state.setCart);
 
   useEffect(() => {
-    // ИСПРАВЛЕНО: принудительная гидратация persist-store при старте приложения
+    // Ensure persisted cart is hydrated as soon as the app mounts.
     void useCartStore.persist.rehydrate();
 
     if (!isAuthenticated) {

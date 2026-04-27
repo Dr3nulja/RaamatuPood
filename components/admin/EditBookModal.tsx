@@ -71,7 +71,7 @@ export default function EditBookModal({
       const uploadPayload = (await uploadResponse.json().catch(() => null)) as { url?: string; error?: string } | null;
 
       if (!uploadResponse.ok) {
-        const errorMessage = uploadPayload?.error || 'Не удалось загрузить файл обложки';
+        const errorMessage = uploadPayload?.error || 'Failed to upload cover file';
         console.error('Cover upload failed:', errorMessage);
         return '';
       }
@@ -83,7 +83,7 @@ export default function EditBookModal({
 
       return uploadPayload.url;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка при загрузке';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
       console.error('Cover upload exception:', errorMessage);
       return '';
     }
@@ -100,7 +100,7 @@ export default function EditBookModal({
     const payload = (await response.json().catch(() => null)) as { author?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.author) {
-      throw new Error(payload?.error || 'Не удалось создать автора');
+      throw new Error(payload?.error || 'Failed to create author');
     }
 
     const updatedAuthors = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
@@ -123,7 +123,7 @@ export default function EditBookModal({
     const payload = (await response.json().catch(() => null)) as { category?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.category) {
-      throw new Error(payload?.error || 'Не удалось создать категорию');
+      throw new Error(payload?.error || 'Failed to create category');
     }
 
     const updatedCategories = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
