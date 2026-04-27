@@ -438,41 +438,6 @@
     "ctaTitle": "Ready to order?",
     "ctaDescription": "Browse our catalog and find your next favorite book."
   },
-  "returns": {
-    "kicker": "Returns and exchanges",
-    "heroTitle": "Simple and transparent rules",
-    "heroDescription": "We value your trust. If a book is not right for you, we will help you arrange a return or exchange quickly and without hassle.",
-    "rules": {
-      "periodTitle": "Return period - 14 days",
-      "periodText": "You can request a return within 14 calendar days from the date you received the order.",
-      "conditionTitle": "Item condition",
-      "conditionText": "The book must be unused, in resale condition, and include all original parts.",
-      "requestTitle": "How to request",
-      "requestText": "Contact us in any convenient way and we will guide you through the return process and next steps."
-    },
-    "guideTitle": "Step-by-step guide",
-    "steps": {
-      "step1": "Send us your order number and return reason.",
-      "step2": "Receive confirmation and instructions from support.",
-      "step3": "Hand the item over at a drop-off point or to a courier.",
-      "step4": "After inspection, we process a refund or exchange."
-    },
-    "exceptionsTitle": "Items not eligible for return",
-    "exceptions": {
-      "item1": "Books with an autograph or personalized author signature.",
-      "item2": "Items with custom packaging damaged after delivery.",
-      "item3": "Digital goods and gift certificates after activation."
-    },
-    "contactsTitle": "Return contacts",
-    "phone": "Phone:",
-    "responseTime": "Response time: daily, 09:00-20:00",
-    "writeToUs": "Write to us",
-    "moreDetailsPrefix": "Need more details? Visit",
-    "faqLink": "FAQ",
-    "moreDetailsMiddle": "or go to",
-    "catalogLink": "catalog",
-    "moreDetailsSuffix": "."
-  },
   "common": {
     "close": "Close",
     "back": "Back",

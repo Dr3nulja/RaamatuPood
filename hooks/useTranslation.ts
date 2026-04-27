@@ -36,6 +36,7 @@ const localeLoaders: Record<Locale, () => Promise<TranslationTree>> = {
 };
 
 const runtimeCache = new Map<Locale, TranslationTree>([['en', enMessages as TranslationTree]]);
+const warnedMissingKeys = new Set<string>();
 
 function isLocale(value: string | null | undefined): value is Locale {
   return value === 'en' || value === 'et';
@@ -284,10 +285,18 @@ export function useTranslation() {
   }, [initialize]);
 
   const t = useCallback((key: TranslationKey | string, params?: TranslationParams): string => {
-    const message =
-      resolveNestedValue(messages, key) ??
-      resolveNestedValue(enMessages as TranslationTree, key) ??
-      key;
+    const primaryMessage = resolveNestedValue(messages, key);
+    const fallbackMessage = resolveNestedValue(enMessages as TranslationTree, key);
+    const message = primaryMessage ?? fallbackMessage;
+
+    if (!message) {
+      if (!warnedMissingKeys.has(key)) {
+        warnedMissingKeys.add(key);
+        console.warn(`Translation missing for key: ${key}`);
+      }
+
+      return key;
+    }
 
     return interpolate(message, params);
   }, [messages]);

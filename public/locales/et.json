@@ -438,41 +438,6 @@
     "ctaTitle": "Kas oled tellimiseks valmis?",
     "ctaDescription": "Ava meie kataloog ja leia oma järgmine lemmikraamat."
   },
-  "returns": {
-    "kicker": "Tagastused ja vahetused",
-    "heroTitle": "Lihtsad ja arusaadavad reeglid",
-    "heroDescription": "Hindame sinu usaldust. Kui raamat ei sobi, aitame korraldada tagastuse või vahetuse kiiresti ja mugavalt.",
-    "rules": {
-      "periodTitle": "Tagastusperiood - 14 päeva",
-      "periodText": "Tagastust saad taotleda 14 kalendripäeva jooksul alates tellimuse kättesaamisest.",
-      "conditionTitle": "Toote seisukord",
-      "conditionText": "Raamat peab olema kasutamata, müügikõlblikus seisukorras ja sisaldama kõiki originaalosi.",
-      "requestTitle": "Kuidas taotleda",
-      "requestText": "Võta meiega ühendust sulle sobival viisil ja juhendame sind kogu tagastusprotsessi jooksul."
-    },
-    "guideTitle": "Samm-sammuline juhend",
-    "steps": {
-      "step1": "Saada meile tellimuse number ja tagastuse põhjus.",
-      "step2": "Saa klienditoelt kinnitus ja edasised juhised.",
-      "step3": "Anna toode üle pakiautomaati, väljastuspunkti või kullerile.",
-      "step4": "Pärast kontrolli vormistame raha tagastuse või vahetuse."
-    },
-    "exceptionsTitle": "Tagastuseks mitte sobivad tooted",
-    "exceptions": {
-      "item1": "Raamatud autogrammi või personaalse autori pühendusega.",
-      "item2": "Tooted, mille eritellimuspakend on pärast kättesaamist kahjustatud.",
-      "item3": "Digitaalsed tooted ja kinkekaardid pärast aktiveerimist."
-    },
-    "contactsTitle": "Tagastuse kontaktid",
-    "phone": "Telefon:",
-    "responseTime": "Vastamisaeg: iga päev, 09:00-20:00",
-    "writeToUs": "Kirjuta meile",
-    "moreDetailsPrefix": "Vajad lisainfot? Külasta",
-    "faqLink": "KKK",
-    "moreDetailsMiddle": "või mine",
-    "catalogLink": "kataloogi",
-    "moreDetailsSuffix": "."
-  },
   "common": {
     "close": "Sulge",
     "back": "Tagasi",
