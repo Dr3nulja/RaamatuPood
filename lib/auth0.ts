@@ -102,7 +102,7 @@ export const auth0Options = {
   session: {
     rolling: true,
     absoluteDuration: 60 * 60 * 24 * 7,
-    inactivityDuration: 60 * 60 * 24,
+    inactivityDuration: 60 * 60 * 1,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

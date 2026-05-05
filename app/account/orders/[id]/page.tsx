@@ -28,7 +28,7 @@ export default async function AccountOrderDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { user: currentUser } = await requireUserFlowAccess({ returnTo: '/account' });
-  const locale = detectServerLocale();
+  const locale = await detectServerLocale();
   const { t, formatDate, formatPrice } = createServerTranslator(locale);
 
   const { id } = await params;

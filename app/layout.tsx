@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import CartHydration from "@/components/CartHydration";
+import SessionTimeout from "@/components/SessionTimeout";
 import { auth0 } from "@/lib/auth0";
 import { prisma } from "@/lib/prisma";
 
@@ -50,6 +51,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col bg-background text-text-primary font-sans antialiased`}
       >
         <CartHydration isAuthenticated={isAuthenticated} />
+        <SessionTimeout />
         <Header
           userEmail={userEmail}
           userNickname={userNickname}

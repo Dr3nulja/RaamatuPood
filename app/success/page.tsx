@@ -74,7 +74,7 @@ export default async function SuccessPage({
 }: {
   searchParams: Promise<{ session_id?: string }>;
 }) {
-  const locale = detectServerLocale();
+  const locale = await detectServerLocale();
   const { t, formatDate, formatPrice } = createServerTranslator(locale);
   const { session_id } = await searchParams;
 

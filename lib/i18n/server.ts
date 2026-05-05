@@ -41,8 +41,8 @@ function interpolate(template: string, params?: Record<string, string | number>)
   });
 }
 
-export function detectServerLocale(): ServerLocale {
-  const cookieLocale = cookies().get('raamatupood-locale')?.value;
+export async function detectServerLocale(): Promise<ServerLocale> {
+  const cookieLocale = (await cookies()).get('raamatupood-locale')?.value;
   return cookieLocale === 'et' ? 'et' : 'en';
 }
 
