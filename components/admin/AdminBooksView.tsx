@@ -481,7 +481,7 @@ export default function AdminBooksView() {
         }
       >
         <p className="text-zinc-600">
-          Are you sure you want to delete "<span className="font-semibold">{bookToDelete?.title}</span>"? This action cannot be undone.
+          Are you sure you want to delete &quot;<span className="font-semibold">{bookToDelete?.title}</span>&quot;? This action cannot be undone.
         </p>
       </Modal>
     </article>

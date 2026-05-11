@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "jest",
+    "test:ci": "jest --runInBand",
+    "test:coverage": "jest --coverage",
     "db:init": "node scripts/initDb.js",
     "db:seed-users": "node scripts/seedUsers.js"
   },

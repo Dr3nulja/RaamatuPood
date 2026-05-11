@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import { normalizeSessionCartItems } from '@/lib/cart/sessionCart';
@@ -60,16 +61,16 @@ async function postSyncUser(request: Request) {
     const auth0Id = authUser.sub;
     const email = authUser.email?.trim() || `${auth0Id}@auth0.local`;
 
-    const updateData = {
+    const updateData: Prisma.UserUpdateInput = {
       email,
-    } as any;
+    };
 
-    const createData = {
+    const createData: Prisma.UserCreateInput = {
       auth0Id,
       email,
       name: null,
       picture: null,
-    } as any;
+    };
 
     const user = await prisma.user.upsert({
       where: { auth0Id },

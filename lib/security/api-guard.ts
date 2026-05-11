@@ -21,8 +21,6 @@ type GuardOptions = SecurityOptions & {
   resolveUserId?: (request: Request) => Promise<string | null>;
 };
 
-type RouteContext = { params?: Promise<Record<string, string>> };
-
 function mapRateBucket(bucket: SecurityOptions['rateLimitBucket']) {
   // Internal limiter uses "login" bucket; external API exposes "auth" alias.
   if (bucket === 'auth') {
@@ -119,11 +117,11 @@ export function strictObject<T extends z.ZodRawShape>(shape: T) {
   return z.object(shape).strict();
 }
 
-export function withApiSecurity(
-  handler: (request: any, context?: any) => Promise<Response> | Response,
+export function withApiSecurity<TRequest extends Request, TContext = unknown>(
+  handler: (request: TRequest, context: TContext) => Promise<Response> | Response,
   options: GuardOptions
 ) {
-  return async function securedHandler(request: any, context?: any) {
+  return async function securedHandler(request: TRequest, context: TContext) {
     const pathname = getPathname(request);
     const ip = getClientIp(request);
     const method = request.method.toUpperCase();
