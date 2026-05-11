@@ -41,11 +41,6 @@ const Footer: React.FC = () => {
               <li>Email: infobook@raamatu.com</li>
               <li>{t('footer.phone')}: +372 53425673</li>
               <li>{t('footer.supportHours')}: {t('footer.supportHoursValue')}</li>
-              <li className="pt-2 flex gap-3">
-                <a href="#" className="transition hover:text-primary-soft">Instagram</a>
-                <a href="#" className="transition hover:text-primary-soft">Facebook</a>
-                <a href="#" className="transition hover:text-primary-soft">X</a>
-              </li>
             </ul>
           </div>
         </div>
