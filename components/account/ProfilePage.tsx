@@ -161,12 +161,6 @@ export default function ProfilePage({ name, email, avatarUrl, registeredAt, orde
                   {t('profile.editProfile')}
                 </Button>
                 <Link
-                  href="/auth/login?prompt=login"
-                  className="inline-flex items-center justify-center rounded-full border border-amber-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-amber-50"
-                >
-                  {t('profile.changePassword')}
-                </Link>
-                <Link
                   href="/api/auth/logout"
                   className="inline-flex items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                 >

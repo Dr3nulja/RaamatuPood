@@ -72,13 +72,37 @@ export default function OrderCard({ order }: OrderCardProps) {
     showToast(t('profile.orders.repeatNotAvailable'));
   };
 
-  const handleCancelOrder = () => {
+  const handleCancelOrder = async () => {
+    // Only allow cancellation if order status is 'paid'
+    if (order.status !== 'paid') {
+      showToast(t('profile.orders.cannotCancelShipped'));
+      return;
+    }
+
     const confirmed = window.confirm(t('profile.orders.cancelConfirm', { id: order.id }));
     if (!confirmed) {
       return;
     }
 
-    showToast(t('profile.orders.cancelNotAvailable'));
+    try {
+      const response = await fetch(`/api/orders/${order.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+
+      if (!response.ok || !data?.ok) {
+        showToast(t('profile.orders.cancelError'));
+        return;
+      }
+
+      showToast(t('profile.orders.cancelSuccess'));
+      // Optionally refresh the page or update the order in the parent component
+      window.location.reload();
+    } catch (error) {
+      showToast(t('profile.orders.cancelError'));
+    }
   };
 
   const formattedDate = formatDate(order.createdAt);
@@ -167,8 +191,12 @@ export default function OrderCard({ order }: OrderCardProps) {
             type="button"
             variant="outline"
             size="small"
+            disabled={order.status !== 'paid'}
             onClick={handleCancelOrder}
-            className="rounded-full border-red-200 bg-white text-red-600 hover:bg-red-50"
+            className={`rounded-full border-red-200 bg-white text-red-600 hover:bg-red-50 ${
+              order.status !== 'paid' ? 'cursor-not-allowed opacity-50' : ''
+            }`}
+            title={order.status !== 'paid' ? t('profile.orders.cannotCancelShipped') : ''}
           >
             {t('profile.orders.cancel')}
           </Button>
