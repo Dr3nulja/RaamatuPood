@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdminRoute } from '@/lib/admin/guard';
-import { uploadImageToStorage } from '@/lib/storage/upload';
+import { parsePendingBookCoverUploadId } from '@/lib/books/cover';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 
@@ -10,6 +11,8 @@ const adminPatchBookSchema = strictObject({
   price: z.number().min(0).optional(),
   stock: z.number().int().min(0).optional(),
   description: z.string().max(5000).nullable().optional(),
+  language_id: z.union([z.number().int().positive(), z.string()]).optional(),
+  publication_year: z.union([z.number().int().min(1000).max(9999), z.string()]).optional(),
   author_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
   author_ids: z.union([z.array(z.union([z.number().int().positive(), z.string()])), z.string()]).nullable().optional(),
   category_id: z.union([z.number().int().positive(), z.string()]).nullable().optional(),
@@ -76,17 +79,41 @@ type PatchPayload = {
     price?: number;
     stock?: number;
     description?: string | null;
-    categoryId?: number | null;
+    language?: string;
+    publicationYear?: number;
     coverImage?: string | null;
+    coverImageData?: Buffer | null;
+    coverImageMimeType?: string | null;
   };
+  languageId?: number;
   authorIdsToSet?: number[];
+  categoryId?: number | null;
   coverFile?: File | null;
 };
 
+async function syncBookCategoryLink(
+  tx: Prisma.TransactionClient,
+  bookId: number,
+  categoryId: number | null
+) {
+  await tx.bookCategory.deleteMany({ where: { bookId } });
+
+  if (categoryId !== null) {
+    await tx.bookCategory.create({
+      data: {
+        bookId,
+        categoryId,
+      },
+    });
+  }
+}
+
 async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | null> {
   const data: PatchPayload['data'] = {};
+  let languageId: number | undefined;
   let authorIdsToSet: number[] | undefined;
   let coverFile: File | null = null;
+  let categoryId: number | null | undefined;
 
   const contentType = request.headers.get('content-type') || '';
 
@@ -96,6 +123,8 @@ async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | n
     const priceValue = form.get('price');
     const stockValue = form.get('stock');
     const descriptionValue = form.get('description');
+    const languageIdValue = form.get('language_id');
+    const publicationYearValue = form.get('publication_year');
     const authorIdValues = [...form.getAll('author_ids'), form.get('author_id')];
     const categoryIdValue = form.get('category_id');
     const uploadedCoverUrl = String(form.get('uploaded_cover_url') || '').trim();
@@ -131,6 +160,22 @@ async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | n
       data.description = normalized || null;
     }
 
+    if (languageIdValue !== null) {
+      const id = Number(languageIdValue);
+      if (!Number.isInteger(id) || id <= 0) {
+        return null;
+      }
+      languageId = id;
+    }
+
+    if (publicationYearValue !== null) {
+      const year = Number(publicationYearValue);
+      if (!Number.isInteger(year) || year < 1000 || year > 9999) {
+        return null;
+      }
+      data.publicationYear = year;
+    }
+
     const manualCover = coverImageValue !== null ? String(coverImageValue).trim() : '';
     if (uploadedCoverUrl || manualCover) {
       data.coverImage = uploadedCoverUrl || manualCover || null;
@@ -153,7 +198,7 @@ async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | n
       if (Number.isNaN(parsed)) {
         return null;
       }
-      data.categoryId = parsed;
+      categoryId = parsed;
     }
   } else {
     const body = (await request.json().catch(() => null)) as {
@@ -161,6 +206,8 @@ async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | n
       price?: number;
       stock?: number;
       description?: string | null;
+      language_id?: number | string;
+      publication_year?: number | string;
       author_id?: number | string | null;
       author_ids?: Array<number | string> | string | null;
       category_id?: number | string | null;
@@ -196,6 +243,22 @@ async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | n
       data.description = body.description ? String(body.description).trim() : null;
     }
 
+    if (body?.language_id !== undefined) {
+      const id = Number(body.language_id);
+      if (!Number.isInteger(id) || id <= 0) {
+        return null;
+      }
+      languageId = id;
+    }
+
+    if (body?.publication_year !== undefined) {
+      const year = Number(body.publication_year);
+      if (!Number.isInteger(year) || year < 1000 || year > 9999) {
+        return null;
+      }
+      data.publicationYear = year;
+    }
+
     if (body?.cover_image !== undefined || body?.uploaded_cover_url !== undefined) {
       const cover =
         (body?.uploaded_cover_url ? String(body.uploaded_cover_url).trim() : '')
@@ -221,20 +284,22 @@ async function parsePatchPayload(request: NextRequest): Promise<PatchPayload | n
 
     if (body?.category_id !== undefined) {
       if (body.category_id === null || body.category_id === '') {
-        data.categoryId = null;
+        categoryId = null;
       } else {
-        const categoryId = Number(body.category_id);
-        if (!Number.isInteger(categoryId) || categoryId <= 0) {
+        const parsedCategoryId = Number(body.category_id);
+        if (!Number.isInteger(parsedCategoryId) || parsedCategoryId <= 0) {
           return null;
         }
-        data.categoryId = categoryId;
+        categoryId = parsedCategoryId;
       }
     }
   }
 
   return {
     data,
+    languageId,
     authorIdsToSet,
+    categoryId,
     coverFile,
   };
 }
@@ -257,14 +322,28 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  if (payload.coverFile) {
-    const uploaded = await uploadImageToStorage(payload.coverFile);
-    payload.data.coverImage = uploaded.url;
+  const uploadedToken = parsePendingBookCoverUploadId(payload.data.coverImage);
+  if (uploadedToken) {
+    const pendingUpload = await prisma.pendingBookCoverUpload.findUnique({
+      where: { id: uploadedToken },
+    });
+
+    if (!pendingUpload) {
+      return NextResponse.json({ error: 'Uploaded cover was not found' }, { status: 400 });
+    }
+
+    payload.data.coverImage = null;
+    payload.data.coverImageData = Buffer.from(pendingUpload.imageData);
+    payload.data.coverImageMimeType = pendingUpload.mimeType;
+  } else if (payload.coverFile) {
+    payload.data.coverImage = null;
+    payload.data.coverImageData = Buffer.from(await payload.coverFile.arrayBuffer());
+    payload.data.coverImageMimeType = payload.coverFile.type || 'application/octet-stream';
   }
 
-  if (payload.data.categoryId !== undefined && payload.data.categoryId !== null) {
+  if (payload.categoryId !== undefined && payload.categoryId !== null) {
     const categoryExists = await prisma.category.findUnique({
-      where: { id: payload.data.categoryId },
+      where: { id: payload.categoryId },
       select: { id: true },
     });
 
@@ -283,11 +362,33 @@ async function patchAdminBook(request: NextRequest, { params }: { params: Promis
     }
   }
 
+  // Validate language_id if provided
+  if (payload.languageId !== undefined) {
+    const language = await prisma.language.findUnique({
+      where: { id: payload.languageId },
+      select: { name: true },
+    });
+
+    if (!language) {
+      return NextResponse.json({ error: 'Invalid language_id' }, { status: 400 });
+    }
+
+    payload.data.language = language.name;
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.book.update({
       where: { id },
       data: payload.data,
     });
+
+    if (payload.categoryId !== undefined) {
+      await syncBookCategoryLink(tx, id, payload.categoryId);
+    }
+
+    if (uploadedToken) {
+      await tx.pendingBookCoverUpload.delete({ where: { id: uploadedToken } });
+    }
 
     if (payload.authorIdsToSet !== undefined) {
       await tx.bookAuthor.deleteMany({ where: { bookId: id } });

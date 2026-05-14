@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withAuthenticatedSession } from '@/lib/auth/sessionGuard';
 import type { ApiErrorResponse, CartResponse } from '@/lib/api/types';
+import { buildBookCoverImageSrc } from '@/lib/books/cover';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 
@@ -34,6 +35,7 @@ const getCart = withAuthenticatedSession(async (_request, _context, { dbUser }) 
           price: true,
           stock: true,
           coverImage: true,
+            coverImageData: true,
           bookAuthors: {
             orderBy: {
               authorId: 'asc',
@@ -57,7 +59,7 @@ const getCart = withAuthenticatedSession(async (_request, _context, { dbUser }) 
     title: item.book.title,
     author: item.book.bookAuthors[0]?.author?.name ?? undefined,
     price: Number(item.book.price),
-    cover_image: item.book.coverImage ?? undefined,
+    cover_image: buildBookCoverImageSrc(item.book.id, item.book.coverImage, item.book.coverImageData) ?? undefined,
     quantity: item.quantity,
     stock: item.book.stock,
   }));

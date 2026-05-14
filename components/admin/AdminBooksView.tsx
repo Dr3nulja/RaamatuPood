@@ -6,18 +6,22 @@ import type {
   AdminBooksResponse,
   AdminCategoryOption,
   AdminAuthorOption,
+  AdminLanguageOption,
 } from '@/lib/api/adminTypes';
 import Button from '@/components/ui/Button';
 import AddableSelect from '@/components/admin/AddableSelect';
 import EditBookModal from '@/components/admin/EditBookModal';
 import BookCard from '@/components/admin/BookCard';
 import Modal from '@/components/ui/Modal';
+import CoverImageUploader from '@/components/admin/CoverImageUploader';
 
 type BookFormState = {
   title: string;
   price: string;
   stock: string;
   description: string;
+  language_id: string;
+  publication_year: string;
   cover_image: string;
   uploaded_cover_url: string;
   author_id: string;
@@ -30,6 +34,8 @@ const initialBookForm: BookFormState = {
   price: '',
   stock: '',
   description: '',
+  language_id: '',
+  publication_year: new Date().getFullYear().toString(),
   cover_image: '',
   uploaded_cover_url: '',
   author_id: '',
@@ -41,6 +47,7 @@ export default function AdminBooksView() {
   const [books, setBooks] = useState<AdminBook[]>([]);
   const [authors, setAuthors] = useState<AdminAuthorOption[]>([]);
   const [categories, setCategories] = useState<AdminCategoryOption[]>([]);
+  const [languages, setLanguages] = useState<AdminLanguageOption[]>([]);
 
   const [bookForm, setBookForm] = useState<BookFormState>(initialBookForm);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,6 +157,31 @@ export default function AdminBooksView() {
     return payload.category;
   };
 
+  const createLanguage = async (name: string) => {
+    const response = await fetch('/api/languages', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as { language?: { id: number; name: string }; error?: string } | null;
+
+    if (!response.ok || !payload?.language) {
+      throw new Error(payload?.error || 'Failed to create language');
+    }
+
+    // Reload languages after creation
+    const updatedLanguages = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
+      .then((r) => r.json() as Promise<{ languages?: AdminLanguageOption[] }>)
+      .then((data) => data.languages || [])
+      .catch(() => languages);
+
+    setLanguages(updatedLanguages);
+
+    return payload.language;
+  };
+
   const loadBooksData = async () => {
     setIsLoading(true);
     try {
@@ -162,9 +194,10 @@ export default function AdminBooksView() {
       setBooks(data.books || []);
       setAuthors(data.authors || []);
       setCategories(data.categories || []);
+      setLanguages(data.languages || []);
 
-      // Reset form if any new items were created
-      setBookForm((prev) => ({ ...prev, author_id: '', category_id: '' }));
+      // Reset form - don't set default language, let user select it
+      setBookForm((prev) => ({ ...prev, author_id: '', category_id: '', language_id: '' }));
     } catch (error) {
       console.error('Books load failed:', error);
       showToast('Failed to load books');
@@ -212,6 +245,8 @@ export default function AdminBooksView() {
       formData.set('price', bookForm.price);
       formData.set('stock', bookForm.stock);
       formData.set('description', bookForm.description);
+      formData.set('language_id', bookForm.language_id);
+      formData.set('publication_year', bookForm.publication_year);
       formData.set('cover_image', bookForm.cover_image);
       formData.set('author_id', bookForm.author_id);
       formData.set('category_id', bookForm.category_id);
@@ -308,7 +343,7 @@ export default function AdminBooksView() {
       <form onSubmit={handleCreateBook} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <input
           className="rounded-xl border border-amber-200 px-3 py-2"
-          placeholder="Title"
+          placeholder="Title *"
           value={bookForm.title}
           onChange={(event) => setBookForm((prev) => ({ ...prev, title: event.target.value }))}
           required
@@ -318,7 +353,7 @@ export default function AdminBooksView() {
           type="number"
           step="0.01"
           min="0"
-          placeholder="Price"
+          placeholder="Price *"
           value={bookForm.price}
           onChange={(event) => setBookForm((prev) => ({ ...prev, price: event.target.value }))}
           required
@@ -327,17 +362,41 @@ export default function AdminBooksView() {
           className="rounded-xl border border-amber-200 px-3 py-2"
           type="number"
           min="0"
-          placeholder="Stock"
+          placeholder="Stock *"
           value={bookForm.stock}
           onChange={(event) => setBookForm((prev) => ({ ...prev, stock: event.target.value }))}
           required
         />
         <input
           className="rounded-xl border border-amber-200 px-3 py-2"
-          placeholder="Cover URL (optional)"
-          value={bookForm.cover_image}
-          onChange={(event) => setBookForm((prev) => ({ ...prev, cover_image: event.target.value }))}
+          type="number"
+          min="1000"
+          max="9999"
+          placeholder="Year *"
+          value={bookForm.publication_year}
+          onChange={(event) => setBookForm((prev) => ({ ...prev, publication_year: event.target.value }))}
+          required
         />
+
+        <CoverImageUploader
+          coverUrl={bookForm.cover_image}
+          coverFile={bookForm.cover_file}
+          onUrlChange={(url) => setBookForm((prev) => ({ ...prev, cover_image: url }))}
+          onFileChange={(file) => setBookForm((prev) => ({ ...prev, cover_file: file }))}
+        />
+
+        <div>
+          <AddableSelect
+            items={languages}
+            value={bookForm.language_id}
+            onChange={(value) => setBookForm((prev) => ({ ...prev, language_id: value }))}
+            onCreateNew={createLanguage}
+            placeholder="Select language..."
+            label="Language"
+          />
+        </div>
+
+        
 
         <div>
           <AddableSelect
@@ -361,14 +420,6 @@ export default function AdminBooksView() {
           />
         </div>
 
-        <input
-          className="rounded-xl border border-amber-200 px-3 py-2"
-          type="file"
-          accept="image/*"
-          onChange={(event) =>
-            setBookForm((prev) => ({ ...prev, cover_file: event.target.files?.[0] || null }))
-          }
-        />
 
         <Button
           type="submit"
@@ -380,12 +431,12 @@ export default function AdminBooksView() {
         </Button>
 
         <p className="text-xs text-zinc-500 md:col-span-2 xl:col-span-4">
-          Cover: paste URL or upload a file. If both are provided, uploaded file has priority.
+          Fields marked with * are required. Cover: paste URL or upload file. If both provided, file has priority.
         </p>
 
         <textarea
           className="rounded-xl border border-amber-200 px-3 py-2 md:col-span-2 xl:col-span-4"
-          placeholder="Description"
+          placeholder="Description (optional)"
           rows={2}
           value={bookForm.description}
           onChange={(event) => setBookForm((prev) => ({ ...prev, description: event.target.value }))}
@@ -442,9 +493,11 @@ export default function AdminBooksView() {
         book={selectedEditBook}
         authors={authors}
         categories={categories}
+        languages={languages}
         onSave={handleSaveBook}
         setAuthors={setAuthors}
         setCategories={setCategories}
+        setLanguages={setLanguages}
       />
 
       {/* Delete Confirmation Modal */}

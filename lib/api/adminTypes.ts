@@ -4,6 +4,8 @@ export type AdminBook = {
   price: number;
   stock: number;
   description: string | null;
+  language: string;
+  publication_year: number;
   cover_image: string | null;
   author_id: number | null;
   author_ids: number[];
@@ -23,10 +25,16 @@ export type AdminCategoryOption = {
   name: string;
 };
 
+export type AdminLanguageOption = {
+  id: number;
+  name: string;
+};
+
 export type AdminBooksResponse = {
   books: AdminBook[];
   authors: AdminAuthorOption[];
   categories: AdminCategoryOption[];
+  languages: AdminLanguageOption[];
 };
 
 export type AdminOrderBookItem = {

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { AdminBook, AdminAuthorOption, AdminCategoryOption } from '@/lib/api/adminTypes';
+import type { AdminBook, AdminAuthorOption, AdminCategoryOption, AdminLanguageOption } from '@/lib/api/adminTypes';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import AddableSelect from '@/components/admin/AddableSelect';
-import { normalizeCover } from '@/components/admin/shared';
+import CoverImageUploader from '@/components/admin/CoverImageUploader';
 
 interface EditBookModalProps {
   isOpen: boolean;
@@ -13,10 +13,12 @@ interface EditBookModalProps {
   book: AdminBook | null;
   authors: AdminAuthorOption[];
   categories: AdminCategoryOption[];
+  languages: AdminLanguageOption[];
   onSave: (bookId: number, data: FormData) => Promise<void>;
   isLoading?: boolean;
   setAuthors: (authors: AdminAuthorOption[]) => void;
   setCategories: (categories: AdminCategoryOption[]) => void;
+  setLanguages: (languages: AdminLanguageOption[]) => void;
 }
 
 type BookFormState = {
@@ -24,6 +26,8 @@ type BookFormState = {
   price: string;
   stock: string;
   description: string;
+  language_id: string;
+  publication_year: string;
   cover_image: string;
   uploaded_cover_url: string;
   author_id: string;
@@ -36,6 +40,8 @@ const initialBookForm: BookFormState = {
   price: '',
   stock: '',
   description: '',
+  language_id: '',
+  publication_year: new Date().getFullYear().toString(),
   cover_image: '',
   uploaded_cover_url: '',
   author_id: '',
@@ -49,10 +55,12 @@ export default function EditBookModal({
   book,
   authors,
   categories,
+  languages,
   onSave,
   isLoading = false,
   setAuthors,
   setCategories,
+  setLanguages,
 }: EditBookModalProps) {
   const [formData, setFormData] = useState<BookFormState>(initialBookForm);
   const [isSaving, setIsSaving] = useState(false);
@@ -135,13 +143,41 @@ export default function EditBookModal({
     return payload.category;
   };
 
+  const createLanguage = async (name: string) => {
+    const response = await fetch('/api/languages', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as { language?: { id: number; name: string }; error?: string } | null;
+
+    if (!response.ok || !payload?.language) {
+      throw new Error(payload?.error || 'Failed to create language');
+    }
+
+    const updatedLanguages = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
+      .then((r) => r.json() as Promise<{ languages?: AdminLanguageOption[] }>)
+      .then((data) => data.languages || [])
+      .catch(() => languages);
+
+    setLanguages(updatedLanguages);
+    return payload.language;
+  };
+
   useEffect(() => {
     if (isOpen && book) {
+      // Find language ID from book's language name
+      const languageId = languages.find(l => l.name === book.language)?.id.toString() || '';
+      
       setFormData({
         title: book.title,
         price: String(book.price),
         stock: String(book.stock),
         description: book.description || '',
+        language_id: languageId,
+        publication_year: String(book.publication_year),
         cover_image: book.cover_image || '',
         uploaded_cover_url: '',
         author_id: book.author_id ? String(book.author_id) : '',
@@ -149,7 +185,7 @@ export default function EditBookModal({
         cover_file: null,
       });
     }
-  }, [isOpen, book]);
+  }, [isOpen, book, languages]);
 
   const handleSave = async () => {
     if (!book || !formData.title.trim()) {
@@ -158,7 +194,11 @@ export default function EditBookModal({
 
     const nextPrice = Number(formData.price);
     const nextStock = Number(formData.stock);
+    const nextYear = Number(formData.publication_year);
     if (!Number.isFinite(nextPrice) || !Number.isInteger(nextStock) || nextStock < 0) {
+      return;
+    }
+    if (!Number.isInteger(nextYear) || nextYear < 1000 || nextYear > 9999) {
       return;
     }
 
@@ -169,6 +209,8 @@ export default function EditBookModal({
       payload.set('price', String(nextPrice));
       payload.set('stock', String(nextStock));
       payload.set('description', formData.description);
+      payload.set('language_id', formData.language_id);
+      payload.set('publication_year', String(nextYear));
       payload.set('cover_image', formData.cover_image);
       payload.set('author_id', formData.author_id);
       payload.set('category_id', formData.category_id);
@@ -182,10 +224,6 @@ export default function EditBookModal({
       setIsSaving(false);
     }
   };
-
-  const coverPreview = formData.cover_file
-    ? URL.createObjectURL(formData.cover_file)
-    : normalizeCover(formData.uploaded_cover_url || formData.cover_image);
 
   return (
     <Modal
@@ -217,47 +255,13 @@ export default function EditBookModal({
       }
     >
       <div className="space-y-6">
-        {/* Cover Preview & Upload */}
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-zinc-700">Cover Image</label>
-          <div className="flex gap-6">
-            {/* Preview */}
-            <div className="h-40 w-32 flex-shrink-0 rounded-lg border border-amber-200 bg-amber-50">
-              {coverPreview ? (
-                <img src={coverPreview} alt="cover preview" className="h-full w-full object-cover rounded-lg" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-amber-700">No cover</div>
-              )}
-            </div>
-            {/* Upload Controls */}
-            <div className="flex-1 space-y-3">
-              <div>
-                <label className="text-xs font-medium text-zinc-600">Upload File</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) =>
-                    setFormData((prev) => ({ ...prev, cover_file: event.target.files?.[0] || null }))
-                  }
-                  className="mt-1 block w-full rounded-lg border border-amber-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-zinc-600">Or paste URL</label>
-                <input
-                  type="text"
-                  placeholder="https://..."
-                  value={formData.cover_image}
-                  onChange={(event) =>
-                    setFormData((prev) => ({ ...prev, cover_image: event.target.value }))
-                  }
-                  className="mt-1 rounded-lg border border-amber-200 px-3 py-2 text-sm w-full"
-                />
-              </div>
-              <p className="text-xs text-zinc-500">File upload has priority over URL</p>
-            </div>
-          </div>
-        </div>
+        {/* Cover Image Uploader */}
+        <CoverImageUploader
+          coverUrl={formData.cover_image}
+          coverFile={formData.cover_file}
+          onUrlChange={(url) => setFormData((prev) => ({ ...prev, cover_image: url }))}
+          onFileChange={(file) => setFormData((prev) => ({ ...prev, cover_file: file }))}
+        />
 
         {/* Title */}
         <div>
@@ -292,6 +296,35 @@ export default function EditBookModal({
               min="0"
               value={formData.stock}
               onChange={(event) => setFormData((prev) => ({ ...prev, stock: event.target.value }))}
+              className="mt-2 w-full rounded-lg border border-amber-200 px-3 py-2 text-sm"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Language & Publication Year */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-semibold text-zinc-700">Language</label>
+            <div className="mt-2">
+              <AddableSelect
+                items={languages}
+                value={formData.language_id}
+                onChange={(value) => setFormData((prev) => ({ ...prev, language_id: value }))}
+                onCreateNew={createLanguage}
+                placeholder="Select language..."
+                label="Language"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-zinc-700">Publication Year</label>
+            <input
+              type="number"
+              min="1000"
+              max="9999"
+              value={formData.publication_year}
+              onChange={(event) => setFormData((prev) => ({ ...prev, publication_year: event.target.value }))}
               className="mt-2 w-full rounded-lg border border-amber-200 px-3 py-2 text-sm"
               required
             />

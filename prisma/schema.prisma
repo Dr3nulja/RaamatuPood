@@ -51,36 +51,68 @@ model Category {
   name String
 
   // Relations
-  books Book[]
+  bookCategories BookCategory[]
 
   @@map("categories")
 }
 
+// Languages table
+model Language {
+  id   Int     @id @default(autoincrement())
+  name String  @unique
+
+  @@map("languages")
+}
+
 // Books table
 model Book {
-  id              Int       @id @default(autoincrement())
-  title           String
-  description     String?   @db.Text
-  price           Decimal   @db.Decimal(10, 2)
-  language        String?
-  publicationYear Int?      @map("publication_year")
-  stock           Int       @default(0)
-  rating          Decimal   @default(0.0) @db.Decimal(2, 1)
-  coverImage      String?   @map("cover_image") @db.VarChar(500)
-  createdAt       DateTime  @default(now()) @map("created_at")
-
-  // Foreign keys
-  categoryId      Int?      @map("category_id")
+  id                 Int       @id @default(autoincrement())
+  title              String
+  description        String?   @db.Text
+  price              Decimal   @db.Decimal(10, 2)
+  language           String    @default("Unknown")
+  publicationYear    Int       @default(1900) @map("publication_year")
+  stock              Int       @default(0)
+  rating             Decimal   @default(0.0) @db.Decimal(2, 1)
+  coverImage         String?   @map("cover_image") @db.VarChar(500)
+  coverImageData     Bytes?    @map("cover_image_data") @db.LongBlob
+  coverImageMimeType String? @map("cover_image_mime_type") @db.VarChar(100)
+  createdAt          DateTime  @default(now()) @map("created_at")
 
   // Relations
-  category        Category?   @relation(fields: [categoryId], references: [id])
-  bookAuthors     BookAuthor[]
-  cartItems       CartItem[]
-  orderItems      OrderItem[]
-  reviews         Review[]
+  bookCategories BookCategory[]
+  bookAuthors    BookAuthor[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  reviews        Review[]
 
-  @@index([categoryId])
   @@map("books")
+}
+
+// Explicit join table for books <-> categories
+model BookCategory {
+  id         Int      @id @default(autoincrement())
+  bookId     Int      @map("book_id")
+  categoryId Int      @map("category_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, categoryId])
+  @@index([bookId])
+  @@index([categoryId])
+  @@map("book_categories")
+}
+
+model PendingBookCoverUpload {
+  id        Int      @id @default(autoincrement())
+  imageData Bytes    @map("image_data") @db.LongBlob
+  mimeType  String   @map("mime_type") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("pending_book_cover_uploads")
 }
 
 // Explicit join table for books <-> authors

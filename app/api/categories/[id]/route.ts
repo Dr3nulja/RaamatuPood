@@ -61,7 +61,7 @@ async function deleteCategory(_request: NextRequest, { params }: { params: Promi
     return NextResponse.json({ error: 'Invalid category id' }, { status: 400 });
   }
 
-  const usageCount = await prisma.book.count({ where: { categoryId: id } });
+  const usageCount = await prisma.bookCategory.count({ where: { categoryId: id } });
   if (usageCount > 0) {
     return NextResponse.json(
       { error: 'Cannot delete category because it is used by books. Reassign books first.' },

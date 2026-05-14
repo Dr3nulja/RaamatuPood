@@ -95,6 +95,7 @@ export async function mergeSessionCartIntoDb(userId: number, sessionItems: Sessi
             price: true,
             stock: true,
             coverImage: true,
+            coverImageData: true,
             bookAuthors: {
               orderBy: { authorId: 'asc' },
               select: {

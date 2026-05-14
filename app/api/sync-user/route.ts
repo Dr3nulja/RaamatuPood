@@ -4,6 +4,7 @@ import { auth0 } from '@/lib/auth0';
 import { prisma } from '@/lib/prisma';
 import { normalizeSessionCartItems } from '@/lib/cart/sessionCart';
 import { mergeSessionCartIntoDb } from '@/lib/cart/sync';
+import { buildBookCoverImageSrc } from '@/lib/books/cover';
 import { z } from 'zod';
 import { strictObject, withApiSecurity } from '@/lib/security/api-guard';
 
@@ -90,7 +91,7 @@ async function postSyncUser(request: Request) {
             title: item.book.title,
             author: item.book.bookAuthors[0]?.author?.name ?? undefined,
             price: Number(item.book.price),
-            cover_image: item.book.coverImage ?? undefined,
+            cover_image: buildBookCoverImageSrc(item.book.id, item.book.coverImage, item.book.coverImageData) ?? undefined,
             quantity: item.quantity,
             stock: item.book.stock,
           })),

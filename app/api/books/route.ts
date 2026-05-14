@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import type { ApiErrorResponse } from '@/lib/api/types';
 import type { BooksApiResponse, BooksSort } from '@/lib/api/catalogTypes';
+import { buildBookCoverImageSrc } from '@/lib/books/cover';
 import { withApiSecurity } from '@/lib/security/api-guard';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,7 @@ async function getBooks(request: NextRequest) {
             ],
           }
         : {}),
-      ...(categoryId ? { categoryId } : {}),
+      ...(categoryId ? { bookCategories: { some: { categoryId } } } : {}),
     };
 
     const orderBy =
@@ -67,6 +68,7 @@ async function getBooks(request: NextRequest) {
         price: true,
         rating: true,
         coverImage: true,
+        coverImageData: true,
         stock: true,
         bookAuthors: {
           orderBy: {
@@ -80,10 +82,17 @@ async function getBooks(request: NextRequest) {
             },
           },
         },
-        category: {
+        bookCategories: {
+          orderBy: {
+            id: 'asc',
+          },
           select: {
-            id: true,
-            name: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -95,14 +104,14 @@ async function getBooks(request: NextRequest) {
         title: book.title,
         price: Number(book.price),
         rating: book.rating ? Number(book.rating) : null,
-        cover_image: book.coverImage,
-        cover_url: book.coverImage,
+        cover_image: buildBookCoverImageSrc(book.id, book.coverImage, book.coverImageData),
+        cover_url: buildBookCoverImageSrc(book.id, book.coverImage, book.coverImageData),
         stock: book.stock,
         author: book.bookAuthors[0]?.author ? { name: book.bookAuthors[0].author.name } : null,
-        category: book.category
+        category: book.bookCategories[0]?.category
           ? {
-              id: book.category.id,
-              name: book.category.name,
+              id: book.bookCategories[0].category.id,
+              name: book.bookCategories[0].category.name,
             }
           : null,
       })),

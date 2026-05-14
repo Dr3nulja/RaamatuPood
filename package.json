@@ -11,7 +11,8 @@
     "test:ci": "jest --runInBand",
     "test:coverage": "jest --coverage",
     "db:init": "node scripts/initDb.js",
-    "db:seed-users": "node scripts/seedUsers.js"
+    "db:seed-users": "node scripts/seedUsers.js",
+    "books:fix-categories": "node scripts/fixBookCategories.js"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.16.0",

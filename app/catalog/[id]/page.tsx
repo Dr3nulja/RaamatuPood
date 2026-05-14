@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import pool from "../../../lib/db";
 import BookReviews from "@/components/BookReviews";
 import AddToCartButton from "@/components/AddToCartButton";
+import { buildBookCoverImageSrc } from "@/lib/books/cover";
 
 type BookPageProps = {
   params: Promise<{
@@ -22,6 +23,7 @@ type BookDetailsRow = {
   stock: number | null;
   rating: number | string | null;
   cover_image: string | null;
+  cover_image_data: Buffer | null;
   created_at: string | Date;
 };
 
@@ -71,7 +73,7 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
       b.id,
       b.title,
       GROUP_CONCAT(DISTINCT a.name ORDER BY a.name SEPARATOR ', ') AS author,
-      c.name AS category,
+      GROUP_CONCAT(DISTINCT c.name ORDER BY c.name SEPARATOR ', ') AS category,
       b.description,
       b.price,
       b.language,
@@ -79,13 +81,15 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
       b.stock,
       b.rating,
       b.cover_image,
+      b.cover_image_data,
       b.created_at
     FROM books b
     LEFT JOIN book_authors ba ON ba.book_id = b.id
     LEFT JOIN authors a ON ba.author_id = a.id
-    LEFT JOIN categories c ON b.category_id = c.id
+    LEFT JOIN book_categories bc ON bc.book_id = b.id
+    LEFT JOIN categories c ON bc.category_id = c.id
     WHERE b.id = ?
-    GROUP BY b.id, b.title, c.name, b.description, b.price, b.language, b.publication_year, b.stock, b.rating, b.cover_image, b.created_at
+    GROUP BY b.id, b.title, b.description, b.price, b.language, b.publication_year, b.stock, b.rating, b.cover_image, b.cover_image_data, b.created_at
     LIMIT 1`,
     [bookId]
   ) as [BookDetailsRow[], unknown];
@@ -107,7 +111,7 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
   const reviewCount = Number(reviewStats.review_count || 0);
   const displayRating = reviewCount > 0 ? reviewStats.avg_rating : book.rating;
   const inStock = Number(book.stock ?? 0) > 0;
-  const cover = normalizeImageUrl(book.cover_image);
+  const cover = buildBookCoverImageSrc(book.id, book.cover_image, book.cover_image_data) || normalizeImageUrl(book.cover_image);
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 text-zinc-900">
