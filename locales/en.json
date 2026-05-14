@@ -484,5 +484,18 @@
     "confirm": "Confirm",
     "loading": "Loading...",
     "userFallback": "User"
+  },
+  "contacts": {
+    "title": "Get In Touch",
+    "subtitle": "We're here to help and would love to hear from you. Whether you have questions about our books or services, our team is ready to assist.",
+    "aboutText": "RaamatuPood is an online bookstore dedicated to bringing you the best selection of books and exceptional customer service. We're passionate about connecting readers with their next favorite story.",
+    "contactDetails": "Contact Information",
+    "email": "Email",
+    "phone": "Phone",
+    "supportHours": "Support Hours",
+    "address": "Our Location",
+    "region": "Estonia",
+    "ourLocation": "Find Us on the Map",
+    "mapHint": "Visit us at our Jõhvi location in Estonia. We're open and ready to help with your book needs."
   }
 }

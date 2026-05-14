@@ -484,5 +484,18 @@
     "confirm": "Kinnita",
     "loading": "Laadimine...",
     "userFallback": "Kasutaja"
+  },
+  "contacts": {
+    "title": "Võta Ühendust",
+    "subtitle": "Oleme siin, et aidata, ja rõõmustume sinuga ühenduse saamisest. Kas sul on küsimusi meie raamatute või teenuste kohta, meie meeskond on alati abivalmis.",
+    "aboutText": "RaamatuPood on veebiraamatupood, mis on pühendatud sulle parimate raamatute ja erakordse klienditeenuse pakkumisele. Me armastame lugejate ja nende lemmikraamatute vahel seoseid luua.",
+    "contactDetails": "Kontaktandmed",
+    "email": "E-post",
+    "phone": "Telefon",
+    "supportHours": "Tööajad",
+    "address": "Meie Asukoht",
+    "region": "Eesti",
+    "ourLocation": "Leia Meid Kaardilt",
+    "mapHint": "Külasta meid Jõhvi asukohas Eestis. Oleme avatud ja valmis sinu raamatuvajadustega appi tulema."
   }
 }
