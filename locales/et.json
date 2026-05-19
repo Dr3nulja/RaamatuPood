@@ -74,6 +74,197 @@
     "stockUnits": "{{count}} tk",
     "backToCatalog": "Tagasi kataloogi"
   },
+  "admin": {
+    "layout": {
+      "title": "Admin-paneel",
+      "subtitle": "Veebiraamatupoe CRM",
+      "nav": {
+        "dashboard": "Töölaud",
+        "books": "Raamatud",
+        "authors": "Autorid",
+        "categories": "Kategooriad",
+        "orders": "Tellimused"
+      }
+    },
+    "common": {
+      "cancel": "Tühista",
+      "saveChanges": "Salvesta muudatused",
+      "edit": "Muuda",
+      "delete": "Kustuta",
+      "remove": "Eemalda",
+      "creating": "Loomine...",
+      "addBook": "Lisa raamat",
+      "addItem": "Lisa {{item}}"
+    },
+    "dashboard": {
+      "toasts": {
+        "loadFailed": "Töölauda ei õnnestunud laadida"
+      },
+      "popularBookCount": "{{count}} tk",
+      "kpis": {
+        "totalRevenue": "Kogutulu",
+        "totalOrders": "Tellimusi kokku",
+        "delivered": "Kohaletoimetatud",
+        "inProgress": "Töös"
+      },
+      "charts": {
+        "ordersByStatus": "Tellimused staatuse järgi",
+        "revenueByMonth": "Tulu kuude kaupa",
+        "popularBooks": "Populaarsed raamatud",
+        "statusShare": "Staatusjaotus"
+      },
+      "empty": {
+        "popularity": "Populaarsusandmed puuduvad"
+      }
+    },
+    "orders": {
+      "title": "Tellimuste haldus",
+      "found": "Leitud {{count}} tellimust",
+      "filterByStatus": "Filtreeri staatuse järgi:",
+      "allOrders": "Kõik tellimused",
+      "loading": "Tellimuste laadimine...",
+      "emptyTitle": "Tellimusi ei leitud",
+      "emptySubtitle": "Proovi filtreid muuta",
+      "orderPrefix": "Tellimus #{{id}}",
+      "totalAmount": "Kogusumma",
+      "orderItems": "Tellimuse read",
+      "qty": "Kogus: {{count}}",
+      "changeStatus": "Muuda staatust",
+      "updating": "Uuendamine...",
+      "status": {
+        "pending": "Ootel",
+        "paid": "Makstud",
+        "shipped": "Teele pandud",
+        "delivered": "Kohaletoimetatud",
+        "cancelled": "Tühistatud"
+      },
+      "toasts": {
+        "loadFailed": "Tellimusi ei õnnestunud laadida",
+        "statusUpdated": "Tellimus #{{id}}: staatus uuendatud",
+        "updateFailed": "Tellimuse staatuse uuendamine ebaõnnestus"
+      }
+    },
+    "bookCard": {
+      "noAuthor": "Autor puudub",
+      "noCover": "Kaanepilti pole",
+      "stock": "Laoseis: {{count}}",
+      "moreAuthors": "+ veel {{count}}",
+      "noCategory": "Kategooria puudub",
+      "noDescription": "Kirjeldus puudub"
+    },
+    "addableSelect": {
+      "nameEmpty": "Nimi ei tohi olla tühi",
+      "newItemPlaceholder": "Uus {{label}}...",
+      "none": "— (Puudub)",
+      "addNew": "➕ Lisa uus {{label}}"
+    },
+    "coverUploader": {
+      "title": "Kaanepilt",
+      "previewAlt": "Eelvaade",
+      "uploadFile": "Laadi fail üles",
+      "orDragDrop": "või lohista kohale",
+      "fileHint": "PNG, JPG, WebP kuni 10MB",
+      "pasteUrl": "Või kleebi pildi URL",
+      "urlPlaceholder": "https://example.com/image.jpg",
+      "priorityHint": "Kui mõlemad on olemas, on üles laaditud fail prioriteetne"
+    },
+    "editBook": {
+      "modalTitle": "Muuda raamatut: {{title}}",
+      "uploadFailed": "Kaanefaili üleslaadimine ebaõnnestus",
+      "uploadNoUrl": "Kaanefaili üleslaadimine: URL-i ei tagastatud",
+      "uploadUnknown": "Tundmatu üleslaadimise viga",
+      "uploadException": "Kaanefaili üleslaadimise erind",
+      "createAuthorFailed": "Autori loomine ebaõnnestus",
+      "createCategoryFailed": "Kategooria loomine ebaõnnestus",
+      "createLanguageFailed": "Keele loomine ebaõnnestus",
+      "title": "Pealkiri",
+      "price": "Hind (€)",
+      "stock": "Laoseis",
+      "language": "Keel",
+      "selectLanguage": "Vali keel...",
+      "publicationYear": "Ilmumisaasta",
+      "author": "Autor",
+      "selectAuthor": "Vali autor...",
+      "category": "Kategooria",
+      "selectCategory": "Vali kategooria...",
+      "description": "Kirjeldus"
+    },
+    "metadata": {
+      "manage": "Halda metaandmeid",
+      "loadFailed": "{{entity}}sid ei õnnestunud laadida",
+      "nameEmpty": "Nimi ei tohi olla tühi",
+      "saveFailed": "{{item}} salvestamine ebaõnnestus",
+      "saved": "{{item}} salvestatud",
+      "deleteFailed": "{{item}} kustutamine ebaõnnestus",
+      "deleted": "{{item}} kustutatud",
+      "searchPlaceholder": "Otsi {{item}}...",
+      "id": "ID",
+      "name": "Nimi",
+      "actions": "Tegevused",
+      "loading": "{{item}} laadimine...",
+      "noneFound": "{{item}}sid ei leitud.",
+      "editTitle": "Muuda {{item}}",
+      "addTitle": "Lisa {{item}}",
+      "create": "Loo {{item}}",
+      "itemName": "{{item}} nimi",
+      "itemNamePlaceholder": "{{item}} nimi",
+      "deleteTitle": "Kustuta {{item}}",
+      "deleteConfirmPrefix": "Kas oled kindel, et soovid kustutada",
+      "deleteConfirmSuffix": "Seda toimingut ei saa tagasi võtta."
+    },
+    "authors": {
+      "title": "Autorid",
+      "description": "Halda autorite kirjeid, mida kasutatakse kataloogis ja raamatuvormides.",
+      "entity": "Autor",
+      "item": "Autor"
+    },
+    "categories": {
+      "title": "Kategooriad",
+      "description": "Halda kategooriaid, mida kasutatakse poe navigeerimises ja raamatu redaktoris.",
+      "entity": "Kategooria",
+      "item": "Kategooria"
+    },
+    "books": {
+      "title": "Raamatute haldus",
+      "loadFailed": "Raamatuid ei õnnestunud laadida",
+      "uploadFailed": "Kaanefaili üleslaadimine ebaõnnestus",
+      "uploadWarning": "Hoiatus: {{error}}. Kasuta kaanepildi URL-i või proovi uuesti.",
+      "uploadNoUrl": "Hoiatus: server ei tagastanud kaanepildi URL-i. Kasuta käsitsi URL-i.",
+      "uploadUnknown": "Tundmatu üleslaadimise viga",
+      "uploadError": "Üleslaadimise viga: {{error}}",
+      "createAuthorFailed": "Autori loomine ebaõnnestus",
+      "createCategoryFailed": "Kategooria loomine ebaõnnestus",
+      "createLanguageFailed": "Keele loomine ebaõnnestus",
+      "createFailed": "Raamatu loomine ebaõnnestus",
+      "editFailed": "Muutmine ebaõnnestus",
+      "updateFailed": "Raamatu uuendamine ebaõnnestus",
+      "added": "Raamat lisatud",
+      "updated": "Raamat uuendatud",
+      "deleted": "Raamat kustutatud",
+      "deleteFailed": "Raamatu kustutamine ebaõnnestus",
+      "fields": {
+        "title": "Pealkiri *",
+        "price": "Hind *",
+        "stock": "Laoseis *",
+        "year": "Aasta *",
+        "description": "Kirjeldus (valikuline)"
+      },
+      "selectLanguage": "Vali keel...",
+      "language": "Keel",
+      "selectAuthor": "Vali autor...",
+      "author": "Autor",
+      "selectCategory": "Vali kategooria...",
+      "category": "Kategooria",
+      "requiredHint": "Tärniga märgitud väljad on kohustuslikud. Kaanepilt: kleebi URL või laadi fail üles. Kui mõlemad on olemas, on fail prioriteetne.",
+      "searchPlaceholder": "Otsi pealkirja / autori / kirjelduse järgi",
+      "allCategories": "Kõik kategooriad",
+      "loading": "Raamatute laadimine...",
+      "noneFound": "Raamatuid ei leitud",
+      "deleteTitle": "Kustuta raamat?",
+      "deleteConfirmPrefix": "Kas oled kindel, et soovid kustutada",
+      "deleteConfirmSuffix": "Seda toimingut ei saa tagasi võtta."
+    }
+  },
   "cartDrawer": {
     "title": "Ostukorv ({{count}})",
     "close": "Sulge ostukorv",

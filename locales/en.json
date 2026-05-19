@@ -74,6 +74,197 @@
     "stockUnits": "{{count}} pcs.",
     "backToCatalog": "Back to catalog"
   },
+  "admin": {
+    "layout": {
+      "title": "Admin Panel",
+      "subtitle": "Online bookstore CRM",
+      "nav": {
+        "dashboard": "Dashboard",
+        "books": "Books",
+        "authors": "Authors",
+        "categories": "Categories",
+        "orders": "Orders"
+      }
+    },
+    "common": {
+      "cancel": "Cancel",
+      "saveChanges": "Save changes",
+      "edit": "Edit",
+      "delete": "Delete",
+      "remove": "Remove",
+      "creating": "Creating...",
+      "addBook": "Add book",
+      "addItem": "Add {{item}}"
+    },
+    "dashboard": {
+      "toasts": {
+        "loadFailed": "Failed to load dashboard"
+      },
+      "popularBookCount": "{{count}} pcs.",
+      "kpis": {
+        "totalRevenue": "Total revenue",
+        "totalOrders": "Total orders",
+        "delivered": "Delivered",
+        "inProgress": "In progress"
+      },
+      "charts": {
+        "ordersByStatus": "Orders by status",
+        "revenueByMonth": "Revenue by month",
+        "popularBooks": "Popular books",
+        "statusShare": "Status share"
+      },
+      "empty": {
+        "popularity": "No popularity data yet"
+      }
+    },
+    "orders": {
+      "title": "Orders management",
+      "found": "{{count}} orders found",
+      "filterByStatus": "Filter by status:",
+      "allOrders": "All orders",
+      "loading": "Loading orders...",
+      "emptyTitle": "No orders found",
+      "emptySubtitle": "Try adjusting your filters",
+      "orderPrefix": "Order #{{id}}",
+      "totalAmount": "Total amount",
+      "orderItems": "Order items",
+      "qty": "Qty: {{count}}",
+      "changeStatus": "Change status",
+      "updating": "Updating...",
+      "status": {
+        "pending": "Pending",
+        "paid": "Paid",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      },
+      "toasts": {
+        "loadFailed": "Failed to load orders",
+        "statusUpdated": "Order #{{id}}: status updated",
+        "updateFailed": "Failed to update order status"
+      }
+    },
+    "bookCard": {
+      "noAuthor": "No author",
+      "noCover": "No cover",
+      "stock": "Stock: {{count}}",
+      "moreAuthors": "+{{count}} more",
+      "noCategory": "No category",
+      "noDescription": "No description"
+    },
+    "addableSelect": {
+      "nameEmpty": "Name cannot be empty",
+      "newItemPlaceholder": "New {{label}}...",
+      "none": "— (None)",
+      "addNew": "➕ Add new {{label}}"
+    },
+    "coverUploader": {
+      "title": "Cover image",
+      "previewAlt": "Preview",
+      "uploadFile": "Upload file",
+      "orDragDrop": "or drag and drop",
+      "fileHint": "PNG, JPG, WebP up to 10MB",
+      "pasteUrl": "Or paste image URL",
+      "urlPlaceholder": "https://example.com/image.jpg",
+      "priorityHint": "If both provided, uploaded file has priority"
+    },
+    "editBook": {
+      "modalTitle": "Edit book: {{title}}",
+      "uploadFailed": "Failed to upload cover file",
+      "uploadNoUrl": "Cover upload: no URL returned",
+      "uploadUnknown": "Unknown upload error",
+      "uploadException": "Cover upload exception",
+      "createAuthorFailed": "Failed to create author",
+      "createCategoryFailed": "Failed to create category",
+      "createLanguageFailed": "Failed to create language",
+      "title": "Title",
+      "price": "Price (€)",
+      "stock": "Stock",
+      "language": "Language",
+      "selectLanguage": "Select language...",
+      "publicationYear": "Publication year",
+      "author": "Author",
+      "selectAuthor": "Select author...",
+      "category": "Category",
+      "selectCategory": "Select category...",
+      "description": "Description"
+    },
+    "metadata": {
+      "manage": "Manage metadata",
+      "loadFailed": "Failed to load {{entity}}s",
+      "nameEmpty": "Name cannot be empty",
+      "saveFailed": "Failed to save {{item}}",
+      "saved": "{{item}} saved",
+      "deleteFailed": "Failed to delete {{item}}",
+      "deleted": "{{item}} deleted",
+      "searchPlaceholder": "Search {{item}}...",
+      "id": "ID",
+      "name": "Name",
+      "actions": "Actions",
+      "loading": "Loading {{item}}s...",
+      "noneFound": "No {{item}}s found.",
+      "editTitle": "Edit {{item}}",
+      "addTitle": "Add {{item}}",
+      "create": "Create {{item}}",
+      "itemName": "{{item}} name",
+      "itemNamePlaceholder": "{{item}} name",
+      "deleteTitle": "Delete {{item}}",
+      "deleteConfirmPrefix": "Are you sure you want to delete",
+      "deleteConfirmSuffix": "This action cannot be undone."
+    },
+    "authors": {
+      "title": "Authors",
+      "description": "Manage author records used across the catalog and book forms.",
+      "entity": "Author",
+      "item": "Author"
+    },
+    "categories": {
+      "title": "Categories",
+      "description": "Manage categories used in the bookstore navigation and book editor.",
+      "entity": "Category",
+      "item": "Category"
+    },
+    "books": {
+      "title": "Books management",
+      "loadFailed": "Failed to load books",
+      "uploadFailed": "Failed to upload cover file",
+      "uploadWarning": "Warning: {{error}}. Use cover URL or try again.",
+      "uploadNoUrl": "Warning: server did not return a cover URL. Use a manual URL.",
+      "uploadUnknown": "Unknown upload error",
+      "uploadError": "Upload error: {{error}}",
+      "createAuthorFailed": "Failed to create author",
+      "createCategoryFailed": "Failed to create category",
+      "createLanguageFailed": "Failed to create language",
+      "createFailed": "Failed to create book",
+      "editFailed": "Edit failed",
+      "updateFailed": "Failed to update book",
+      "added": "Book added",
+      "updated": "Book updated",
+      "deleted": "Book deleted",
+      "deleteFailed": "Failed to delete book",
+      "fields": {
+        "title": "Title *",
+        "price": "Price *",
+        "stock": "Stock *",
+        "year": "Year *",
+        "description": "Description (optional)"
+      },
+      "selectLanguage": "Select language...",
+      "language": "Language",
+      "selectAuthor": "Select author...",
+      "author": "Author",
+      "selectCategory": "Select category...",
+      "category": "Category",
+      "requiredHint": "Fields marked with * are required. Cover: paste URL or upload file. If both provided, file has priority.",
+      "searchPlaceholder": "Search by title / author / description",
+      "allCategories": "All categories",
+      "loading": "Loading books...",
+      "noneFound": "No books found",
+      "deleteTitle": "Delete book?",
+      "deleteConfirmPrefix": "Are you sure you want to delete",
+      "deleteConfirmSuffix": "This action cannot be undone."
+    }
+  },
   "cartDrawer": {
     "title": "Cart ({{count}})",
     "close": "Close cart",

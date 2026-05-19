@@ -14,6 +14,7 @@ import EditBookModal from '@/components/admin/EditBookModal';
 import BookCard from '@/components/admin/BookCard';
 import Modal from '@/components/ui/Modal';
 import CoverImageUploader from '@/components/admin/CoverImageUploader';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type BookFormState = {
   title: string;
@@ -44,6 +45,7 @@ const initialBookForm: BookFormState = {
 };
 
 export default function AdminBooksView() {
+  const { t } = useTranslation();
   const [books, setBooks] = useState<AdminBook[]>([]);
   const [authors, setAuthors] = useState<AdminAuthorOption[]>([]);
   const [categories, setCategories] = useState<AdminCategoryOption[]>([]);
@@ -84,25 +86,25 @@ export default function AdminBooksView() {
       const uploadPayload = (await uploadResponse.json().catch(() => null)) as { url?: string; error?: string } | null;
 
       if (!uploadResponse.ok) {
-        const errorMessage = uploadPayload?.error || 'Failed to upload cover file';
+        const errorMessage = uploadPayload?.error || t('admin.books.uploadFailed');
         console.error('Cover upload failed:', errorMessage);
         
         // Show warning toast but don't crash the flow
-        showToast(`Warning: ${errorMessage}. Use cover URL or try again.`);
+        showToast(t('admin.books.uploadWarning', { error: errorMessage }));
         return '';
       }
 
       if (!uploadPayload?.url) {
         console.error('Cover upload: No URL returned');
-        showToast('Warning: Server did not return a cover URL. Use a manual URL.');
+        showToast(t('admin.books.uploadNoUrl'));
         return '';
       }
 
       return uploadPayload.url;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+      const errorMessage = error instanceof Error ? error.message : t('admin.books.uploadUnknown');
       console.error('Cover upload exception:', errorMessage);
-      showToast(`Upload error: ${errorMessage}`);
+      showToast(t('admin.books.uploadError', { error: errorMessage }));
       return '';
     }
   };
@@ -118,7 +120,7 @@ export default function AdminBooksView() {
     const payload = (await response.json().catch(() => null)) as { author?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.author) {
-      throw new Error(payload?.error || 'Failed to create author');
+      throw new Error(payload?.error || t('admin.books.createAuthorFailed'));
     }
 
     // Reload authors after creation
@@ -143,7 +145,7 @@ export default function AdminBooksView() {
     const payload = (await response.json().catch(() => null)) as { category?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.category) {
-      throw new Error(payload?.error || 'Failed to create category');
+      throw new Error(payload?.error || t('admin.books.createCategoryFailed'));
     }
 
     // Reload categories after creation
@@ -168,7 +170,7 @@ export default function AdminBooksView() {
     const payload = (await response.json().catch(() => null)) as { language?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.language) {
-      throw new Error(payload?.error || 'Failed to create language');
+      throw new Error(payload?.error || t('admin.books.createLanguageFailed'));
     }
 
     // Reload languages after creation
@@ -187,7 +189,7 @@ export default function AdminBooksView() {
     try {
       const response = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' });
       if (!response.ok) {
-        throw new Error('Failed to load admin books');
+        throw new Error(t('admin.books.loadFailed'));
       }
 
       const data = (await response.json()) as AdminBooksResponse;
@@ -200,7 +202,7 @@ export default function AdminBooksView() {
       setBookForm((prev) => ({ ...prev, author_id: '', category_id: '', language_id: '' }));
     } catch (error) {
       console.error('Books load failed:', error);
-      showToast('Failed to load books');
+      showToast(t('admin.books.loadFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -261,15 +263,15 @@ export default function AdminBooksView() {
       });
 
       if (!response.ok) {
-        throw new Error('Create book failed');
+        throw new Error(t('admin.books.createFailed'));
       }
 
       setBookForm(initialBookForm);
-      showToast('Book added');
+      showToast(t('admin.books.added'));
       await loadBooksData();
     } catch (error) {
       console.error(error);
-      showToast(error instanceof Error ? error.message : 'Failed to create book');
+      showToast(error instanceof Error ? error.message : t('admin.books.createFailed'));
     } finally {
       setIsCreatingBook(false);
     }
@@ -294,14 +296,14 @@ export default function AdminBooksView() {
       });
 
       if (!response.ok) {
-        throw new Error('Delete failed');
+        throw new Error(t('admin.books.deleteFailed'));
       }
 
       setBooks((prev) => prev.filter((book) => book.id !== id));
-      showToast('Book deleted');
+      showToast(t('admin.books.deleted'));
     } catch (error) {
       console.error(error);
-      showToast('Failed to delete book');
+      showToast(t('admin.books.deleteFailed'));
     } finally {
       setBookActionLoadingId(null);
       setBookToDelete(null);
@@ -317,22 +319,22 @@ export default function AdminBooksView() {
       });
 
       if (!response.ok) {
-        throw new Error('Edit failed');
+        throw new Error(t('admin.books.editFailed'));
       }
 
       await loadBooksData();
       cancelEditingBook();
-      showToast('Book updated');
+      showToast(t('admin.books.updated'));
     } catch (error) {
       console.error(error);
-      showToast(error instanceof Error ? error.message : 'Failed to update book');
+      showToast(error instanceof Error ? error.message : t('admin.books.updateFailed'));
       throw error;
     }
   };
 
   return (
     <article className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-      <h2 className="font-serif text-2xl font-bold text-secondary">Books management</h2>
+      <h2 className="font-serif text-2xl font-bold text-secondary">{t('admin.books.title')}</h2>
 
       {toast && (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">
@@ -343,7 +345,7 @@ export default function AdminBooksView() {
       <form onSubmit={handleCreateBook} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <input
           className="rounded-xl border border-amber-200 px-3 py-2"
-          placeholder="Title *"
+          placeholder={t('admin.books.fields.title')}
           value={bookForm.title}
           onChange={(event) => setBookForm((prev) => ({ ...prev, title: event.target.value }))}
           required
@@ -353,7 +355,7 @@ export default function AdminBooksView() {
           type="number"
           step="0.01"
           min="0"
-          placeholder="Price *"
+          placeholder={t('admin.books.fields.price')}
           value={bookForm.price}
           onChange={(event) => setBookForm((prev) => ({ ...prev, price: event.target.value }))}
           required
@@ -362,7 +364,7 @@ export default function AdminBooksView() {
           className="rounded-xl border border-amber-200 px-3 py-2"
           type="number"
           min="0"
-          placeholder="Stock *"
+          placeholder={t('admin.books.fields.stock')}
           value={bookForm.stock}
           onChange={(event) => setBookForm((prev) => ({ ...prev, stock: event.target.value }))}
           required
@@ -372,7 +374,7 @@ export default function AdminBooksView() {
           type="number"
           min="1000"
           max="9999"
-          placeholder="Year *"
+          placeholder={t('admin.books.fields.year')}
           value={bookForm.publication_year}
           onChange={(event) => setBookForm((prev) => ({ ...prev, publication_year: event.target.value }))}
           required
@@ -391,8 +393,8 @@ export default function AdminBooksView() {
             value={bookForm.language_id}
             onChange={(value) => setBookForm((prev) => ({ ...prev, language_id: value }))}
             onCreateNew={createLanguage}
-            placeholder="Select language..."
-            label="Language"
+            placeholder={t('admin.books.selectLanguage')}
+            label={t('admin.books.language')}
           />
         </div>
 
@@ -404,8 +406,8 @@ export default function AdminBooksView() {
             value={bookForm.author_id}
             onChange={(value) => setBookForm((prev) => ({ ...prev, author_id: value }))}
             onCreateNew={createAuthor}
-            placeholder="Select author..."
-            label="Author"
+            placeholder={t('admin.books.selectAuthor')}
+            label={t('admin.books.author')}
           />
         </div>
 
@@ -415,8 +417,8 @@ export default function AdminBooksView() {
             value={bookForm.category_id}
             onChange={(value) => setBookForm((prev) => ({ ...prev, category_id: value }))}
             onCreateNew={createCategory}
-            placeholder="Select category..."
-            label="Category"
+            placeholder={t('admin.books.selectCategory')}
+            label={t('admin.books.category')}
           />
         </div>
 
@@ -427,16 +429,16 @@ export default function AdminBooksView() {
           disabled={isCreatingBook}
           className="rounded-xl px-4 py-2"
         >
-          {isCreatingBook ? 'Creating...' : 'Add Book'}
+          {isCreatingBook ? t('admin.common.creating') : t('admin.common.addBook')}
         </Button>
 
         <p className="text-xs text-zinc-500 md:col-span-2 xl:col-span-4">
-          Fields marked with * are required. Cover: paste URL or upload file. If both provided, file has priority.
+          {t('admin.books.requiredHint')}
         </p>
 
         <textarea
           className="rounded-xl border border-amber-200 px-3 py-2 md:col-span-2 xl:col-span-4"
-          placeholder="Description (optional)"
+          placeholder={t('admin.books.fields.description')}
           rows={2}
           value={bookForm.description}
           onChange={(event) => setBookForm((prev) => ({ ...prev, description: event.target.value }))}
@@ -446,7 +448,7 @@ export default function AdminBooksView() {
       <div className="mt-6 grid gap-3 md:grid-cols-[1fr_220px]">
         <input
           className="rounded-xl border border-amber-200 px-3 py-2"
-          placeholder="Search by title / author / description"
+          placeholder={t('admin.books.searchPlaceholder')}
           value={booksQuery}
           onChange={(event) => setBooksQuery(event.target.value)}
         />
@@ -455,7 +457,7 @@ export default function AdminBooksView() {
           value={booksCategoryFilter}
           onChange={(event) => setBooksCategoryFilter(event.target.value)}
         >
-          <option value="all">All categories</option>
+          <option value="all">{t('admin.books.allCategories')}</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>{category.name}</option>
           ))}
@@ -465,11 +467,11 @@ export default function AdminBooksView() {
       <div className="mt-6">
         {isLoading ? (
           <div className="rounded-3xl border border-amber-100 bg-amber-50/40 px-6 py-10 text-center text-sm text-zinc-500 shadow-sm">
-            Loading books...
+            {t('admin.books.loading')}
           </div>
         ) : filteredBooks.length === 0 ? (
           <div className="rounded-3xl border border-amber-100 bg-white px-6 py-10 text-center text-sm text-zinc-500 shadow-sm">
-            No books found
+            {t('admin.books.noneFound')}
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -507,7 +509,7 @@ export default function AdminBooksView() {
           setIsDeleteConfirmOpen(false);
           setBookToDelete(null);
         }}
-        title="Delete book?"
+        title={t('admin.books.deleteTitle')}
         size="md"
         footer={
           <div className="flex justify-end gap-3">
@@ -520,7 +522,7 @@ export default function AdminBooksView() {
               }}
               className="rounded-lg px-4 py-2 font-semibold"
             >
-              Cancel
+              {t('admin.common.cancel')}
             </Button>
             <Button
               type="button"
@@ -528,13 +530,13 @@ export default function AdminBooksView() {
               disabled={!bookToDelete || bookActionLoadingId === bookToDelete.id}
               className="rounded-lg border border-red-300 bg-red-50 px-4 py-2 font-semibold text-red-300 hover:bg-red-100 disabled:opacity-60"
             >
-              Delete
+              {t('admin.common.delete')}
             </Button>
           </div>
         }
       >
         <p className="text-zinc-600">
-          Are you sure you want to delete &quot;<span className="font-semibold">{bookToDelete?.title}</span>&quot;? This action cannot be undone.
+          {t('admin.books.deleteConfirmPrefix')} &quot;<span className="font-semibold">{bookToDelete?.title}</span>&quot;? {t('admin.books.deleteConfirmSuffix')}
         </p>
       </Modal>
     </article>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Item = { id: number; name: string };
 
@@ -26,6 +27,7 @@ export default function AddableSelect({
   creatingMessage = 'Creating...',
   errorMessage = 'Failed to create',
 }: AddableSelectProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
@@ -64,7 +66,7 @@ export default function AddableSelect({
   const handleCreateNew = async () => {
     const trimmedName = newName.trim();
     if (!trimmedName) {
-      setError('Name cannot be empty');
+      setError(t('admin.addableSelect.nameEmpty'));
       return;
     }
 
@@ -111,7 +113,7 @@ export default function AddableSelect({
                 autoFocus
                 type="text"
                 className="mb-2 w-full rounded-lg border border-amber-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                placeholder={`New ${label.toLowerCase()}...`}
+                placeholder={t('admin.addableSelect.newItemPlaceholder', { label: label.toLowerCase() })}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -127,7 +129,7 @@ export default function AddableSelect({
                   disabled={!newName.trim()}
                   className="flex-1 rounded-lg bg-emerald-600 px-2 py-1 text-xs hover:bg-emerald-700"
                 >
-                  Create
+                  {creatingMessage}
                 </Button>
                 <Button
                   type="button"
@@ -140,7 +142,7 @@ export default function AddableSelect({
                   }}
                   className="flex-1 rounded-lg border-zinc-200 bg-zinc-100 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-200"
                 >
-                  Cancel
+                  {t('admin.common.cancel')}
                 </Button>
               </div>
             </div>
@@ -154,7 +156,7 @@ export default function AddableSelect({
                   onClick={() => onChange('')}
                   className="w-full justify-start rounded-none px-3 py-2 text-left text-sm text-zinc-600 hover:bg-amber-50"
                 >
-                  — (None)
+                  {t('admin.addableSelect.none')}
                 </Button>
               </li>
               {items.map((item) => (
@@ -182,7 +184,7 @@ export default function AddableSelect({
                   onClick={() => handleSelect('__add_new__')}
                   className="w-full justify-start rounded-none px-3 py-2 text-left text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
                 >
-                  ➕ Add new {label.toLowerCase()}
+                  {t('admin.addableSelect.addNew', { label: label.toLowerCase() })}
                 </Button>
               </li>
             </ul>

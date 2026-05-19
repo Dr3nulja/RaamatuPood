@@ -1,13 +1,17 @@
 import MetadataManager from '@/components/admin/MetadataManager';
+import { createServerTranslator, detectServerLocale } from '@/lib/i18n/server';
 
-export default function AdminCategoriesPage() {
+export default async function AdminCategoriesPage() {
+  const locale = await detectServerLocale();
+  const { t } = createServerTranslator(locale);
+
   return (
     <MetadataManager
-      title="Categories"
-      description="Manage categories used in the bookstore navigation and book editor."
-      entityLabel="Category"
+      title={t('admin.categories.title')}
+      description={t('admin.categories.description')}
+      entityLabel={t('admin.categories.entity')}
       listEndpoint="/api/categories"
-      itemLabel="Category"
+      itemLabel={t('admin.categories.item')}
       collectionKey="categories"
     />
   );

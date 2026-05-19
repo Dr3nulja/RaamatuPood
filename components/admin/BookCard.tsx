@@ -3,6 +3,7 @@
 import Button from '@/components/ui/Button';
 import { normalizeCover } from '@/components/admin/shared';
 import type { AdminBook } from '@/lib/api/adminTypes';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type BookCardProps = {
   book: AdminBook;
@@ -12,8 +13,9 @@ type BookCardProps = {
 };
 
 export default function BookCard({ book, onEdit, onDelete, isDeleting = false }: BookCardProps) {
+  const { t, formatPrice } = useTranslation();
   const coverUrl = normalizeCover(book.cover_image);
-  const primaryAuthor = book.author_names[0] || book.author_name || 'No author';
+  const primaryAuthor = book.author_names[0] || book.author_name || t('admin.bookCard.noAuthor');
   const extraAuthors = Math.max(book.author_names.length - 1, 0);
 
   return (
@@ -27,13 +29,13 @@ export default function BookCard({ book, onEdit, onDelete, isDeleting = false }:
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-amber-700">
-            No cover
+            {t('admin.bookCard.noCover')}
           </div>
         )}
 
         <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
           <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur">
-            Stock: {book.stock}
+            {t('admin.bookCard.stock', { count: book.stock })}
           </span>
 
           <div className="flex gap-2 rounded-full bg-white/90 p-1 shadow-sm backdrop-blur opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
@@ -44,7 +46,7 @@ export default function BookCard({ book, onEdit, onDelete, isDeleting = false }:
               onClick={() => onEdit(book)}
               className="rounded-full px-3 py-1 text-xs font-semibold shadow-none"
             >
-              Edit
+              {t('admin.common.edit')}
             </Button>
             <Button
               type="button"
@@ -54,7 +56,7 @@ export default function BookCard({ book, onEdit, onDelete, isDeleting = false }:
               onClick={() => onDelete(book)}
               className="rounded-full px-3 py-1 text-xs font-semibold shadow-none"
             >
-              Delete
+              {t('admin.common.delete')}
             </Button>
           </div>
         </div>
@@ -65,7 +67,7 @@ export default function BookCard({ book, onEdit, onDelete, isDeleting = false }:
           <h3 className="line-clamp-2 text-lg font-semibold tracking-tight text-zinc-900">
             {book.title}
           </h3>
-          <p className="text-2xl font-bold leading-none text-amber-700">€{book.price.toFixed(2)}</p>
+          <p className="text-2xl font-bold leading-none text-amber-700">{formatPrice(book.price)}</p>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -74,16 +76,16 @@ export default function BookCard({ book, onEdit, onDelete, isDeleting = false }:
           </span>
           {extraAuthors > 0 ? (
             <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
-              +{extraAuthors} more
+              {t('admin.bookCard.moreAuthors', { count: extraAuthors })}
             </span>
           ) : null}
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            {book.category_name || 'No category'}
+            {book.category_name || t('admin.bookCard.noCategory')}
           </span>
         </div>
 
         <p className="mt-4 line-clamp-3 text-sm leading-6 text-zinc-600">
-          {book.description || 'No description'}
+          {book.description || t('admin.bookCard.noDescription')}
         </p>
       </div>
     </article>

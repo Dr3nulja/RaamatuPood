@@ -17,8 +17,10 @@ import {
 } from 'recharts';
 import type { AdminOrder, AdminOrdersResponse } from '@/lib/api/adminTypes';
 import { chartPalette, orderStatuses } from '@/components/admin/shared';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function AdminDashboardView() {
+  const { t, formatPrice } = useTranslation();
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export default function AdminDashboardView() {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to load admin orders');
+          throw new Error(t('admin.dashboard.toasts.loadFailed'));
         }
 
         const data = (await response.json()) as AdminOrdersResponse;
@@ -51,7 +53,7 @@ export default function AdminDashboardView() {
       } catch (error) {
         console.error('Dashboard load failed:', error);
         if (isMounted) {
-          showToast('Failed to load dashboard');
+          showToast(t('admin.dashboard.toasts.loadFailed'));
         }
       } finally {
         if (isMounted) {
@@ -65,7 +67,7 @@ export default function AdminDashboardView() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [t]);
 
   const dashboardKpis = useMemo(() => {
     const totalRevenue = orders.reduce((sum, order) => sum + order.total_price, 0);
@@ -145,19 +147,19 @@ export default function AdminDashboardView() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-zinc-500">Total revenue</p>
-          <p className="mt-2 text-2xl font-bold text-amber-800">€{dashboardKpis.totalRevenue.toFixed(2)}</p>
+          <p className="text-sm text-zinc-500">{t('admin.dashboard.kpis.totalRevenue')}</p>
+          <p className="mt-2 text-2xl font-bold text-amber-800">{formatPrice(dashboardKpis.totalRevenue)}</p>
         </article>
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-zinc-500">Total orders</p>
+          <p className="text-sm text-zinc-500">{t('admin.dashboard.kpis.totalOrders')}</p>
           <p className="mt-2 text-2xl font-bold text-zinc-900">{dashboardKpis.totalOrders}</p>
         </article>
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-zinc-500">Delivered</p>
+          <p className="text-sm text-zinc-500">{t('admin.dashboard.kpis.delivered')}</p>
           <p className="mt-2 text-2xl font-bold text-emerald-700">{dashboardKpis.statusCounter.delivered}</p>
         </article>
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <p className="text-sm text-zinc-500">In progress</p>
+          <p className="text-sm text-zinc-500">{t('admin.dashboard.kpis.inProgress')}</p>
           <p className="mt-2 text-2xl font-bold text-zinc-900">
             {dashboardKpis.statusCounter.pending + dashboardKpis.statusCounter.paid + dashboardKpis.statusCounter.shipped}
           </p>
@@ -166,7 +168,7 @@ export default function AdminDashboardView() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold text-zinc-900">Orders by status</h3>
+          <h3 className="text-lg font-semibold text-zinc-900">{t('admin.dashboard.charts.ordersByStatus')}</h3>
           <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dashboardKpis.statusSeries}>
@@ -185,7 +187,7 @@ export default function AdminDashboardView() {
         </article>
 
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold text-zinc-900">Revenue by month</h3>
+          <h3 className="text-lg font-semibold text-zinc-900">{t('admin.dashboard.charts.revenueByMonth')}</h3>
           <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dashboardKpis.revenueSeries}>
@@ -202,12 +204,12 @@ export default function AdminDashboardView() {
 
       <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold text-zinc-900">Popular books</h3>
+          <h3 className="text-lg font-semibold text-zinc-900">{t('admin.dashboard.charts.popularBooks')}</h3>
           <ul className="mt-4 space-y-3">
             {isLoading ? (
-              <li className="text-sm text-zinc-500">Loading...</li>
+              <li className="text-sm text-zinc-500">{t('common.loading')}</li>
             ) : dashboardKpis.popularBooks.length === 0 ? (
-              <li className="text-sm text-zinc-500">No popularity data yet</li>
+              <li className="text-sm text-zinc-500">{t('admin.dashboard.empty.popularity')}</li>
             ) : (
               dashboardKpis.popularBooks.map((item, index) => (
                 <li key={item.bookId} className="flex items-center justify-between rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3">
@@ -215,7 +217,9 @@ export default function AdminDashboardView() {
                     <p className="text-sm font-semibold text-zinc-900">#{index + 1} {item.title}</p>
                     <p className="text-xs text-zinc-500">ID: {item.bookId}</p>
                   </div>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">{item.count} pcs.</span>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+                    {t('admin.dashboard.popularBookCount', { count: item.count })}
+                  </span>
                 </li>
               ))
             )}
@@ -223,7 +227,7 @@ export default function AdminDashboardView() {
         </article>
 
         <article className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold text-zinc-900">Status share</h3>
+          <h3 className="text-lg font-semibold text-zinc-900">{t('admin.dashboard.charts.statusShare')}</h3>
           <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

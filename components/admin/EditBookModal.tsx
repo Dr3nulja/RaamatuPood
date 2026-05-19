@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import AddableSelect from '@/components/admin/AddableSelect';
 import CoverImageUploader from '@/components/admin/CoverImageUploader';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EditBookModalProps {
   isOpen: boolean;
@@ -62,6 +63,7 @@ export default function EditBookModal({
   setCategories,
   setLanguages,
 }: EditBookModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<BookFormState>(initialBookForm);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -79,20 +81,20 @@ export default function EditBookModal({
       const uploadPayload = (await uploadResponse.json().catch(() => null)) as { url?: string; error?: string } | null;
 
       if (!uploadResponse.ok) {
-        const errorMessage = uploadPayload?.error || 'Failed to upload cover file';
-        console.error('Cover upload failed:', errorMessage);
+        const errorMessage = uploadPayload?.error || t('admin.editBook.uploadFailed');
+        console.error(t('admin.editBook.uploadFailed'), errorMessage);
         return '';
       }
 
       if (!uploadPayload?.url) {
-        console.error('Cover upload: No URL returned');
+        console.error(t('admin.editBook.uploadNoUrl'));
         return '';
       }
 
       return uploadPayload.url;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
-      console.error('Cover upload exception:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : t('admin.editBook.uploadUnknown');
+      console.error(t('admin.editBook.uploadException'), errorMessage);
       return '';
     }
   };
@@ -108,7 +110,7 @@ export default function EditBookModal({
     const payload = (await response.json().catch(() => null)) as { author?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.author) {
-      throw new Error(payload?.error || 'Failed to create author');
+      throw new Error(payload?.error || t('admin.editBook.createAuthorFailed'));
     }
 
     const updatedAuthors = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
@@ -131,7 +133,7 @@ export default function EditBookModal({
     const payload = (await response.json().catch(() => null)) as { category?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.category) {
-      throw new Error(payload?.error || 'Failed to create category');
+      throw new Error(payload?.error || t('admin.editBook.createCategoryFailed'));
     }
 
     const updatedCategories = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
@@ -154,7 +156,7 @@ export default function EditBookModal({
     const payload = (await response.json().catch(() => null)) as { language?: { id: number; name: string }; error?: string } | null;
 
     if (!response.ok || !payload?.language) {
-      throw new Error(payload?.error || 'Failed to create language');
+      throw new Error(payload?.error || t('admin.editBook.createLanguageFailed'));
     }
 
     const updatedLanguages = await fetch('/api/admin/books', { cache: 'no-store', credentials: 'include' })
@@ -229,7 +231,7 @@ export default function EditBookModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Edit Book: ${book?.title || ''}`}
+      title={t('admin.editBook.modalTitle', { title: book?.title || '' })}
       size="lg"
       footer={
         <div className="flex gap-3">
@@ -240,7 +242,7 @@ export default function EditBookModal({
             disabled={isSaving}
             className="flex-1"
           >
-            Cancel
+              {t('admin.common.cancel')}
           </Button>
           <Button
             type="button"
@@ -249,7 +251,7 @@ export default function EditBookModal({
             disabled={isSaving}
             className="flex-1"
           >
-            Save Changes
+            {t('admin.common.saveChanges')}
           </Button>
         </div>
       }
@@ -265,7 +267,7 @@ export default function EditBookModal({
 
         {/* Title */}
         <div>
-          <label className="block text-sm font-semibold text-zinc-700">Title</label>
+          <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.title')}</label>
           <input
             type="text"
             value={formData.title}
@@ -278,7 +280,7 @@ export default function EditBookModal({
         {/* Price & Stock */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-semibold text-zinc-700">Price (€)</label>
+            <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.price')}</label>
             <input
               type="number"
               step="0.01"
@@ -290,7 +292,7 @@ export default function EditBookModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-zinc-700">Stock</label>
+            <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.stock')}</label>
             <input
               type="number"
               min="0"
@@ -305,20 +307,20 @@ export default function EditBookModal({
         {/* Language & Publication Year */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-semibold text-zinc-700">Language</label>
+            <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.language')}</label>
             <div className="mt-2">
               <AddableSelect
                 items={languages}
                 value={formData.language_id}
                 onChange={(value) => setFormData((prev) => ({ ...prev, language_id: value }))}
                 onCreateNew={createLanguage}
-                placeholder="Select language..."
-                label="Language"
+                placeholder={t('admin.editBook.selectLanguage')}
+                label={t('admin.editBook.language')}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-zinc-700">Publication Year</label>
+            <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.publicationYear')}</label>
             <input
               type="number"
               min="1000"
@@ -334,28 +336,28 @@ export default function EditBookModal({
         {/* Author & Category */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-semibold text-zinc-700">Author</label>
+            <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.author')}</label>
             <div className="mt-2">
               <AddableSelect
                 items={authors}
                 value={formData.author_id}
                 onChange={(value) => setFormData((prev) => ({ ...prev, author_id: value }))}
                 onCreateNew={createAuthor}
-                placeholder="Select author..."
-                label="Author"
+                placeholder={t('admin.editBook.selectAuthor')}
+                label={t('admin.editBook.author')}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-zinc-700">Category</label>
+            <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.category')}</label>
             <div className="mt-2">
               <AddableSelect
                 items={categories}
                 value={formData.category_id}
                 onChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
                 onCreateNew={createCategory}
-                placeholder="Select category..."
-                label="Category"
+                placeholder={t('admin.editBook.selectCategory')}
+                label={t('admin.editBook.category')}
               />
             </div>
           </div>
@@ -363,7 +365,7 @@ export default function EditBookModal({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-semibold text-zinc-700">Description</label>
+          <label className="block text-sm font-semibold text-zinc-700">{t('admin.editBook.description')}</label>
           <textarea
             value={formData.description}
             onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}

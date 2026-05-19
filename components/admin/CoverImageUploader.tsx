@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CoverImageUploaderProps {
   coverUrl: string;
@@ -15,6 +16,7 @@ export default function CoverImageUploader({
   onUrlChange,
   onFileChange,
 }: CoverImageUploaderProps) {
+  const { t } = useTranslation();
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
@@ -54,7 +56,7 @@ export default function CoverImageUploader({
 
   return (
     <div className="rounded-xl border border-amber-200 p-4">
-      <label className="mb-3 block text-sm font-medium text-gray-700">Cover Image</label>
+      <label className="mb-3 block text-sm font-medium text-gray-700">{t('admin.coverUploader.title')}</label>
 
       {/* Preview */}
       {preview && (
@@ -62,7 +64,7 @@ export default function CoverImageUploader({
           <div className="relative">
             <img
               src={preview}
-              alt="Preview"
+              alt={t('admin.coverUploader.previewAlt')}
               className="h-32 w-24 rounded-lg border border-amber-100 object-cover"
               onError={() => setPreviewUrl('')}
             />
@@ -71,7 +73,8 @@ export default function CoverImageUploader({
               onClick={handleRemove}
               className="absolute -right-2 -top-2 rounded-full bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
             >
-              ✕
+              <span>{t('admin.common.remove')}</span>
+              <span aria-hidden="true"> ✕</span>
             </button>
           </div>
         </div>
@@ -88,9 +91,9 @@ export default function CoverImageUploader({
             className="hidden"
           />
           <div className="text-sm text-gray-600">
-            <span className="font-medium text-amber-600">Upload file</span> or drag and drop
+            <span className="font-medium text-amber-600">{t('admin.coverUploader.uploadFile')}</span> {t('admin.coverUploader.orDragDrop')}
           </div>
-          <div className="text-xs text-gray-400">PNG, JPG, WebP up to 10MB</div>
+          <div className="text-xs text-gray-400">{t('admin.coverUploader.fileHint')}</div>
         </label>
 
         {/* URL input toggle */}
@@ -100,12 +103,12 @@ export default function CoverImageUploader({
             onClick={() => setShowUrlInput(true)}
             className="w-full rounded-lg border border-amber-200 px-3 py-2 text-center text-sm text-amber-600 transition hover:bg-amber-50"
           >
-            Or paste image URL
+            {t('admin.coverUploader.pasteUrl')}
           </button>
         ) : (
           <input
             type="url"
-            placeholder="https://example.com/image.jpg"
+            placeholder={t('admin.coverUploader.urlPlaceholder')}
             value={coverUrl}
             onChange={handleUrlChange}
             className="w-full rounded-lg border border-amber-200 px-3 py-2 text-sm"
@@ -114,7 +117,7 @@ export default function CoverImageUploader({
       </div>
 
       <div className="mt-2 text-xs text-gray-400">
-        If both provided, uploaded file has priority
+        {t('admin.coverUploader.priorityHint')}
       </div>
     </div>
   );
