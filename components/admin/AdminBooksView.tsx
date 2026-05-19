@@ -422,6 +422,14 @@ export default function AdminBooksView() {
           />
         </div>
 
+        <textarea
+          className="rounded-xl border border-amber-200 px-3 py-2 md:col-span-2 xl:col-span-4"
+          placeholder={t('admin.books.fields.description')}
+          rows={2}
+          value={bookForm.description}
+          onChange={(event) => setBookForm((prev) => ({ ...prev, description: event.target.value }))}
+        />
+
 
         <Button
           type="submit"
@@ -436,13 +444,7 @@ export default function AdminBooksView() {
           {t('admin.books.requiredHint')}
         </p>
 
-        <textarea
-          className="rounded-xl border border-amber-200 px-3 py-2 md:col-span-2 xl:col-span-4"
-          placeholder={t('admin.books.fields.description')}
-          rows={2}
-          value={bookForm.description}
-          onChange={(event) => setBookForm((prev) => ({ ...prev, description: event.target.value }))}
-        />
+        
       </form>
 
       <div className="mt-6 grid gap-3 md:grid-cols-[1fr_220px]">

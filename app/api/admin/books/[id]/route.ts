@@ -421,7 +421,17 @@ async function deleteAdminBook(_request: NextRequest, { params }: { params: Prom
   }
 
   try {
-    await prisma.book.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.orderItem.updateMany({
+        where: { bookId: id },
+        data: { bookId: null },
+      });
+      await tx.review.deleteMany({ where: { bookId: id } });
+      await tx.cartItem.deleteMany({ where: { bookId: id } });
+      await tx.bookAuthor.deleteMany({ where: { bookId: id } });
+      await tx.bookCategory.deleteMany({ where: { bookId: id } });
+      await tx.book.delete({ where: { id } });
+    });
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch {
     return NextResponse.json({ error: 'Unable to delete book' }, { status: 400 });
