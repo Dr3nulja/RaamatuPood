@@ -155,7 +155,7 @@ export default function PrivacyPage() {
               href="mailto:privacy@raamatupood.example"
               className="inline-flex items-center rounded-xl border border-amber-200 bg-white px-5 py-2.5 text-sm font-semibold text-secondary transition hover:bg-amber-50"
             >
-              privacy@raamatupood.example
+              infobook@raamatu.com
             </a>
           </div>
         </div>

@@ -53,6 +53,37 @@
     "addFailed": "Could not add the book to cart",
     "actionFailed": "Could not complete the action. Please try again later."
   },
+  "bookPage": {
+    "bookId": "Book #{{id}}",
+    "bookIdLabel": "Book ID",
+    "authorUnknown": "Author not specified",
+    "category": "Category",
+    "notSpecified": "Not specified",
+    "language": "Language: {{language}}",
+    "year": "Year: {{year}}",
+    "price": "Price",
+    "rating": "Rating",
+    "reviews": "Reviews",
+    "description": "Description",
+    "descriptionFallback": "Description for this book has not been added yet.",
+    "noCover": "No cover",
+    "inStock": "In stock: {{count}}",
+    "outOfStock": "Out of stock",
+    "added": "Added",
+    "stock": "Stock",
+    "stockUnits": "{{count}} pcs.",
+    "backToCatalog": "Back to catalog"
+  },
+  "cartDrawer": {
+    "title": "Cart ({{count}})",
+    "close": "Close cart",
+    "emptyTitle": "Your cart is empty",
+    "emptySubtitle": "Add books to start checkout",
+    "qty": "Qty: {{count}}",
+    "remove": "Remove",
+    "total": "Total",
+    "checkout": "Checkout"
+  },
   "cart": {
     "title": "Cart",
     "empty": "Your cart is empty",

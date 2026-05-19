@@ -4,6 +4,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type CartDrawerProps = {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
   const setCart = useCartStore((state) => state.setCart);
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const { t, formatPrice } = useTranslation();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -128,7 +130,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
     >
       <Button
         type="button"
-        aria-label="Close cart"
+        aria-label={t('cartDrawer.close')}
         variant="ghost"
         size="small"
         className={`fixed inset-0 z-40 !p-0 bg-white/20 backdrop-blur-sm transition-opacity duration-300 ease-in-out ${
@@ -152,7 +154,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
       >
         <header className="shrink-0 border-b border-border bg-surface-muted px-4 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-secondary">Cart ({safeTotalItems})</h2>
+            <h2 className="text-lg font-bold text-secondary">{t('cartDrawer.title', { count: safeTotalItems })}</h2>
             <Button
               type="button"
               onClick={onClose}
@@ -170,8 +172,8 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
         <div className="flex-1 overflow-y-auto p-4">
           {safeCart.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-muted p-6 text-center">
-              <p className="text-base font-semibold text-text-primary">Your cart is empty</p>
-              <p className="mt-1 text-sm text-text-secondary">Add books to start checkout</p>
+              <p className="text-base font-semibold text-text-primary">{t('cartDrawer.emptyTitle')}</p>
+              <p className="mt-1 text-sm text-text-secondary">{t('cartDrawer.emptySubtitle')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -193,10 +195,8 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
                       <h3 className="line-clamp-2 text-sm font-semibold text-text-primary">{item.title}</h3>
                       {item.author && <p className="mt-0.5 text-xs text-text-secondary">{item.author}</p>}
                       <div className="mt-1 flex items-center gap-2">
-                        <p className="text-sm font-bold text-primary">
-                          €{typeof item.price === 'string' ? item.price : item.price.toFixed(2)}
-                        </p>
-                        <span className="text-xs font-semibold text-text-secondary">Qty: {item.quantity}</span>
+                        <p className="text-sm font-bold text-primary">{formatPrice(Number(item.price))}</p>
+                        <span className="text-xs font-semibold text-text-secondary">{t('cartDrawer.qty', { count: item.quantity })}</span>
                       </div>
                     </div>
                   </div>
@@ -211,7 +211,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
                     >
                       -
                     </Button>
-                    <span className="min-w-[72px] text-center text-sm font-semibold text-text-secondary">Qty: {item.quantity}</span>
+                    <span className="min-w-[72px] text-center text-sm font-semibold text-text-secondary">{t('cartDrawer.qty', { count: item.quantity })}</span>
                     <Button
                       type="button"
                       variant="outline"
@@ -228,7 +228,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
                       onClick={() => void handleRemove(item.id)}
                       className="ml-auto px-2 py-1 text-xs font-semibold"
                     >
-                      Remove
+                      {t('cartDrawer.remove')}
                     </Button>
                   </div>
                 </article>
@@ -239,8 +239,8 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
 
         <footer className="shrink-0 border-t border-border bg-surface-muted p-4">
           <div className="mb-3 flex items-center justify-between text-sm font-semibold text-text-secondary">
-            <span>Total</span>
-            <span className="text-lg font-bold text-primary">€{safeTotalPrice.toFixed(2)}</span>
+            <span>{t('cartDrawer.total')}</span>
+            <span className="text-lg font-bold text-primary">{formatPrice(safeTotalPrice)}</span>
           </div>
           <Button
             type="button"
@@ -252,7 +252,7 @@ export default function CartDrawer({ isOpen, onClose, isAuthenticated }: CartDra
               router.push('/checkout');
             }}
           >
-            Checkout
+              {t('cartDrawer.checkout')}
           </Button>
         </footer>
       </aside>

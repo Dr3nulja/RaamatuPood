@@ -4,6 +4,7 @@ import pool from "../../../lib/db";
 import BookReviews from "@/components/BookReviews";
 import AddToCartButton from "@/components/AddToCartButton";
 import { buildBookCoverImageSrc } from "@/lib/books/cover";
+import { createServerTranslator, detectServerLocale } from "@/lib/i18n/server";
 
 type BookPageProps = {
   params: Promise<{
@@ -46,21 +47,9 @@ function formatNumber(value: number | string | null, digits = 2) {
   return Number.isFinite(parsed) ? parsed.toFixed(digits) : digits === 2 ? "0.00" : "0.0";
 }
 
-function formatDate(value: string | Date) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Date not specified";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
 export default async function BookDetailsPage({ params }: BookPageProps) {
+  const locale = await detectServerLocale();
+  const { t, formatDate, formatPrice } = createServerTranslator(locale);
   const { id } = await params;
   const bookId = Number(id);
 
@@ -117,9 +106,9 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
     <main className="min-h-screen bg-background px-4 py-10 text-zinc-900">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-600">
-          <Link href="/" className="transition hover:text-secondary">Home</Link>
+          <Link href="/" className="transition hover:text-secondary">{t('nav.home')}</Link>
           <span>•</span>
-          <Link href="/catalog" className="transition hover:text-secondary">Catalog</Link>
+          <Link href="/catalog" className="transition hover:text-secondary">{t('nav.catalog')}</Link>
           <span>•</span>
           <span className="text-zinc-800">{book.title}</span>
         </div>
@@ -130,7 +119,7 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
               <img src={cover} alt={book.title} className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-[520px] items-center justify-center text-zinc-500">
-                No cover
+                {t('bookPage.noCover')}
               </div>
             )}
           </div>
@@ -138,11 +127,11 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
           <div className="space-y-6">
             <div>
               <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-primary">
-                Book #{book.id}
+                {t('bookPage.bookId', { id: book.id })}
               </p>
               <h1 className="text-4xl font-bold leading-tight">{book.title}</h1>
               <p className="mt-3 text-lg text-zinc-600">
-                {book.author || "Author not specified"}
+                {book.author || t('bookPage.authorUnknown')}
               </p>
             </div>
 
@@ -151,31 +140,31 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
                 <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">{book.category}</span>
               )}
               {book.language && (
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">Language: {book.language}</span>
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">{t('bookPage.language', { language: book.language })}</span>
               )}
               {book.publication_year && (
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">Year: {book.publication_year}</span>
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">{t('bookPage.year', { year: book.publication_year })}</span>
               )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Price</div>
-                <div className="mt-2 text-2xl font-bold">€{formatNumber(book.price)}</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.price')}</div>
+                <div className="mt-2 text-2xl font-bold">{formatPrice(Number(book.price))}</div>
               </div>
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Rating</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.rating')}</div>
                 <div className="mt-2 text-2xl font-bold">★ {formatNumber(displayRating, 1)}</div>
               </div>
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Reviews</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.reviews')}</div>
                 <div className="mt-2 text-2xl font-bold">{reviewCount}</div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-amber-200 p-5">
               <div className="mb-3 flex items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold">Description</h2>
+                <h2 className="text-lg font-semibold">{t('bookPage.description')}</h2>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     inStock
@@ -183,30 +172,30 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
                       : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {inStock ? `In stock: ${book.stock}` : "Out of stock"}
+                  {inStock ? t('bookPage.inStock', { count: book.stock ?? 0 }) : t('bookPage.outOfStock')}
                 </span>
               </div>
               <p className="whitespace-pre-line text-sm leading-7 text-zinc-700">
-                {book.description || "Description for this book has not been added yet."}
+                {book.description || t('bookPage.descriptionFallback')}
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Book ID</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.bookIdLabel')}</div>
                 <div className="mt-1 font-semibold">{book.id}</div>
               </div>
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Category</div>
-                <div className="mt-1 font-semibold">{book.category || "Not specified"}</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.category')}</div>
+                <div className="mt-1 font-semibold">{book.category || t('bookPage.notSpecified')}</div>
               </div>
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Added</div>
-                <div className="mt-1 font-semibold">{formatDate(book.created_at)}</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.added')}</div>
+                <div className="mt-1 font-semibold">{formatDate(new Date(book.created_at))}</div>
               </div>
               <div className="rounded-2xl bg-background-muted p-4">
-                <div className="text-sm text-zinc-600">Stock</div>
-                <div className="mt-1 font-semibold">{Number(book.stock ?? 0)} pcs.</div>
+                <div className="text-sm text-zinc-600">{t('bookPage.stock')}</div>
+                <div className="mt-1 font-semibold">{t('bookPage.stockUnits', { count: Number(book.stock ?? 0) })}</div>
               </div>
             </div>
 
@@ -226,7 +215,7 @@ export default async function BookDetailsPage({ params }: BookPageProps) {
                 href="/catalog"
                 className="rounded-xl border border-amber-300 px-5 py-3 text-sm font-medium text-secondary transition hover:bg-amber-50"
               >
-                Back to catalog
+                {t('bookPage.backToCatalog')}
               </Link>
             </div>
           </div>

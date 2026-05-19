@@ -53,6 +53,37 @@
     "addFailed": "Raamatu lisamine ostukorvi ebaõnnestus",
     "actionFailed": "Toimingut ei õnnestunud teha. Proovi hiljem uuesti."
   },
+  "bookPage": {
+    "bookId": "Raamat #{{id}}",
+    "bookIdLabel": "Raamatu ID",
+    "authorUnknown": "Autor puudub",
+    "category": "Kategooria",
+    "notSpecified": "Määramata",
+    "language": "Keel: {{language}}",
+    "year": "Aasta: {{year}}",
+    "price": "Hind",
+    "rating": "Hinne",
+    "reviews": "Arvustused",
+    "description": "Kirjeldus",
+    "descriptionFallback": "Selle raamatu kirjeldust pole veel lisatud.",
+    "noCover": "Kaanepilti pole",
+    "inStock": "Laos: {{count}}",
+    "outOfStock": "Laost otsas",
+    "added": "Lisatud",
+    "stock": "Laoseis",
+    "stockUnits": "{{count}} tk",
+    "backToCatalog": "Tagasi kataloogi"
+  },
+  "cartDrawer": {
+    "title": "Ostukorv ({{count}})",
+    "close": "Sulge ostukorv",
+    "emptyTitle": "Sinu ostukorv on tühi",
+    "emptySubtitle": "Lisa raamatuid, et jätkata tellimusega",
+    "qty": "Kogus: {{count}}",
+    "remove": "Eemalda",
+    "total": "Kokku",
+    "checkout": "Vormista tellimus"
+  },
   "cart": {
     "title": "Ostukorv",
     "empty": "Sinu ostukorv on tühi",
