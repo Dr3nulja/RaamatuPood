@@ -128,12 +128,14 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
             >
               {catalogLabel}
             </Link>
-            <Link
-              href="/account"
-              className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
-            >
-              {profileLabel}
-            </Link>
+            {isAuthenticated && (
+              <Link
+                href="/account"
+                className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+              >
+                {profileLabel}
+              </Link>
+            )}
             <Link
               href="/contacts"
               className="inline-flex items-center rounded-lg px-2 py-1 font-medium text-zinc-700 transition-[color,background-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-0.5 hover:bg-amber-50/80 hover:text-amber-700 hover:shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-amber-300 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
@@ -285,12 +287,14 @@ export default function Header({ userEmail, userNickname, userPicture, isAdmin =
             >
               {catalogLabel}
             </Link>
-            <Link
-              href="/account"
-              className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
-            >
-              {profileLabel}
-            </Link>
+            {isAuthenticated && (
+              <Link
+                href="/account"
+                className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
+              >
+                {profileLabel}
+              </Link>
+            )}
             <Link
               href="/contacts"
               className="block rounded-lg px-4 py-2 text-zinc-700 transition-[color,background-color,opacity] duration-150 ease-out hover:bg-amber-50 hover:text-amber-700 active:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-zinc-100 dark:hover:bg-zinc-800 dark:active:bg-zinc-700 dark:focus-visible:ring-amber-400 dark:focus-visible:ring-offset-zinc-950"
