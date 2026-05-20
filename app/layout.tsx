@@ -7,6 +7,7 @@ import CartHydration from "@/components/CartHydration";
 import SessionTimeout from "@/components/SessionTimeout";
 import { auth0 } from "@/lib/auth0";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/security/prisma";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth0.getSession();
+  const session = await withTimeout(auth0.getSession(), 3_000, 'AUTH0_SESSION_TIMEOUT').catch(() => null);
   const userEmail = session?.user?.email ?? null;
   const isAuthenticated = Boolean(session?.user?.sub);
 
@@ -36,10 +37,10 @@ export default async function RootLayout({
   let userPicture = session?.user?.picture ?? null;
   let userNickname = (session?.user?.nickname as string | undefined) ?? null;
   if (session?.user?.sub) {
-    const dbUser = await prisma.user.findUnique({
+    const dbUser = await withTimeout(prisma.user.findUnique({
       where: { auth0Id: session.user.sub },
       select: { role: true, picture: true, name: true },
-    });
+    }), 3_000, 'AUTH0_PROFILE_TIMEOUT').catch(() => null);
     isAdmin = dbUser?.role === 'ADMIN';
     userPicture = dbUser?.picture ?? userPicture;
     userNickname = dbUser?.name ?? userNickname;

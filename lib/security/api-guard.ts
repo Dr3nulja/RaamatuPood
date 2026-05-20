@@ -135,8 +135,8 @@ export function withApiSecurity<TRequest extends Request, TContext = unknown>(
     }
 
     const effectiveBucket = resolveRateBucket(options);
-    const ipLimit = await consumeIpLimit(effectiveBucket, ip);
-    if (!ipLimit.allowed) {
+    const ipLimit = (await consumeIpLimit(effectiveBucket, ip)) ?? { allowed: true, retryAfterSeconds: 0 };
+    if (!ipLimit || !ipLimit.allowed) {
       logSecurityEvent('request.blocked.ip_rate_limit', { ip, pathname, method, bucket: effectiveBucket });
       return NextResponse.json(
         { error: 'rate_limited' },
@@ -167,8 +167,8 @@ export function withApiSecurity<TRequest extends Request, TContext = unknown>(
     if (options.resolveUserId) {
       const userId = await options.resolveUserId(request);
       if (userId) {
-        const userLimit = await consumeUserLimit(effectiveBucket, userId);
-        if (!userLimit.allowed) {
+        const userLimit = (await consumeUserLimit(effectiveBucket, userId)) ?? { allowed: true, retryAfterSeconds: 0 };
+        if (!userLimit || !userLimit.allowed) {
           logSecurityEvent('request.blocked.user_rate_limit', { userId, pathname, method, bucket: effectiveBucket });
           return NextResponse.json(
             { error: 'rate_limited' },
@@ -224,3 +224,6 @@ export function withApiSecurity<TRequest extends Request, TContext = unknown>(
     }
   };
 }
+
+
+

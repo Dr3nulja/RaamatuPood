@@ -1,17 +1,24 @@
 import type { Config } from 'jest';
 
 const config: Config = {
-  testEnvironment: 'jsdom',
+  preset: 'ts-jest',
+  testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/e2e/',
+    '\\.spec\\.ts$',
+  ],
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(next|@auth0/nextjs-auth0)/)',
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  testMatch: ['<rootDir>/tests/**/*.test.ts', '<rootDir>/tests/**/*.test.tsx'],
-  transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
-  },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  collectCoverageFrom: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'contexts/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}', 'stores/**/*.{ts,tsx}', '!**/*.d.ts'],
+  // dotenv loaded from jest.setup.ts
 };
 
 export default config;

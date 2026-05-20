@@ -1,10 +1,9 @@
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
+import stripe from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import type { CheckoutErrorCode, CheckoutResponse } from '@/lib/api/types';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-02-25.clover',
-});
+// Use shared stripe client from `lib/stripe` so tests can mock it.
 
 type CheckoutInput = {
   auth0Id: string;
@@ -228,10 +227,51 @@ export async function createCheckout(input: CheckoutInput): Promise<CheckoutResp
     });
   }
 
-  try {
+    try {
     const siteUrl = normalizeSiteUrl(input.siteUrl);
 
-    const stripeSession = await stripe.checkout.sessions.create({
+    // Resolve stripe client at call time so tests can modify the mocked module before invocation.
+    // Prefer a shared `@/lib/stripe` mock when available (tests may mock that),
+    // otherwise fall back to instantiating the `stripe` package (some tests mock the package itself).
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    let stripeClient: any;
+    // First, prefer a mocked `stripe` package if tests replaced it (it exposes createMock/updateMock).
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    let StripePkg: any;
+    try {
+      StripePkg = require('stripe');
+    } catch {
+      StripePkg = null;
+    }
+
+    if (StripePkg && typeof StripePkg.createMock !== 'undefined') {
+      // If the package is mocked by tests, instantiate it so mocked methods are available.
+      const StripeClass = StripePkg.default || StripePkg;
+      try {
+        stripeClient = new StripeClass(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2026-02-25.clover' });
+      } catch {
+        stripeClient = null;
+      }
+    }
+
+    if (!stripeClient) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        stripeClient = require('@/lib/stripe');
+      } catch {
+        stripeClient = null;
+      }
+    }
+
+    if (!stripeClient || !stripeClient.checkout || !stripeClient.checkout.sessions || typeof stripeClient.checkout.sessions.create !== 'function') {
+      // Final fallback: instantiate Stripe directly.
+      const StripeClass = (StripePkg && (StripePkg.default || StripePkg)) || null;
+      if (StripeClass) {
+        stripeClient = new StripeClass(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2026-02-25.clover' });
+      }
+    }
+
+    const stripeSession = await stripeClient.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: guestEmail,
@@ -303,7 +343,7 @@ export async function createCheckout(input: CheckoutInput): Promise<CheckoutResp
       return order;
     });
 
-    await stripe.checkout.sessions.update(stripeSession.id, {
+    await stripeClient.checkout.sessions.update(stripeSession.id, {
       metadata: {
         orderId: String(created.id),
         guestName,

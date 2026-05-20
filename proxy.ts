@@ -57,7 +57,7 @@ function isEmailFlowAllowedPath(pathname: string) {
   return false;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = getClientIp(request);
   const bypassEarlyBlocking = shouldBypassEarlyBlocking(pathname, request);

@@ -44,7 +44,7 @@ function getResolvedAuth0Config(): ResolvedAuth0Config {
   const domain = explicitDomain ?? issuerDomain;
 
   if (explicitDomain && issuerDomain && explicitDomain !== issuerDomain) {
-    throw new Error('[auth0] AUTH0_DOMAIN and AUTH0_ISSUER_BASE_URL must point to the same Auth0 tenant.');
+    console.log('DEBUG: explicit:', explicitDomain, 'issuer:', issuerDomain); throw new Error('DEBUG: MISMATCH');
   }
 
   if (!domain) {
@@ -112,3 +112,4 @@ export const auth0Options = {
 } as const;
 
 export const auth0 = new Auth0Client(auth0Options);
+export default auth0;

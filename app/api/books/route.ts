@@ -107,11 +107,11 @@ async function getBooks(request: NextRequest) {
         cover_image: buildBookCoverImageSrc(book.id, book.coverImage, book.coverImageData),
         cover_url: buildBookCoverImageSrc(book.id, book.coverImage, book.coverImageData),
         stock: book.stock,
-        author: book.bookAuthors[0]?.author ? { name: book.bookAuthors[0].author.name } : null,
-        category: book.bookCategories[0]?.category
+        author: book.bookAuthors?.[0]?.author ? { name: book.bookAuthors?.[0]?.author.name } : null,
+        category: book.bookCategories?.[0]?.category
           ? {
-              id: book.bookCategories[0].category.id,
-              name: book.bookCategories[0].category.name,
+              id: book.bookCategories?.[0]?.category.id,
+              name: book.bookCategories?.[0]?.category.name,
             }
           : null,
       })),
